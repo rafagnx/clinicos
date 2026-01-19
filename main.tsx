@@ -7,7 +7,10 @@ import { Toaster as ToasterOriginal } from "@/components/ui/toaster"
 import './index.css'
 
 import Layout from './Layout'
-import Login from './pages/Login'
+// import Login from './pages/Login' // Deprecated
+import Auth from './pages/Auth' // New Auth Page
+import Organization from './pages/Organization' // New Org Page
+
 import Dashboard from './pages/Dashboard'
 import Agenda from './pages/Agenda'
 import Patients from './pages/Patients'
@@ -33,13 +36,18 @@ const App = () => {
         <Router>
             <Routes>
                 {/* Public Route */}
-                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/register" element={<Auth />} />
 
                 {/* Authenticated Routes wrapped in Layout */}
                 <Route path="*" element={
                     <Layout>
                         <Routes>
                             <Route path="/" element={<Navigate to="/Dashboard" replace />} />
+
+                            {/* Organization Setup */}
+                            <Route path="/organization/new" element={<Organization />} />
+
                             <Route path="/Dashboard" element={<Dashboard />} />
                             <Route path="/Agenda" element={<Agenda />} />
                             <Route path="/Patients" element={<Patients />} />

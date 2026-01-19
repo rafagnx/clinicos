@@ -48,7 +48,23 @@ export default function Layout({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => { });
+    // Check if on a public route to avoid loop? No, Layout is only for protected routes.
+    // If better-auth session is missing, we redirect.
+    base44.auth.me().then((u) => {
+      if (!u && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        // If we are in Layout, we SHOULD be authenticated
+        // window.location.href = '/login'; 
+        // Commenting out forced redirect for development/demo safety unless user explicitly requested strict mode.
+        // User wants multi-tenant system, so auth is required.
+        // However, if fetching fetch fails (e.g. server down), we might not want to loop.
+        // Let's rely on the fact that if 'u' is null, we redirect.
+        window.location.href = '/login';
+      }
+      setUser(u);
+    }).catch(() => {
+      // If error, redirect to login
+      window.location.href = '/login';
+    });
   }, []);
 
   const { data: clinicSettings } = useQuery({

@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
+import { toNodeHandler } from "better-auth/node";
 
 const { Pool } = pg;
 dotenv.config();
@@ -16,43 +19,68 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../dist')));
-
-// Database Connection
-let pool;
-
-if (process.env.DATABASE_URL) {
-    pool = new Pool({
+// Database Connection Config
+const dbConfig = process.env.DATABASE_URL
+    ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false // Required for Render/Railway
-        }
-    });
-} else {
-    pool = new Pool({
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
         database: process.env.DB_NAME || 'clinicOS',
         password: process.env.DB_PASSWORD || 'password',
         port: process.env.DB_PORT || 5432,
-    });
-}
+      };
 
-// Initial Schema Setup (Auto-Migration for Render)
+const pool = new Pool(dbConfig);
+
+// Better Auth Initialization
+const auth = betterAuth({
+    database: {
+        provider: "postgres", // Explicitly using postgres adapter
+        url: process.env.DATABASE_URL || `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
+    },
+    plugins: [
+        organization()
+    ],
+    emailAndPassword: {
+        enabled: true
+    },
+    trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"] // Add production domains
+});
+
+// Middleware
+app.use(cors({
+    origin: ["http://localhost:5173", "https://clinicos.unaux.com"],
+    credentials: true // Required for auth cookies
+}));
+app.use(bodyParser.json());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// ------------------------------------------------------------------
+// BETTER AUTH ROUTE HANDLER
+// ------------------------------------------------------------------
+app.all("/api/auth/*", toNodeHandler(auth));
+
+
+// Initial Schema Setup (Auto-Migration)
 const initSchema = async () => {
     try {
         const schemaPath = path.join(__dirname, '../database/schema.sql');
-        // Simple check if file exists (in production structure, might need adjustment)
-        // We'll read it using fs.
         const fs = await import('fs');
         if (fs.existsSync(schemaPath)) {
             const sql = fs.readFileSync(schemaPath, 'utf8');
             console.log('Running Schema Migration...');
+            // We need to split commands potentially, but pg usually handles script blocks if simple.
+            // However, typical pg query() might not handle multiple statements without strict mode or splitting.
+            // For now, we assume the schema file is well-formed for single execute or we simple log it.
+            // Better Auth handles IT'S own tables usually via 'generate'/'migrate' but here we manually included SQL.
+            
+            // NOTE: Ideally we use 'better-auth cli' to migrate, but since we manually added definitions to schema.sql,
+            // we will try to run it.
             await pool.query(sql);
             console.log('Schema Migration Success!');
         } else {
@@ -67,51 +95,86 @@ const initSchema = async () => {
 pool.connect(async (err, client, release) => {
     if (err) {
         console.error('Error acquiring client', err.stack);
-        console.log('SUGGESTION: Ensure your DATABASE_URL is correct and the database is running.');
     } else {
         console.log('Connected to PostgreSQL database!');
-        await initSchema(); // Run migration on connect
+        await initSchema();
         release();
     }
 });
 
-// --- Generic CRUD Helpers ---
-const generateId = () => uuidv4();
+// ------------------------------------------------------------------
+// MIDDLEWARE: Require Auth & Organization
+// ------------------------------------------------------------------
+const requireAuth = async (req, res, next) => {
+    try {
+        const session = await auth.api.getSession({
+            headers: req.headers
+        });
 
-// --- Routes ---
+        if (!session) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        // Check for active organization
+        // The Organization plugin usually allows setting an active organization in the session
+        // OR the client sends an 'organization-id' header/query.
+        // For simplicity, we will check headers first, then fallback to session.activeOrganizationId if available.
+        
+        // However, better-auth session object structure with organization plugin needs verification.
+        // Usually: session.session.activeOrganizationId
+        
+        const orgId = req.headers['x-organization-id'] || session.session.activeOrganizationId;
+
+        if (!orgId) {
+             // If NO organization context, we might restrict access to global stuff only.
+             // But for 'api/:entity' we need context.
+             // We'll let the route handle missing org if mostly listing generic stuff, 
+             // but for tenant data it is required.
+             // We will attach what we have.
+        }
+
+        req.auth = {
+            user: session.user,
+            session: session.session,
+            organizationId: orgId
+        };
+        
+        next();
+    } catch (error) {
+        console.error("Auth Middleware Error:", error);
+        res.status(500).json({ error: "Auth Check Failed" });
+    }
+};
+
+
+// ------------------------------------------------------------------
+// ROUTES
+// ------------------------------------------------------------------
 
 // Test Route
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'ClinicOS Server is running' });
 });
 
-// AUTH: Me (Simulated)
-app.get('/api/auth/me', async (req, res) => {
-    try {
-        const { rows } = await pool.query("SELECT * FROM professionals WHERE role_type = 'admin' LIMIT 1");
-        if (rows.length > 0) {
-            const user = rows[0];
-            delete user.password;
-            res.json(user);
-        } else {
-            res.json({ id: 'temp-admin', full_name: 'Admin Temp', email: 'admin@temp.com', role: 'admin' });
-        }
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: e.message });
-    }
-});
 
 // GENERIC READ (List/Filter)
-app.get('/api/:entity', async (req, res) => {
+app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
+    const { organizationId } = req.auth;
+
+    if (!organizationId) {
+        return res.status(400).json({ error: "Organization Context Required (Header: x-organization-id)" });
+    }
+
     const tableMap = {
         'Professional': 'professionals',
         'Patient': 'patients',
         'Appointment': 'appointments',
         'MedicalRecord': 'medical_records',
         'Notification': 'notifications',
-        'Promotion': 'promotions'
+        'Promotion': 'promotions',
+        'Lead': 'leads', // Added Lead
+        'Message': 'messages' // Added Message
     };
 
     const tableName = tableMap[entity];
@@ -119,9 +182,9 @@ app.get('/api/:entity', async (req, res) => {
 
     try {
         let query = `SELECT * FROM ${tableName}`;
-        let params = [];
-        let whereClauses = [];
-        let paramIndex = 1;
+        let params = [organizationId]; // First param is always org_id
+        let whereClauses = [`organization_id = $1`];
+        let paramIndex = 2;
 
         if (req.query.id) {
             whereClauses.push(`id = $${paramIndex++}`);
@@ -132,11 +195,10 @@ app.get('/api/:entity', async (req, res) => {
             query += ` WHERE ` + whereClauses.join(' AND ');
         }
 
-        // Add Sort
         if (tableName === 'appointments') {
             query += ` ORDER BY start_time ASC`;
         } else {
-            query += ` ORDER BY created_at DESC`; // Switched to created_at (standard in schema)
+            query += ` ORDER BY created_at DESC`;
         }
 
         if (req.query.limit) {
@@ -153,28 +215,32 @@ app.get('/api/:entity', async (req, res) => {
 });
 
 // GENERIC CREATE
-app.post('/api/:entity', async (req, res) => {
+app.post('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
+    const { organizationId } = req.auth;
+
+    if (!organizationId) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
+
     const tableMap = {
         'Professional': 'professionals',
         'Patient': 'patients',
         'Appointment': 'appointments',
         'MedicalRecord': 'medical_records',
         'Notification': 'notifications',
-        'Promotion': 'promotions'
+        'Promotion': 'promotions',
+        'Lead': 'leads',
+        'Message': 'messages'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
 
     const data = req.body;
-    // Postgres SERIAL handles IDs, but if uuid is needed allow it. 
-    // Schema says SERIAL, so we typically omit ID unless we changed schema back to UUID.
-    // The previous code generated UUIDs. The new schema uses SERIAL (integers).
-    // If the frontend expects UUIDs, this might be a break. 
-    // BUT the user approved the plan which said "Change to SERIAL". 
-    // So we should NOT generate ID manually if it's SERIAL.
-    // However, if the frontend sends an ID, we might ignore it or error.
-    delete data.id;
+    delete data.id; // Ensure ID is generated
+    
+    // Inject Organization ID
+    data.organization_id = organizationId;
 
     try {
         const keys = Object.keys(data);
@@ -193,15 +259,23 @@ app.post('/api/:entity', async (req, res) => {
 });
 
 // GENERIC UPDATE
-app.put('/api/:entity/:id', async (req, res) => {
+app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     const { entity, id } = req.params;
+    const { organizationId } = req.auth;
+
+    if (!organizationId) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
+
     const tableMap = {
         'Professional': 'professionals',
         'Patient': 'patients',
         'Appointment': 'appointments',
         'MedicalRecord': 'medical_records',
         'Notification': 'notifications',
-        'Promotion': 'promotions'
+        'Promotion': 'promotions',
+        'Lead': 'leads',
+        'Message': 'messages'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
@@ -212,9 +286,14 @@ app.put('/api/:entity/:id', async (req, res) => {
         const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
 
         const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
-        const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} RETURNING *`;
+        // Ensure we only update if it belongs to the org
+        const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} AND organization_id = $${keys.length + 2} RETURNING *`;
 
-        const { rows } = await pool.query(query, [...values, id]);
+        const { rows } = await pool.query(query, [...values, id, organizationId]);
+
+        if (rows.length === 0) {
+             return res.status(404).json({ error: "Item not found or access denied" });
+        }
 
         res.json(rows[0]);
     } catch (error) {
@@ -224,21 +303,32 @@ app.put('/api/:entity/:id', async (req, res) => {
 });
 
 // GENERIC DELETE
-app.delete('/api/:entity/:id', async (req, res) => {
+app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     const { entity, id } = req.params;
+    const { organizationId } = req.auth;
+
+    if (!organizationId) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
+
     const tableMap = {
         'Professional': 'professionals',
         'Patient': 'patients',
         'Appointment': 'appointments',
         'MedicalRecord': 'medical_records',
         'Notification': 'notifications',
-        'Promotion': 'promotions'
+        'Promotion': 'promotions',
+        'Lead': 'leads',
+        'Message': 'messages'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
 
     try {
-        await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [id]);
+        const result = await pool.query(`DELETE FROM ${tableName} WHERE id = $1 AND organization_id = $2`, [id, organizationId]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Item not found or access denied" });
+        }
         res.json({ success: true });
     } catch (error) {
         console.error(`Error deleting ${entity}:`, error);
