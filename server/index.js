@@ -70,7 +70,13 @@ const auth = betterAuth({
         window: 10, // 10 seconds (short window)
         max: 100, // Allow 100 requests per window (very permissive for debugging)
     },
-    trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"]
+    trustedOrigins: [
+        "http://localhost:5173",
+        "http://localhost:3001",
+        "https://clinicos.unaux.com",
+        "https://www.clinicos.unaux.com",
+        "http://clinicos.unaux.com"
+    ]
 });
 
 // Middleware
@@ -78,8 +84,17 @@ app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        const allowedOrigins = ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"];
+
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "http://localhost:3001",
+            "https://clinicos.unaux.com",
+            "https://www.clinicos.unaux.com",
+            "http://clinicos.unaux.com"
+        ];
+
         if (allowedOrigins.indexOf(origin) === -1) {
+            console.log("BLOCKED CORS ORIGIN:", origin); // Debug log
             var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
