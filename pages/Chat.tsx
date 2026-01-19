@@ -13,13 +13,14 @@ export default function Chat() {
   const [newConversationOpen, setNewConversationOpen] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(setCurrentUser).catch(() => {});
+    base44.auth.me().then(setCurrentUser).catch(() => { });
   }, []);
 
   const { data: conversations = [] } = useQuery({
     queryKey: ["conversations"],
     queryFn: () => base44.entities.Conversation.list("-last_message_at"),
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    refetchInterval: 5000 // Poll every 5 seconds
   });
 
   const { data: professionals = [] } = useQuery({
@@ -33,32 +34,13 @@ export default function Chat() {
       conversation_id: selectedConversation.id,
       "created_date": ""
     }),
-    enabled: !!selectedConversation
+    enabled: !!selectedConversation,
+    refetchInterval: 3000 // Poll every 3 seconds for messages
   });
 
-  // Real-time subscription for conversations
-  useEffect(() => {
-    if (!currentUser) return;
+  // Real-time subscription replaced with Polling for REST API compatibility
+  // base44Client does not support .subscribe()
 
-    const unsubscribe = base44.entities.Conversation.subscribe((event) => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
-    });
-
-    return unsubscribe;
-  }, [currentUser, queryClient]);
-
-  // Real-time subscription for messages
-  useEffect(() => {
-    if (!selectedConversation) return;
-
-    const unsubscribe = base44.entities.Message.subscribe((event) => {
-      if (event.data.conversation_id === selectedConversation.id) {
-        queryClient.invalidateQueries({ queryKey: ["messages", selectedConversation.id] });
-      }
-    });
-
-    return unsubscribe;
-  }, [selectedConversation, queryClient]);
 
   const sendMessageMutation = useMutation({
     mutationFn: (text) => base44.entities.Message.create({
@@ -78,7 +60,7 @@ export default function Chat() {
       <div className="w-80 border-r flex flex-col">
         <div className="p-4 border-b flex items-center justify-between">
           <h1 className="text-xl font-bold">Mensagens</h1>
-          <button 
+          <button
             onClick={() => setNewConversationOpen(true)}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
@@ -87,7 +69,7 @@ export default function Chat() {
             </svg>
           </button>
         </div>
-        <ConversationList 
+        <ConversationList
           conversations={conversations}
           professionals={professionals}
           selectedId={selectedConversation?.id}
@@ -98,7 +80,7 @@ export default function Chat() {
 
       <div className="flex-1 flex flex-col">
         {selectedConversation ? (
-          <MessageArea 
+          <MessageArea
             conversation={selectedConversation}
             messages={messages}
             currentUser={currentUser}
@@ -115,7 +97,7 @@ export default function Chat() {
         )}
       </div>
 
-      <NewConversationDialog 
+      <NewConversationDialog
         open={newConversationOpen}
         onOpenChange={setNewConversationOpen}
         professionals={professionals}

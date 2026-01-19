@@ -29,8 +29,12 @@ api.interceptors.request.use(async (config) => {
 
 const createEntityHandler = (entityName) => ({
     list: async (params = {}) => {
+        // Handle "params" being a string (legacy sort instruction from generated code)
+        // Axios expects an object, so we must sanitize.
+        const requestParams = (typeof params === 'object' && params !== null) ? params : {};
+
         try {
-            const response = await api.get(`/${entityName}`, { params });
+            const response = await api.get(`/${entityName}`, { params: requestParams });
             return response.data;
         } catch (error) {
             console.error(`Error listing ${entityName}:`, error);
@@ -117,6 +121,12 @@ export const base44 = {
         logout: async () => {
             await authClient.signOut();
             window.location.href = "/login";
+        }
+    },
+    admin: {
+        listOrganizations: async () => {
+            const response = await api.get("/admin/organizations");
+            return response.data;
         }
     },
     storage: {
