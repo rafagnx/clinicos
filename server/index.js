@@ -239,19 +239,12 @@ app.get('/api/health', (req, res) => {
 });
 
 
+const userScopedEntities = ['NotificationPreference'];
+
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
-    const { organizationId, isSystemAdmin } = req.auth;
-
-    if (!organizationId) {
-        // If System Admin has no org context, return empty list instead of error
-        // to prevent UI crashes (e.g. Layout fetching settings)
-        if (isSystemAdmin) {
-            return res.json([]);
-        }
-        return res.status(400).json({ error: "Organization Context Required (Header: x-organization-id)" });
-    }
+    const { organizationId, isSystemAdmin, user } = req.auth;
 
     const tableMap = {
         'Professional': 'professionals',
@@ -260,23 +253,47 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         'MedicalRecord': 'medical_records',
         'Notification': 'notifications',
         'Promotion': 'promotions',
-        'Lead': 'leads', // Added Lead
-        'Message': 'messages', // Added Message
-        'Conversation': 'conversations' // Added Conversation
+        'Lead': 'leads',
+        'Message': 'messages',
+        'Conversation': 'conversations',
+        'ClinicSettings': 'clinic_settings',
+        'NotificationPreference': 'notification_preferences'
     };
 
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
 
+    const isUserScoped = userScopedEntities.includes(entity);
+
+    if (!organizationId && !isUserScoped) {
+        if (isSystemAdmin) {
+            return res.json([]);
+        }
+        return res.status(400).json({ error: "Organization Context Required (Header: x-organization-id)" });
+    }
+
     try {
         let query = `SELECT * FROM ${tableName}`;
-        let params = [organizationId]; // First param is always org_id
-        let whereClauses = [`organization_id = $1`];
-        let paramIndex = 2;
+        let params = [];
+        let whereClauses = [];
+        let paramIndex = 1;
+
+        if (isUserScoped) {
+            whereClauses.push(`user_id = $${paramIndex++}`);
+            params.push(user.id);
+        } else {
+            whereClauses.push(`organization_id = $${paramIndex++}`);
+            params.push(organizationId);
+        }
 
         if (req.query.id) {
             whereClauses.push(`id = $${paramIndex++}`);
             params.push(req.query.id);
+        }
+
+        // Support filter by user_id explicit (for Profile.tsx compat)
+        if (req.query.user_id && isUserScoped) {
+            // already handled by implicit scope above, but if needed we can ignore or validate
         }
 
         if (whereClauses.length > 0) {
@@ -305,11 +322,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
 // GENERIC CREATE
 app.post('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
-    const { organizationId } = req.auth;
-
-    if (!organizationId) {
-        return res.status(400).json({ error: "Organization Context Required" });
-    }
+    const { organizationId, user } = req.auth;
 
     const tableMap = {
         'Professional': 'professionals',
@@ -319,16 +332,29 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         'Notification': 'notifications',
         'Promotion': 'promotions',
         'Lead': 'leads',
-        'Message': 'messages'
+        'Message': 'messages',
+        'Conversation': 'conversations',
+        'ClinicSettings': 'clinic_settings',
+        'NotificationPreference': 'notification_preferences'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
 
+    const isUserScoped = userScopedEntities.includes(entity);
+
+    if (!organizationId && !isUserScoped) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
+
     const data = req.body;
     delete data.id; // Ensure ID is generated
 
-    // Inject Organization ID
-    data.organization_id = organizationId;
+    // Inject Context ID
+    if (isUserScoped) {
+        data.user_id = user.id;
+    } else {
+        data.organization_id = organizationId;
+    }
 
     try {
         const keys = Object.keys(data);
@@ -349,11 +375,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 // GENERIC UPDATE
 app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     const { entity, id } = req.params;
-    const { organizationId } = req.auth;
-
-    if (!organizationId) {
-        return res.status(400).json({ error: "Organization Context Required" });
-    }
+    const { organizationId, user } = req.auth;
 
     const tableMap = {
         'Professional': 'professionals',
@@ -363,10 +385,19 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         'Notification': 'notifications',
         'Promotion': 'promotions',
         'Lead': 'leads',
-        'Message': 'messages'
+        'Message': 'messages',
+        'Conversation': 'conversations',
+        'ClinicSettings': 'clinic_settings',
+        'NotificationPreference': 'notification_preferences'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
+
+    const isUserScoped = userScopedEntities.includes(entity);
+
+    if (!organizationId && !isUserScoped) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
 
     const data = req.body;
     try {
@@ -374,10 +405,21 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
 
         const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
-        // Ensure we only update if it belongs to the org
-        const query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} AND organization_id = $${keys.length + 2} RETURNING *`;
 
-        const { rows } = await pool.query(query, [...values, id, organizationId]);
+        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1}`;
+        const queryParams = [...values, id];
+
+        if (isUserScoped) {
+            query += ` AND user_id = $${keys.length + 2}`;
+            queryParams.push(user.id);
+        } else {
+            query += ` AND organization_id = $${keys.length + 2}`;
+            queryParams.push(organizationId);
+        }
+
+        query += ` RETURNING *`;
+
+        const { rows } = await pool.query(query, queryParams);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: "Item not found or access denied" });
@@ -393,11 +435,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 // GENERIC DELETE
 app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     const { entity, id } = req.params;
-    const { organizationId } = req.auth;
-
-    if (!organizationId) {
-        return res.status(400).json({ error: "Organization Context Required" });
-    }
+    const { organizationId, user } = req.auth;
 
     const tableMap = {
         'Professional': 'professionals',
@@ -407,13 +445,33 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         'Notification': 'notifications',
         'Promotion': 'promotions',
         'Lead': 'leads',
-        'Message': 'messages'
+        'Message': 'messages',
+        'Conversation': 'conversations',
+        'ClinicSettings': 'clinic_settings',
+        'NotificationPreference': 'notification_preferences'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
 
+    const isUserScoped = userScopedEntities.includes(entity);
+
+    if (!organizationId && !isUserScoped) {
+        return res.status(400).json({ error: "Organization Context Required" });
+    }
+
     try {
-        const result = await pool.query(`DELETE FROM ${tableName} WHERE id = $1 AND organization_id = $2`, [id, organizationId]);
+        let query = `DELETE FROM ${tableName} WHERE id = $1`;
+        const params = [id];
+
+        if (isUserScoped) {
+            query += ` AND user_id = $2`;
+            params.push(user.id);
+        } else {
+            query += ` AND organization_id = $2`;
+            params.push(organizationId);
+        }
+
+        const result = await pool.query(query, params);
         if (result.rowCount === 0) {
             return res.status(404).json({ error: "Item not found or access denied" });
         }

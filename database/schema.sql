@@ -15,10 +15,19 @@ CREATE TABLE IF NOT EXISTS "user" (
 );
 
 -- Safely add 'role' column if it doesn't exist
-DO $$
-BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user' AND column_name='role') THEN
         ALTER TABLE "user" ADD COLUMN "role" TEXT DEFAULT 'user';
+    END IF;
+    
+    -- Additional Profile Fields
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user' AND column_name='phone') THEN
+        ALTER TABLE "user" ADD COLUMN "phone" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user' AND column_name='specialty') THEN
+        ALTER TABLE "user" ADD COLUMN "specialty" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='user' AND column_name='user_type') THEN
+        ALTER TABLE "user" ADD COLUMN "user_type" TEXT DEFAULT 'profissional';
     END IF;
 END
 $$;
@@ -171,3 +180,30 @@ CREATE TABLE IF NOT EXISTS messages (
 --   password_hash VARCHAR(255) NOT NULL,
 --   role VARCHAR(50) DEFAULT 'user'
 -- );
+
+-- Notification Preferences
+CREATE TABLE IF NOT EXISTS "notification_preferences" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "user_id" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+  "email_enabled" BOOLEAN DEFAULT TRUE,
+  "push_enabled" BOOLEAN DEFAULT TRUE,
+  "whatsapp_enabled" BOOLEAN DEFAULT FALSE,
+  "marketing_updates" BOOLEAN DEFAULT FALSE,
+  "appointment_reminders" BOOLEAN DEFAULT TRUE,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
+
+-- Clinic Settings
+CREATE TABLE IF NOT EXISTS "clinic_settings" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL,
+  "clinic_name" TEXT,
+  "primary_color" TEXT DEFAULT '#3b82f6',
+  "address" TEXT,
+  "phone" TEXT,
+  "website" TEXT,
+  "logo_url" TEXT,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
