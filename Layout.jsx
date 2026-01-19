@@ -303,7 +303,10 @@ export default function Layout({ children }) {
                       <div className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <p className="text-sm font-medium text-slate-800">
-                            {user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário"}
+                            {user.email === "rafamarketingdb@gmail.com"
+                              ? (user.display_name || user.full_name || "Usuário")
+                              : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                            }
                           </p>
                           {user.role === "admin" && (
                             <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium text-[9px]">
@@ -311,7 +314,9 @@ export default function Layout({ children }) {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-500">{user.email}</p>
+                        {user.email !== "rafamarketingdb@gmail.com" && (
+                          <p className="text-xs text-slate-500">{user.email}</p>
+                        )}
                       </div>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user.photo_url} />
@@ -326,9 +331,14 @@ export default function Layout({ children }) {
                       <div className="flex items-center gap-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-800 truncate">
-                            {user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário"}
+                            {user.email === "rafamarketingdb@gmail.com"
+                              ? (user.display_name || user.full_name || "Usuário")
+                              : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                            }
                           </p>
-                          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                          {user.email !== "rafamarketingdb@gmail.com" && (
+                            <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                          )}
                         </div>
                         {user.role === "admin" && (
                           <span className="shrink-0 px-2 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
