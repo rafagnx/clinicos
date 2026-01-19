@@ -47,10 +47,23 @@ if (!process.env.DATABASE_URL) {
 const auth = betterAuth({
     database: {
         provider: "postgres",
-        // We pass the existing pool to share the connection logic (SSL, etc)
-        // If better-auth version supports 'pool', this is ideal. 
-        // If not, we fall back to URL.
-        pool: pool, // Use the existing configured pool with SSL
+        // Reverting to URL but ensuring SSL is handled for Render
+        url: (() => {
+            let url = process.env.DATABASE_URL;
+            if (!url) {
+                // detailed logging handled above
+                return `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;
+            }
+            // Fix for Render/pg: Append ssl=true if not present to force SSL connection
+            // Node-postgres needs this in the string if we can't pass the object
+            if (!url.includes('ssl=')) {
+                url += (url.includes('?') ? '&' : '?') + 'ssl=true';
+                console.log("Appended 'ssl=true' to DATABASE_URL for better-auth.");
+            } else {
+                console.log("DATABASE_URL already contains 'ssl=' parameter for better-auth.");
+            }
+            return url;
+        })()
     },
     baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
     plugins: [
