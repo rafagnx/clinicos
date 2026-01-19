@@ -4,6 +4,8 @@
 -- BETTER AUTH TABLES
 -- ----------------------------
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS "user" (
   "id" TEXT PRIMARY KEY,
   "name" TEXT NOT NULL,
