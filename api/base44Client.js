@@ -1,144 +1,82 @@
 import axios from "axios";
 
-// --- MOCK DATABASE (In-Memory) ---
-// Temporary solution to allow the app to work while DB connection is blocked by host.
-const uuidv4 = () => "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+// PRODUCTION BACKEND URL
+// Replace this with your actual backend URL if it changes
+const BACKEND_URL = "https://clinicos-it4q.onrender.com/api";
 
-const MOCK_DB = {
-    Professional: [
-        { id: "prof_1", full_name: "Dr. Bittencourt", role_type: "dentist", specialty: "Harmonização", is_active: true, photo_url: "https://i.pravatar.cc/150?u=1", created_date: new Date().toISOString() },
-        { id: "prof_2", full_name: "Dra. Letícia", role_type: "dentist", specialty: "Corporal", is_active: true, photo_url: "https://i.pravatar.cc/150?u=2", created_date: new Date().toISOString() }
-    ],
-    Patient: [
-        { id: "pat_1", full_name: "Rafaela Silva", phone: "11999999999", email: "rafa@email.com", photo_url: "https://i.pravatar.cc/150?u=3", created_date: new Date().toISOString() }
-    ],
-
-    Appointment: [],
-    MedicalRecord: [],
-    Notification: [],
-    Promotion: [],
-    Conversation: [
-        {
-            id: "conv_1",
-            participants: ["admin", "prof_1"],
-            last_message: "Olá, tudo bem?",
-            last_message_at: new Date().toISOString(),
-            unread_count: 1,
-            professional_id: "prof_1"
-        }
-    ],
-    Message: [
-        {
-            id: "msg_1",
-            conversation_id: "conv_1",
-            sender_id: "prof_1",
-            text: "Olá, tudo bem?",
-            created_date: new Date().toISOString()
-        }
-    ]
-};
-
-// Helper: Simulate delay for realism
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const api = axios.create({
+    baseURL: BACKEND_URL,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
 
 const createEntityHandler = (entityName) => ({
     list: async (params = {}) => {
-        await delay(300);
-        let data = MOCK_DB[entityName] || [];
-
-        // Handle if params is just a sort string (e.g. "-created_date")
-        let sortField = null;
-        let search = "";
-
-        if (typeof params === 'string') {
-            sortField = params;
-        } else {
-            search = params.search;
-            if (params.sort) sortField = params.sort; // If complex sort object
+        try {
+            // Convert params to query string if needed
+            // Currently our backend accepts generic query params
+            const response = await api.get(`/${entityName}`, { params });
+            return response.data;
+        } catch (error) {
+            console.error(`Error listing ${entityName}:`, error);
+            return [];
         }
-
-        if (search && typeof search === 'string') {
-            const lower = search.toLowerCase();
-            data = data.filter(i => JSON.stringify(i).toLowerCase().includes(lower));
-        }
-
-        // Simple string sort handling (e.g. "-date" or "date")
-        if (typeof sortField === 'string') {
-            const desc = sortField.startsWith("-");
-            const field = desc ? sortField.substring(1) : sortField;
-            data.sort((a, b) => {
-                const valA = a[field] || "";
-                const valB = b[field] || "";
-                return desc ? (valA < valB ? 1 : -1) : (valA > valB ? 1 : -1);
-            });
-        }
-
-        return [...data]; // Return copy
     },
     read: async (params = {}) => {
-        await delay(300);
-        let data = MOCK_DB[entityName] || [];
+        try {
+            // Backend supports ID filtering via query param
+            // If params has filter object, try to extract ID or other fields
+            let queryParams = {};
 
-        // Simple filter logic
-        if (params.filter) {
-            Object.keys(params.filter).forEach(key => {
-                const val = params.filter[key];
-                if (typeof val === 'object' && val._ilike && typeof val._ilike === 'string') {
-                    const term = val._ilike.replace(/%/g, '').toLowerCase();
-                    data = data.filter(i => String(i[key]).toLowerCase().includes(term));
-                } else if (typeof val !== 'object') {
-                    data = data.filter(i => i[key] == val);
-                }
-            });
+            if (params.filter) {
+                // Flatten filter object for simple backend
+                // Supporting ID specifically as per our backend logic
+                if (params.filter.id) queryParams.id = params.filter.id;
+            }
+
+            // If the caller passed an ID directly or complex object, adjust strategy
+            // For now, assuming standard usage matches our backend expectations
+            const response = await api.get(`/${entityName}`, { params: queryParams });
+            return response.data;
+        } catch (error) {
+            console.error(`Error reading ${entityName}:`, error);
+            return [];
         }
-
-        // Sort logic
-        if (params.sort && params.sort[0]) {
-            const { field, direction } = params.sort[0];
-            data.sort((a, b) => {
-                const valA = a[field] || "";
-                const valB = b[field] || "";
-                return direction === "asc" ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-            });
-        }
-
-        return [...data];
     },
     filter: async (query) => {
-        // Alias to read for now
+        // Alias to read
         return createEntityHandler(entityName).read({ filter: query });
     },
     create: async (data) => {
-        await delay(300); // reduced delay
-        const newItem = { id: uuidv4(), created_date: new Date().toISOString(), ...data };
-
-        // Mock Relationships
-        if (entityName === "Appointment" && newItem.patient_id) {
-            newItem.patient = MOCK_DB.Patient.find(p => p.id === newItem.patient_id);
-            newItem.professional = MOCK_DB.Professional.find(p => p.id === newItem.professional_id);
+        try {
+            const response = await api.post(`/${entityName}`, data);
+            return response.data;
+        } catch (error) {
+            console.error(`Error creating ${entityName}:`, error);
+            throw error;
         }
-
-        if (!MOCK_DB[entityName]) MOCK_DB[entityName] = [];
-        MOCK_DB[entityName].push(newItem);
-        return newItem;
     },
     update: async (id, data) => {
-        await delay(300);
-        const list = MOCK_DB[entityName];
-        const idx = list.findIndex(i => i.id === id);
-        if (idx > -1) {
-            list[idx] = { ...list[idx], ...data };
-            return list[idx];
+        try {
+            const response = await api.put(`/${entityName}/${id}`, data);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating ${entityName}:`, error);
+            throw error;
         }
-        throw new Error("Not found");
     },
     delete: async (id) => {
-        await delay(300);
-        MOCK_DB[entityName] = MOCK_DB[entityName].filter(i => i.id !== id);
-        return { success: true };
+        try {
+            const response = await api.delete(`/${entityName}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error deleting ${entityName}:`, error);
+            throw error;
+        }
     },
     subscribe: (callback) => {
-        // Mock subscription - return unsubscribe function
+        // Realtime not implemented in MVP, return dummy unsubscribe
         return () => { };
     }
 });
@@ -164,7 +102,15 @@ export const base44 = {
     },
 
     auth: {
-        me: async () => ({ id: "admin", full_name: "Administrador", email: "admin@clinicos.com", role: "admin" }),
+        // Mock Auth for MVP - in strict mode this should call /api/auth/me
+        me: async () => {
+            try {
+                const res = await api.get('/auth/me');
+                return res.data;
+            } catch (e) {
+                return null;
+            }
+        },
         login: async () => ({ token: "mock", user: { id: "admin" } }),
         logout: async () => true
     },
