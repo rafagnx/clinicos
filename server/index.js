@@ -41,18 +41,28 @@ const auth = betterAuth({
         provider: "postgres", // Explicitly using postgres adapter
         url: process.env.DATABASE_URL || `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
     },
+    baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com", // Explicit Base URL
     plugins: [
         organization()
     ],
     emailAndPassword: {
         enabled: true
     },
-    trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"] // Add production domains
+    trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"]
 });
 
 // Middleware
 app.use(cors({
-    origin: ["http://localhost:5173", "https://clinicos.unaux.com"],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        const allowedOrigins = ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"];
+        if (allowedOrigins.indexOf(origin) === -1) {
+            var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true // Required for auth cookies
 }));
 app.use(bodyParser.json());
