@@ -50,8 +50,7 @@ const auth = betterAuth({
         // We pass the existing pool to share the connection logic (SSL, etc)
         // If better-auth version supports 'pool', this is ideal. 
         // If not, we fall back to URL.
-        pool: pool,
-        url: process.env.DATABASE_URL || `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
+        pool: pool, // Use the existing configured pool with SSL
     },
     baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
     plugins: [
