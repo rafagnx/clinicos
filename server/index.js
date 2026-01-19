@@ -43,13 +43,34 @@ if (process.env.DATABASE_URL) {
     });
 }
 
+// Initial Schema Setup (Auto-Migration for Render)
+const initSchema = async () => {
+    try {
+        const schemaPath = path.join(__dirname, '../database/schema.sql');
+        // Simple check if file exists (in production structure, might need adjustment)
+        // We'll read it using fs.
+        const fs = await import('fs');
+        if (fs.existsSync(schemaPath)) {
+            const sql = fs.readFileSync(schemaPath, 'utf8');
+            console.log('Running Schema Migration...');
+            await pool.query(sql);
+            console.log('Schema Migration Success!');
+        } else {
+            console.warn('Schema file not found at:', schemaPath);
+        }
+    } catch (err) {
+        console.error('Schema Migration Failed:', err);
+    }
+};
+
 // Test connection
-pool.connect((err, client, release) => {
+pool.connect(async (err, client, release) => {
     if (err) {
         console.error('Error acquiring client', err.stack);
         console.log('SUGGESTION: Ensure your DATABASE_URL is correct and the database is running.');
     } else {
         console.log('Connected to PostgreSQL database!');
+        await initSchema(); // Run migration on connect
         release();
     }
 });
