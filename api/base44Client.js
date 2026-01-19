@@ -17,6 +17,8 @@ const api = axios.create({
     }
 });
 
+console.log("ClinicOS Client v1.1 Loaded - Debug Mode"); // Log to verify update
+
 // Interceptor to add Organization ID
 api.interceptors.request.use(async (config) => {
     // Try to get active org from localStorage (we will set this in our React UI)
@@ -46,7 +48,8 @@ const createEntityHandler = (entityName) => ({
         try {
             let queryParams = {};
             if (params.filter) {
-                if (params.filter.id) queryParams.id = params.filter.id;
+                // Support all filters, not just ID
+                Object.assign(queryParams, params.filter);
             }
             const response = await api.get(`/${entityName}`, { params: queryParams });
             return response.data;
@@ -107,6 +110,7 @@ export const base44 = {
         Message: createEntityHandler("Message"),
         Conversation: createEntityHandler("Conversation"), // Added missing entity
         ClinicSettings: createEntityHandler("ClinicSettings"), // Added for layout
+        NotificationPreference: createEntityHandler("NotificationPreference"), // Added missing entity
     },
 
     auth: {
@@ -123,10 +127,18 @@ export const base44 = {
             // This is critical because Profile.tsx sends 'display_name' but user table has 'name'
             const updatePayload = {
                 name: data.display_name || data.name || data.full_name,
-                image: data.photo_url || data.image
+                image: data.photo_url || data.image,
+                phone: data.phone,
+                specialty: data.specialty,
+                user_type: data.user_type
             };
 
-            // Allow empty string to clear? Better Auth handles it.
+            // Remove undefined keys to prevent 400 Bad Request
+            Object.keys(updatePayload).forEach(key => updatePayload[key] === undefined && delete updatePayload[key]);
+
+            // If payload is empty, return early (or throw check)
+            if (Object.keys(updatePayload).length === 0) return { data: null };
+
             const { data: updatedUser, error } = await authClient.updateUser(updatePayload);
 
             if (error) throw error;

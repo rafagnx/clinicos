@@ -53,6 +53,22 @@ const auth = betterAuth({
     emailAndPassword: {
         enabled: true
     },
+    user: {
+        additionalFields: {
+            phone: {
+                type: "string",
+                required: false,
+            },
+            specialty: {
+                type: "string",
+                required: false
+            },
+            user_type: {
+                type: "string",
+                required: false
+            }
+        }
+    },
     advanced: {
         cookiePrefix: "clinicos",
         useSecureCookies: true, // Force secure cookies

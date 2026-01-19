@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
-  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft
+  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft, Star
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
@@ -414,7 +414,9 @@ export default function Layout({ children }) {
                     <p className="text-sm font-medium text-slate-800">
                       {user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário"}
                     </p>
-                    <p className="text-xs text-slate-500">{user.email}</p>
+                    {user.email !== "rafamarketingdb@gmail.com" && (
+                      <p className="text-xs text-slate-500">{user.email}</p>
+                    )}
                     <div className="flex items-center gap-2 mt-2">
                       {user.user_type && (
                         <span className="text-xs">
@@ -433,6 +435,13 @@ export default function Layout({ children }) {
                       {user.role === "admin" && (
                         <span className="ml-auto px-2 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
                           ADMIN
+                        </span>
+                      )}
+
+                      {/* Exclusive Golden Badge */}
+                      {user.email === "rafamarketingdb@gmail.com" && (
+                        <span className="ml-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-[10px] shadow-lg flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-white" /> ADMIN
                         </span>
                       )}
                     </div>

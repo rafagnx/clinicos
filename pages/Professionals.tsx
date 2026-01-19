@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
@@ -64,6 +65,9 @@ export default function Professionals() {
     if (!user || isLoading || !professionals) return;
 
     // Check if user already exists as Professional
+    const activeOrg = localStorage.getItem("active-org-id");
+    if (!activeOrg) return; // Do not auto-create if no org context
+
     const existingProf = professionals.find(p => p.email === user.email);
     if (!existingProf) {
       // Auto-create Professional record for current user

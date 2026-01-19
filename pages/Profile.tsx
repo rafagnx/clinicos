@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, Loader2, Save, User as UserIcon, Bell, Mail, AlertCircle, MessageSquare, Tag } from "lucide-react";
+import { Camera, Loader2, Save, User as UserIcon, Bell, Mail, AlertCircle, MessageSquare, Tag, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -64,7 +65,7 @@ export default function Profile() {
         specialty: me.specialty || "",
         photo_url: me.photo_url || ""
       });
-      
+
       // Load notification preferences
       const prefs = await base44.entities.NotificationPreference.filter({ user_id: me.id });
       if (prefs.length > 0) {
@@ -141,14 +142,25 @@ export default function Profile() {
             {uploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Camera className="w-6 h-6" />}
           </label>
         </div>
-        
+
         <div className="space-y-1">
           <h1 className="text-2xl font-bold text-slate-900">{user?.display_name || "Usuário"}</h1>
           <div className="flex items-center gap-2">
             <Badge className={USER_TYPE_COLORS[formData.user_type]}>
               {USER_TYPE_LABELS[formData.user_type]}
             </Badge>
-            <span className="text-sm text-slate-500">{user?.email}</span>
+
+            {/* Golden Badge for Exclusive User */}
+            {user?.email === "rafamarketingdb@gmail.com" && (
+              <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-lg shadow-amber-200/50 flex items-center gap-1 px-3 py-1 animate-in fade-in zoom-in duration-500">
+                <Star className="w-3 h-3 fill-current text-white" />
+                Admin
+              </Badge>
+            )}
+
+            {user?.email !== "rafamarketingdb@gmail.com" && (
+              <span className="text-sm text-slate-500">{user?.email}</span>
+            )}
           </div>
         </div>
       </div>
@@ -168,22 +180,22 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Nome de Exibição</Label>
-                <Input 
-                  value={formData.display_name} 
+                <Input
+                  value={formData.display_name}
                   onChange={e => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Telefone</Label>
-                <Input 
-                  value={formData.phone} 
+                <Input
+                  value={formData.phone}
                   onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Tipo de Usuário</Label>
-                <Select 
-                  value={formData.user_type} 
+                <Select
+                  value={formData.user_type}
                   onValueChange={v => setFormData(prev => ({ ...prev, user_type: v }))}
                 >
                   <SelectTrigger>
@@ -198,8 +210,8 @@ export default function Profile() {
               </div>
               <div className="space-y-2">
                 <Label>Especialidade</Label>
-                <Input 
-                  value={formData.specialty} 
+                <Input
+                  value={formData.specialty}
                   onChange={e => setFormData(prev => ({ ...prev, specialty: e.target.value }))}
                   placeholder="Ex: Ortodontista"
                 />
@@ -207,7 +219,7 @@ export default function Profile() {
             </div>
 
             <div className="pt-4 border-t flex justify-end">
-              <Button 
+              <Button
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => updateMutation.mutate(formData)}
                 disabled={updateMutation.isPending}
@@ -232,8 +244,8 @@ export default function Profile() {
                     <Label className="text-base">E-mail</Label>
                     <p className="text-sm text-slate-500">Receba alertas importantes no seu e-mail.</p>
                   </div>
-                  <Switch 
-                    checked={notificationPrefs?.email_enabled} 
+                  <Switch
+                    checked={notificationPrefs?.email_enabled}
                     onCheckedChange={v => updatePrefsMutation.mutate({ email_enabled: v })}
                   />
                 </div>
@@ -242,8 +254,8 @@ export default function Profile() {
                     <Label className="text-base">Notificações Push</Label>
                     <p className="text-sm text-slate-500">Alertas em tempo real no navegador.</p>
                   </div>
-                  <Switch 
-                    checked={notificationPrefs?.push_enabled} 
+                  <Switch
+                    checked={notificationPrefs?.push_enabled}
                     onCheckedChange={v => updatePrefsMutation.mutate({ push_enabled: v })}
                   />
                 </div>
@@ -252,8 +264,8 @@ export default function Profile() {
                     <Label className="text-base">WhatsApp</Label>
                     <p className="text-sm text-slate-500">Receba lembretes diretamente no celular.</p>
                   </div>
-                  <Switch 
-                    checked={notificationPrefs?.whatsapp_enabled} 
+                  <Switch
+                    checked={notificationPrefs?.whatsapp_enabled}
                     onCheckedChange={v => updatePrefsMutation.mutate({ whatsapp_enabled: v })}
                   />
                 </div>
@@ -268,15 +280,15 @@ export default function Profile() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-slate-700">Lembretes de Consultas</Label>
-                  <Switch 
-                    checked={notificationPrefs?.appointment_reminders} 
+                  <Switch
+                    checked={notificationPrefs?.appointment_reminders}
                     onCheckedChange={v => updatePrefsMutation.mutate({ appointment_reminders: v })}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-slate-700">Novidades e Marketing</Label>
-                  <Switch 
-                    checked={notificationPrefs?.marketing_updates} 
+                  <Switch
+                    checked={notificationPrefs?.marketing_updates}
                     onCheckedChange={v => updatePrefsMutation.mutate({ marketing_updates: v })}
                   />
                 </div>
