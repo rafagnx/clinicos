@@ -41,17 +41,17 @@ const App = () => {
                 <Route path="/login" element={<Auth />} />
                 <Route path="/register" element={<Auth />} />
 
+                {/* Organization Setup */}
+                <Route path="/organization/new" element={<Organization />} />
+
+                {/* Admin - Standalone Layout */}
+                <Route path="/admin" element={<AdminDashboard />} />
+
                 {/* Authenticated Routes wrapped in Layout */}
                 <Route path="*" element={
                     <Layout>
                         <Routes>
                             <Route path="/" element={<Navigate to="/Dashboard" replace />} />
-
-                            {/* Organization Setup */}
-                            <Route path="/organization/new" element={<Organization />} />
-
-                            {/* Admin */}
-                            <Route path="/admin" element={<AdminDashboard />} />
 
                             <Route path="/Dashboard" element={<Dashboard />} />
                             <Route path="/Agenda" element={<Agenda />} />
