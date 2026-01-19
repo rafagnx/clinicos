@@ -152,6 +152,28 @@ export default function Layout({ children }) {
                 </motion.div>
               );
             })}
+            {/* System Admin Link */}
+            {(user?.email === "rafamarketingdb@gmail.com" || user?.role === "admin") && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5, duration: 0.3 }}
+              >
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-800 transition-all duration-200 mt-4 border border-rose-100"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Target className="w-5 h-5" />
+                  </motion.div>
+                  Super Admin
+                </Link>
+              </motion.div>
+            )}
           </nav>
 
           {/* User */}
