@@ -1,39 +1,41 @@
-# ClinicOS Deployment Guide
+# PROCESSO DE DEPLOY (Como colocar o site no ar)
 
-## Prerequisites
-- Node.js (v18+)
-- MySQL or PostgreSQL (Optional for local mock version)
+Seu site funciona em DUAS partes separadas. Você precisa atualizar AMBAS para que tudo funcione.
 
-## Setup
+## 1. BACKEND (Render.com)
+O "Cérebro" do sistema (Banco de Dados, Login, API).
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+Se você fez alterações em `server/`, `api/`, ou `schema.sql`:
+1.  **Git Push**:
+    ```bash
+    git push origin main
+    ```
+2.  **Acesse o Render**: [dashboard.render.com](https://dashboard.render.com/)
+3.  Vá em **Manual Deploy** -> **Clear Cache and Deploy**.
+4.  *Espere terminar.* (Isso corrige o Erro 500 no banco de dados).
 
-2. **Start Backend Server**
-   To run the local backend (initially using in-memory mock data):
-   ```bash
-   npm run server
-   ```
-   *Server runs on port 3000.*
+---
 
-3. **Start Frontend**
-   In a new terminal:
-   ```bash
-   npm run dev
-   ```
-   *Frontend runs on http://localhost:5173.*
+## 2. FRONTEND (ProFreeHost)
+A "Cara" do site (Telas, Botões, Cores, Perfis).
 
-## Database Setup (Production)
-If you wish to switch from Mock Data to a real database:
-1. Run the script in `database/schema.sql` to create your tables.
-2. Edit `server/routes.js` (or create a `db.js` connector) to query the database instead of the `db` object.
+Se você fez alterações em `pages/`, `components/`, ou `Layout.jsx`:
+1.  **Construir o Site (Build)**:
+    No seu terminal VS Code:
+    ```bash
+    npm run build
+    ```
+    *Isso cria uma pasta nova chamada `dist` no seu computador.*
 
-## Features Currently Active
-- **Dashboard**: Visualizes mock data.
-- **Agenda**: Fully interactive with drag-and-drop support (mocked).
-- **Patients/Leads**: CRUD operations (in-memory).
+2.  **Enviar para o Site (Upload)**:
+    *   Abra o **FileZilla** (ou gerenciador de arquivos do ProFreeHost).
+    *   Conecte-se ao seu servidor FTP.
+    *   Entre na pasta `htdocs`.
+    *   **APAGUE** todos os arquivos antigos dentro de `htdocs`.
+    *   **ARRASTE** todo o conteúdo de dentro da pasta `dist` (do seu computador) para dentro da pasta `htdocs`.
 
-## Troubleshooting
-- If you see "Network Error", ensure the backend server is running on port 3000.
+## RESUMO
+- **npm run build** = Cria os arquivos NO SEU COMPUTADOR.
+- **Upload (FTP)** = Coloca os arquivos NA INTERNET.
+
+**Se você não fizer o passo 2 (Upload), o site "clinicos.unaux.com" continuará velho!**
