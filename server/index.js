@@ -225,7 +225,8 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         'Notification': 'notifications',
         'Promotion': 'promotions',
         'Lead': 'leads', // Added Lead
-        'Message': 'messages' // Added Message
+        'Message': 'messages', // Added Message
+        'Conversation': 'conversations' // Added Conversation
     };
 
     const tableName = tableMap[entity];
