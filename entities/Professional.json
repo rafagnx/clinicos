@@ -1,0 +1,69 @@
+{
+  "name": "Professional",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL da foto"
+    },
+    "role_type": {
+      "type": "string",
+      "enum": [
+        "profissional",
+        "secretaria",
+        "marketing",
+        "gerente",
+        "outro"
+      ],
+      "default": "profissional",
+      "description": "Tipo de função na clínica"
+    },
+    "specialty": {
+      "type": "string",
+      "description": "Especialidade médica ou cargo"
+    },
+    "council_number": {
+      "type": "string",
+      "description": "Número do conselho (CRM, CRO, etc)"
+    },
+    "council_state": {
+      "type": "string",
+      "description": "Estado do conselho"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone"
+    },
+    "email": {
+      "type": "string",
+      "description": "E-mail"
+    },
+    "color": {
+      "type": "string",
+      "description": "Cor para identificação na agenda"
+    },
+    "appointment_duration": {
+      "type": "number",
+      "default": 30,
+      "description": "Duração padrão da consulta em minutos"
+    },
+    "is_admin": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o usuário tem permissões de administrador"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se o profissional está ativo no sistema"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}

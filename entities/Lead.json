@@ -1,0 +1,73 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo do lead"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "meta_ads",
+        "instagram",
+        "facebook",
+        "google",
+        "site",
+        "indicacao",
+        "whatsapp",
+        "outro"
+      ],
+      "default": "meta_ads",
+      "description": "Origem do lead"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "novo",
+        "contatado",
+        "qualificado",
+        "convertido",
+        "perdido"
+      ],
+      "default": "novo",
+      "description": "Status do lead"
+    },
+    "campaign_name": {
+      "type": "string",
+      "description": "Nome da campanha (Meta Ads)"
+    },
+    "ad_name": {
+      "type": "string",
+      "description": "Nome do anúncio"
+    },
+    "interest": {
+      "type": "string",
+      "description": "Interesse demonstrado"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observações"
+    },
+    "assigned_to": {
+      "type": "string",
+      "description": "ID do usuário responsável"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

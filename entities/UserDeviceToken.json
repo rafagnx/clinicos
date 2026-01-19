@@ -1,0 +1,36 @@
+{
+  "name": "UserDeviceToken",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email do usuário"
+    },
+    "device_token": {
+      "type": "string",
+      "description": "Token do dispositivo para notificações push"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "web",
+        "mobile"
+      ],
+      "default": "web",
+      "description": "Tipo de dispositivo"
+    },
+    "browser": {
+      "type": "string",
+      "description": "Nome do navegador (para web)"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se as notificações estão ativas para este dispositivo"
+    }
+  },
+  "required": [
+    "user_email",
+    "device_token"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "name": "Patient",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo do paciente"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL da foto do paciente"
+    },
+    "social_name": {
+      "type": "string",
+      "description": "Nome social do paciente"
+    },
+    "nickname": {
+      "type": "string",
+      "description": "Apelido"
+    },
+    "medical_record_number": {
+      "type": "string",
+      "description": "Número do prontuário"
+    },
+    "label_number": {
+      "type": "string",
+      "description": "Número da etiqueta"
+    },
+    "cpf": {
+      "type": "string",
+      "description": "CPF do paciente"
+    },
+    "rg": {
+      "type": "string",
+      "description": "RG do paciente"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de nascimento"
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "masculino",
+        "feminino",
+        "outro"
+      ],
+      "description": "Sexo"
+    },
+    "marital_status": {
+      "type": "string",
+      "enum": [
+        "solteiro",
+        "casado",
+        "divorciado",
+        "viuvo",
+        "uniao_estavel"
+      ],
+      "description": "Estado civil"
+    },
+    "occupation": {
+      "type": "string",
+      "description": "Profissão"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone"
+    },
+    "emergency_contact_name": {
+      "type": "string",
+      "description": "Nome do contato de emergência"
+    },
+    "emergency_contact_phone": {
+      "type": "string",
+      "description": "Telefone do contato de emergência"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "address": {
+      "type": "string",
+      "description": "Endereço"
+    },
+    "address_number": {
+      "type": "string",
+      "description": "Número"
+    },
+    "address_complement": {
+      "type": "string",
+      "description": "Complemento"
+    },
+    "neighborhood": {
+      "type": "string",
+      "description": "Bairro"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observações"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags"
+    }
+  },
+  "required": [
+    "full_name"
+  ]
+}

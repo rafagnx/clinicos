@@ -1,0 +1,61 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do usuário que receberá a notificação"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "appointment",
+        "task",
+        "reminder",
+        "system"
+      ],
+      "description": "Tipo de notificação"
+    },
+    "title": {
+      "type": "string",
+      "description": "Título da notificação"
+    },
+    "message": {
+      "type": "string",
+      "description": "Mensagem da notificação"
+    },
+    "link": {
+      "type": "string",
+      "description": "Link para ação relacionada"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se a notificaçao foi lida"
+    },
+    "sent_email": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se foi enviado e-mail"
+    },
+    "appointment_id": {
+      "type": "string",
+      "description": "ID do agendamento relacionado"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal"
+    }
+  },
+  "required": [
+    "user_id",
+    "title",
+    "message"
+  ]
+}

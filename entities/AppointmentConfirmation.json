@@ -1,0 +1,34 @@
+{
+  "name": "AppointmentConfirmation",
+  "type": "object",
+  "properties": {
+    "appointment_id": {
+      "type": "string",
+      "description": "ID do agendamento"
+    },
+    "token": {
+      "type": "string",
+      "description": "Token único para confirmação"
+    },
+    "confirmed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se foi confirmado"
+    },
+    "confirmed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora da confirmação"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de expiração do token"
+    }
+  },
+  "required": [
+    "appointment_id",
+    "token",
+    "expires_at"
+  ]
+}

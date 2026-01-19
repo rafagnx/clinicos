@@ -1,0 +1,70 @@
+{
+  "name": "Onboarding",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID do usuário"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Nome do usuário"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email do usuário"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "em_progresso",
+        "concluido"
+      ],
+      "default": "pendente",
+      "description": "Status do onboarding"
+    },
+    "steps_completed": {
+      "type": "object",
+      "description": "Etapas concluídas",
+      "properties": {
+        "profile_completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "availability_set": {
+          "type": "boolean",
+          "default": false
+        },
+        "training_completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "tasks_assigned": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "assigned_tasks": {
+      "type": "array",
+      "description": "Tarefas iniciais atribuídas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "user_id",
+    "user_email"
+  ]
+}

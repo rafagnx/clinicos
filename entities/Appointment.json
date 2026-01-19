@@ -1,0 +1,90 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "patient_id": {
+      "type": "string",
+      "description": "ID do paciente"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nome do paciente (cache)"
+    },
+    "professional_id": {
+      "type": "string",
+      "description": "ID do profissional"
+    },
+    "professional_name": {
+      "type": "string",
+      "description": "Nome do profissional (cache)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da consulta"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "Horário de início (HH:MM)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "Horário de término (HH:MM)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "consulta",
+        "retorno",
+        "exame",
+        "procedimento",
+        "encaixe",
+        "compromisso"
+      ],
+      "default": "consulta",
+      "description": "Tipo de atendimento"
+    },
+    "procedure_name": {
+      "type": "string",
+      "description": "Nome do procedimento realizado"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor do atendimento"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "pago",
+        "parcial"
+      ],
+      "default": "pendente",
+      "description": "Status do pagamento"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "agendado",
+        "confirmado",
+        "em_atendimento",
+        "finalizado",
+        "cancelado",
+        "faltou"
+      ],
+      "default": "agendado",
+      "description": "Status do agendamento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observações"
+    }
+  },
+  "required": [
+    "patient_id",
+    "professional_id",
+    "date",
+    "start_time",
+    "end_time"
+  ]
+}

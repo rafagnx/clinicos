@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+build_log*.txt
+exec_result*.txt
+temp_base44_repo
+.DS_Store
+.vscode

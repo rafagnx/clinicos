@@ -1,0 +1,85 @@
+{
+  "name": "MedicalRecord",
+  "type": "object",
+  "properties": {
+    "patient_id": {
+      "type": "string",
+      "description": "ID do paciente"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nome do paciente (cache)"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do atendimento"
+    },
+    "professional_id": {
+      "type": "string",
+      "description": "ID do profissional"
+    },
+    "professional_name": {
+      "type": "string",
+      "description": "Nome do profissional (cache)"
+    },
+    "anamnesis": {
+      "type": "object",
+      "description": "Dados da anamnese",
+      "properties": {
+        "main_complaint": {
+          "type": "string",
+          "description": "Queixa principal"
+        },
+        "medical_history": {
+          "type": "string",
+          "description": "Histórico médico"
+        },
+        "allergies": {
+          "type": "string",
+          "description": "Alergias"
+        },
+        "medications": {
+          "type": "string",
+          "description": "Medicamentos em uso"
+        },
+        "previous_procedures": {
+          "type": "string",
+          "description": "Procedimentos anteriores"
+        },
+        "skin_type": {
+          "type": "string",
+          "description": "Tipo de pele"
+        }
+      }
+    },
+    "physical_exam": {
+      "type": "string",
+      "description": "Exame físico"
+    },
+    "diagnosis": {
+      "type": "string",
+      "description": "Diagnóstico"
+    },
+    "treatment_plan": {
+      "type": "string",
+      "description": "Plano de tratamento"
+    },
+    "prescriptions": {
+      "type": "string",
+      "description": "Prescrições"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Anexos (URLs de fotos/documentos)"
+    }
+  },
+  "required": [
+    "patient_id",
+    "date",
+    "professional_id"
+  ]
+}
