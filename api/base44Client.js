@@ -118,6 +118,20 @@ export const base44 = {
             const { data } = await authClient.getSession();
             return data?.user || null;
         },
+        updateMe: async (data) => {
+            // Map legacy form data to better-auth keys
+            // This is critical because Profile.tsx sends 'display_name' but user table has 'name'
+            const updatePayload = {
+                name: data.display_name || data.name || data.full_name,
+                image: data.photo_url || data.image
+            };
+
+            // Allow empty string to clear? Better Auth handles it.
+            const { data: updatedUser, error } = await authClient.updateUser(updatePayload);
+
+            if (error) throw error;
+            return updatedUser;
+        },
         logout: async () => {
             await authClient.signOut();
             window.location.href = "/login";
