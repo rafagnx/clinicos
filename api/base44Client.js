@@ -6,7 +6,8 @@ import { authClient } from "@/lib/auth-client"; // Import for types if needed, o
 // Client state is in useSession. 
 
 // PRODUCTION BACKEND URL
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001/api";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL = `${BASE_URL}/api`;
 
 const api = axios.create({
     baseURL: BACKEND_URL,
