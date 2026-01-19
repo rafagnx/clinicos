@@ -24,14 +24,14 @@ const dbConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false }
-      }
+    }
     : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
         database: process.env.DB_NAME || 'clinicOS',
         password: process.env.DB_PASSWORD || 'password',
         port: process.env.DB_PORT || 5432,
-      };
+    };
 
 const pool = new Pool(dbConfig);
 
@@ -78,7 +78,7 @@ const initSchema = async () => {
             // However, typical pg query() might not handle multiple statements without strict mode or splitting.
             // For now, we assume the schema file is well-formed for single execute or we simple log it.
             // Better Auth handles IT'S own tables usually via 'generate'/'migrate' but here we manually included SQL.
-            
+
             // NOTE: Ideally we use 'better-auth cli' to migrate, but since we manually added definitions to schema.sql,
             // we will try to run it.
             await pool.query(sql);
@@ -105,6 +105,9 @@ pool.connect(async (err, client, release) => {
 // ------------------------------------------------------------------
 // MIDDLEWARE: Require Auth & Organization
 // ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// MIDDLEWARE: Require Auth & Organization
+// ------------------------------------------------------------------
 const requireAuth = async (req, res, next) => {
     try {
         const session = await auth.api.getSession({
@@ -115,36 +118,52 @@ const requireAuth = async (req, res, next) => {
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        // Check for active organization
-        // The Organization plugin usually allows setting an active organization in the session
-        // OR the client sends an 'organization-id' header/query.
-        // For simplicity, we will check headers first, then fallback to session.activeOrganizationId if available.
-        
-        // However, better-auth session object structure with organization plugin needs verification.
-        // Usually: session.session.activeOrganizationId
-        
-        const orgId = req.headers['x-organization-id'] || session.session.activeOrganizationId;
+        // SYSTEM ADMIN CHECK (Hardcoded for MVP safety)
+        const isSystemAdmin = session.user.email === "rafamarketingdb@gmail.com";
 
-        if (!orgId) {
-             // If NO organization context, we might restrict access to global stuff only.
-             // But for 'api/:entity' we need context.
-             // We'll let the route handle missing org if mostly listing generic stuff, 
-             // but for tenant data it is required.
-             // We will attach what we have.
+        // If SysAdmin, we might add flag to user object
+        if (isSystemAdmin) {
+            session.user.role = "admin";
+        }
+
+        // Check for active organization
+        let orgId = req.headers['x-organization-id'] || session.session.activeOrganizationId;
+
+        // If System Admin AND no orgId is provided, they might be in "Global View" mode.
+        // But the generic routes demand an orgId usually. 
+        // We will allow continuing without orgId only if it's a specific admin route (handled below)
+        // or if we decide to fallback.
+
+        if (!orgId && !isSystemAdmin) {
+            // Non-admins need context for most things, but we'll let individual routes decide
         }
 
         req.auth = {
             user: session.user,
             session: session.session,
-            organizationId: orgId
+            organizationId: orgId,
+            isSystemAdmin: isSystemAdmin
         };
-        
+
         next();
     } catch (error) {
         console.error("Auth Middleware Error:", error);
         res.status(500).json({ error: "Auth Check Failed" });
     }
 };
+
+// ADMIN ROUTES (System Admin Only)
+app.get('/api/admin/organizations', requireAuth, async (req, res) => {
+    if (!req.auth.isSystemAdmin) {
+        return res.status(403).json({ error: "Access Denied: System Admin Only" });
+    }
+    try {
+        const { rows } = await pool.query('SELECT * FROM "organization" ORDER BY "createdAt" DESC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 
 // ------------------------------------------------------------------
@@ -238,7 +257,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
     const data = req.body;
     delete data.id; // Ensure ID is generated
-    
+
     // Inject Organization ID
     data.organization_id = organizationId;
 
@@ -292,7 +311,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         const { rows } = await pool.query(query, [...values, id, organizationId]);
 
         if (rows.length === 0) {
-             return res.status(404).json({ error: "Item not found or access denied" });
+            return res.status(404).json({ error: "Item not found or access denied" });
         }
 
         res.json(rows[0]);

@@ -29,6 +29,8 @@ import NewMedicalRecord from './pages/NewMedicalRecord'
 import PatientHistory from './pages/PatientHistory'
 import ImportPatients from './pages/ImportPatients'
 
+import AdminDashboard from './pages/AdminDashboard'
+
 const queryClient = new QueryClient()
 
 const App = () => {
@@ -47,6 +49,9 @@ const App = () => {
 
                             {/* Organization Setup */}
                             <Route path="/organization/new" element={<Organization />} />
+
+                            {/* Admin */}
+                            <Route path="/admin" element={<AdminDashboard />} />
 
                             <Route path="/Dashboard" element={<Dashboard />} />
                             <Route path="/Agenda" element={<Agenda />} />
