@@ -43,35 +43,13 @@ const dbConfig = process.env.DATABASE_URL
 const pool = new Pool(dbConfig);
 
 // Better Auth Initialization
-// Debug Database Config
-console.log("Initializing Database Connection...");
-if (!process.env.DATABASE_URL) {
-    console.warn("WARNING: DATABASE_URL environment variable is MISSING. Defaulting to localhost (will fail on Render).");
-} else {
-    console.log("DATABASE_URL is present.");
-}
+// Debug Config
+console.log("DB Host:", dbConfig.host);
+console.log("DB User:", dbConfig.user);
+// console.log("DB Config:", JSON.stringify(dbConfig, null, 2));
 
 const auth = betterAuth({
-    database: {
-        provider: "postgres",
-        // Reverting to URL but ensuring SSL is handled for Render
-        url: (() => {
-            let url = process.env.DATABASE_URL;
-            if (!url) {
-                // detailed logging handled above
-                return `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;
-            }
-            // Fix for Render/pg: Append ssl=true if not present to force SSL connection
-            // Node-postgres needs this in the string if we can't pass the object
-            if (!url.includes('ssl=')) {
-                url += (url.includes('?') ? '&' : '?') + 'ssl=true';
-                console.log("Appended 'ssl=true' to DATABASE_URL for better-auth.");
-            } else {
-                console.log("DATABASE_URL already contains 'ssl=' parameter for better-auth.");
-            }
-            return url;
-        })()
-    },
+    database: pool, // Trying direct pool instance assignment
     baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
     plugins: [
         organization()
