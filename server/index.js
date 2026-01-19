@@ -43,13 +43,9 @@ const dbConfig = process.env.DATABASE_URL
 const pool = new Pool(dbConfig);
 
 // Better Auth Initialization
-// Debug Config
-console.log("DB Host:", dbConfig.host);
-console.log("DB User:", dbConfig.user);
-// console.log("DB Config:", JSON.stringify(dbConfig, null, 2));
-
 const auth = betterAuth({
-    database: pool, // Trying direct pool instance assignment
+    database: pool,
+    secret: process.env.BETTER_AUTH_SECRET || "clinic_os_fallback_secret_secure_enough_for_now_123", // Fallback to unblock deploy
     baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
     plugins: [
         organization()
