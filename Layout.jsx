@@ -43,22 +43,31 @@ const navigation = [
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  // MOCK USER FOR VERIFICATION (RESTORED FOR USER REQUEST)
+  const [user, setUser] = useState({
+    id: "mock-admin-id",
+    email: "rafamarketingdb@gmail.com",
+    full_name: "Rafa",
+    display_name: "Rafa",
+    role: "admin",
+    user_type: "profissional",
+    photo_url: null
+  });
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
 
-  useEffect(() => {
-    // Check if on a public route to avoid loop? No, Layout is only for protected routes.
-    // If better-auth session is missing, we redirect.
-    base44.auth.me().then((u) => {
-      if (!u && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        window.location.href = '/login';
-      }
-      setUser(u);
-    }).catch(() => {
-      window.location.href = '/login';
-    });
-  }, []);
+  // useEffect(() => {
+  //   // Check if on a public route to avoid loop? No, Layout is only for protected routes.
+  //   // If better-auth session is missing, we redirect.
+  //   base44.auth.me().then((u) => {
+  //     if (!u && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+  //       window.location.href = '/login';
+  //     }
+  //     setUser(u);
+  //   }).catch (() => {
+  //     window.location.href = '/login';
+  //   });
+  // }, []);
 
   const { data: clinicSettings } = useQuery({
     queryKey: ["clinic-settings"],
