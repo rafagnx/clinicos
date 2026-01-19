@@ -143,6 +143,15 @@ CREATE TABLE IF NOT EXISTS leads (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS conversations (
+  id SERIAL PRIMARY KEY,
+  organization_id TEXT NOT NULL REFERENCES organization(id),
+  title VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'open',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_message_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS messages (
   id SERIAL PRIMARY KEY,
   organization_id TEXT NOT NULL REFERENCES organization(id),

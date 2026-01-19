@@ -101,6 +101,7 @@ export const base44 = {
         Promotion: createEntityHandler("Promotion"),
         Lead: createEntityHandler("Lead"),
         Message: createEntityHandler("Message"),
+        Conversation: createEntityHandler("Conversation"), // Added missing entity
         ClinicSettings: createEntityHandler("ClinicSettings"), // Added for layout
     },
 

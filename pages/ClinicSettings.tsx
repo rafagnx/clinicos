@@ -20,7 +20,8 @@ export default function ClinicSettings() {
   useEffect(() => {
     base44.auth.me().then(currentUser => {
       setUser(currentUser);
-      if (currentUser.role !== "admin") {
+      // Allow if role is admin OR if it's the specific system admin email
+      if (currentUser.role !== "admin" && currentUser.email !== "rafamarketingdb@gmail.com") {
         setIsUnauthorized(true);
       }
     }).catch(() => setIsUnauthorized(true));
@@ -151,9 +152,9 @@ export default function ClinicSettings() {
                   <Button variant="outline" className="relative" disabled={uploading}>
                     {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
                     Alterar Logo
-                    <input 
-                      type="file" 
-                      className="absolute inset-0 opacity-0 cursor-pointer" 
+                    <input
+                      type="file"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
                       onChange={handleLogoUpload}
                       accept="image/*"
                     />
@@ -165,16 +166,16 @@ export default function ClinicSettings() {
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label>Nome da Clínica</Label>
-                  <Input 
-                    value={settings.clinic_name} 
+                  <Input
+                    value={settings.clinic_name}
                     onChange={e => setSettings(prev => ({ ...prev, clinic_name: e.target.value }))}
                     placeholder="Ex: Clínica Odontológica Sorriso"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Endereço Completo</Label>
-                  <Textarea 
-                    value={settings.address} 
+                  <Textarea
+                    value={settings.address}
                     onChange={e => setSettings(prev => ({ ...prev, address: e.target.value }))}
                     placeholder="Rua, número, bairro, cidade - UF"
                   />
@@ -192,32 +193,32 @@ export default function ClinicSettings() {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> Telefone</Label>
-                <Input 
-                  value={settings.phone} 
+                <Input
+                  value={settings.phone}
                   onChange={e => setSettings(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="(00) 00000-0000"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Mail className="w-4 h-4" /> E-mail</Label>
-                <Input 
-                  value={settings.email} 
+                <Input
+                  value={settings.email}
                   onChange={e => setSettings(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="contato@clinica.com"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Globe className="w-4 h-4" /> Website</Label>
-                <Input 
-                  value={settings.website} 
+                <Input
+                  value={settings.website}
                   onChange={e => setSettings(prev => ({ ...prev, website: e.target.value }))}
                   placeholder="https://www.clinica.com"
                 />
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Instagram className="w-4 h-4" /> Instagram</Label>
-                <Input 
-                  value={settings.instagram} 
+                <Input
+                  value={settings.instagram}
                   onChange={e => setSettings(prev => ({ ...prev, instagram: e.target.value }))}
                   placeholder="@usuario"
                 />
@@ -234,7 +235,7 @@ export default function ClinicSettings() {
                   <CardTitle>Integração WhatsApp Cloud API</CardTitle>
                   <CardDescription>Configure o envio automático de mensagens via Meta</CardDescription>
                 </div>
-                <Switch 
+                <Switch
                   checked={settings.meta_integration.enabled}
                   onCheckedChange={val => setSettings(prev => ({
                     ...prev,
@@ -247,7 +248,7 @@ export default function ClinicSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label>Phone Number ID</Label>
-                  <Input 
+                  <Input
                     value={settings.meta_integration.whatsapp_number}
                     onChange={e => setSettings(prev => ({
                       ...prev,
@@ -257,7 +258,7 @@ export default function ClinicSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label>WhatsApp Business Account ID</Label>
-                  <Input 
+                  <Input
                     value={settings.meta_integration.whatsapp_account_id}
                     onChange={e => setSettings(prev => ({
                       ...prev,
@@ -267,7 +268,7 @@ export default function ClinicSettings() {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label>Permanent Access Token</Label>
-                  <Input 
+                  <Input
                     type="password"
                     value={settings.meta_integration.access_token}
                     onChange={e => setSettings(prev => ({
@@ -283,7 +284,7 @@ export default function ClinicSettings() {
       </Tabs>
 
       <div className="flex items-center justify-end gap-4 pt-4 border-t">
-        <Button 
+        <Button
           onClick={() => saveMutation.mutate(settings)}
           disabled={saveMutation.isPending}
           className="min-w-[150px]"
