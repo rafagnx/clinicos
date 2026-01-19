@@ -36,12 +36,24 @@ const dbConfig = process.env.DATABASE_URL
 const pool = new Pool(dbConfig);
 
 // Better Auth Initialization
+// Debug Database Config
+console.log("Initializing Database Connection...");
+if (!process.env.DATABASE_URL) {
+    console.warn("WARNING: DATABASE_URL environment variable is MISSING. Defaulting to localhost (will fail on Render).");
+} else {
+    console.log("DATABASE_URL is present.");
+}
+
 const auth = betterAuth({
     database: {
-        provider: "postgres", // Explicitly using postgres adapter
+        provider: "postgres",
+        // We pass the existing pool to share the connection logic (SSL, etc)
+        // If better-auth version supports 'pool', this is ideal. 
+        // If not, we fall back to URL.
+        pool: pool,
         url: process.env.DATABASE_URL || `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
     },
-    baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com", // Explicit Base URL
+    baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
     plugins: [
         organization()
     ],
