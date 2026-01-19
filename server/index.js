@@ -13,6 +13,13 @@ import { toNodeHandler } from "better-auth/node";
 const { Pool } = pg;
 dotenv.config();
 
+// FIX FOR RENDER SSL ISSUES with internal libraries like better-auth
+// This allows connections to Postgres with self-signed certs (common in Render internal network)
+if (process.env.NODE_ENV === 'production') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
