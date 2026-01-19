@@ -1,5 +1,5 @@
 CREATE TABLE patients (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   cpf VARCHAR(14),
   birth_date DATE,
@@ -10,7 +10,7 @@ CREATE TABLE patients (
 );
 
 CREATE TABLE professionals (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   specialty VARCHAR(100),
@@ -21,11 +21,11 @@ CREATE TABLE professionals (
 );
 
 CREATE TABLE appointments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   patient_id INT,
   professional_id INT,
-  start_time DATETIME NOT NULL,
-  end_time DATETIME NOT NULL,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
   status ENUM('agendado', 'confirmado', 'aguardando', 'em_atendimento', 'finalizado', 'faltou', 'cancelado') DEFAULT 'agendado',
   type ENUM('consulta', 'retorno', 'compromisso') DEFAULT 'consulta',
   notes TEXT,
@@ -34,7 +34,7 @@ CREATE TABLE appointments (
 );
 
 CREATE TABLE leads (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
   email VARCHAR(255),
@@ -44,7 +44,7 @@ CREATE TABLE leads (
 );
 
 CREATE TABLE messages (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   conversation_id INT,
   sender_id INT,
   content TEXT,
@@ -54,7 +54,7 @@ CREATE TABLE messages (
 );
 
 CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(50) DEFAULT 'user'
