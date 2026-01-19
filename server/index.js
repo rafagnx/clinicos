@@ -226,9 +226,14 @@ app.get('/api/health', (req, res) => {
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
-    const { organizationId } = req.auth;
+    const { organizationId, isSystemAdmin } = req.auth;
 
     if (!organizationId) {
+        // If System Admin has no org context, return empty list instead of error
+        // to prevent UI crashes (e.g. Layout fetching settings)
+        if (isSystemAdmin) {
+            return res.json([]);
+        }
         return res.status(400).json({ error: "Organization Context Required (Header: x-organization-id)" });
     }
 
