@@ -66,6 +66,10 @@ const auth = betterAuth({
             httpOnly: true
         }
     },
+    rateLimit: {
+        window: 10, // 10 seconds (short window)
+        max: 100, // Allow 100 requests per window (very permissive for debugging)
+    },
     trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"]
 });
 
