@@ -53,6 +53,19 @@ const auth = betterAuth({
     emailAndPassword: {
         enabled: true
     },
+    advanced: {
+        cookiePrefix: "clinicos",
+        useSecureCookies: true, // Force secure cookies
+        crossSubdomainCookies: {
+            enabled: true,
+            domain: ".onrender.com" // Help with Render subdomains if needed, though unaux is external
+        },
+        defaultCookieAttributes: {
+            sameSite: "none", // REQUIRED for cross-site (Frontend on unaux, Backend on render)
+            secure: true, // REQUIRED for sameSite: none
+            httpOnly: true
+        }
+    },
     trustedOrigins: ["http://localhost:5173", "http://localhost:3001", "https://clinicos.unaux.com"]
 });
 
