@@ -95,7 +95,7 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Olá, {(user?.display_name || user?.full_name || "Doutor(a)").split(" ")[0]}! 👋
+            Olá, {(user?.display_name || user?.full_name || "Usuário").split(" ")[0]}! 👋
           </h1>
           <p className="text-slate-500">Aqui está o resumo da sua clínica para hoje, {format(new Date(), "dd 'de' MMMM", { locale: ptBR })}.</p>
         </div>

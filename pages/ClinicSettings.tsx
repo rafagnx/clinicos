@@ -20,8 +20,11 @@ export default function ClinicSettings() {
   useEffect(() => {
     base44.auth.me().then(currentUser => {
       setUser(currentUser);
-      // Allow if role is admin OR if it's the specific system admin email
-      if (currentUser.role !== "admin" && currentUser.email !== "rafamarketingdb@gmail.com") {
+      // Allow if role is admin OR specific system admin email. 
+      // Note: 'admin' role check is prioritized.
+      if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com") {
+        setIsUnauthorized(false);
+      } else {
         setIsUnauthorized(true);
       }
     }).catch(() => setIsUnauthorized(true));
