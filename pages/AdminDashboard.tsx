@@ -59,9 +59,14 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-slate-50 p-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Painel do Super Admin</h1>
-                <Button onClick={() => window.location.href = "/organization/new"}>
-                    Nova Organização
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => base44.auth.logout()}>
+                        Sair
+                    </Button>
+                    <Button onClick={() => window.location.href = "/organization/new"}>
+                        Nova Organização
+                    </Button>
+                </div>
             </div>
 
             {orgs.length === 0 ? (
