@@ -124,7 +124,7 @@ export default function AdminOrganizations() {
                                     placeholder="Ex: Clínica Sorriso"
                                     {...register("name", { required: "Nome é obrigatório" })}
                                 />
-                                {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
+                                {errors.name && <span className="text-red-500 text-sm">{errors.name.message as string}</span>}
                             </div>
 
                             <div className="space-y-2">
