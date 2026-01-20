@@ -49,9 +49,25 @@ export default function Chat() {
       text,
       created_date: new Date().toISOString()
     }),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["messages", selectedConversation.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
+
+      // Identify recipient
+      const isProfessional = currentUser.user_type === "profissional" || currentUser.role === "admin";
+      const recipientId = isProfessional ? selectedConversation.patient_id : selectedConversation.professional_id;
+
+      // Send Notification to recipient
+      if (recipientId) {
+        await base44.entities.Notification.create({
+          user_id: recipientId,
+          title: isProfessional ? "Nova mensagem do Profissional" : "Nova mensagem de Paciente",
+          message: `Você recebeu uma mensagem de ${currentUser.name || "Usuário"}: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`,
+          type: "chat",
+          link: "/Chat", // Deep link if supported
+          read: false
+        });
+      }
     }
   });
 

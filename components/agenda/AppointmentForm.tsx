@@ -312,11 +312,22 @@ export default function AppointmentForm({
 
             return base44.entities.Appointment.create(payload);
         },
-        onSuccess: () => {
+        onSuccess: async (data, variables) => {
             toast.success("Agendamento criado com sucesso!");
             queryClient.invalidateQueries({ queryKey: ["appointments"] });
             onSuccess?.();
             onOpenChange(false);
+
+            // Notify Professional
+            if (variables.professional_id) {
+                await base44.entities.Notification.create({
+                    user_id: variables.professional_id,
+                    title: "Novo Agendamento",
+                    message: `Novo agendamento: ${variables.type} com ${variables.patient_name || "Paciente"} em ${format(new Date(variables.date), "dd/MM")} às ${variables.time}.`,
+                    type: "appointment",
+                    read: false
+                });
+            }
         },
         onError: () => toast.error("Erro ao criar agendamento")
     });
