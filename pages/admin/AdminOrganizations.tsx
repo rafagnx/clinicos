@@ -187,8 +187,16 @@ export default function AdminOrganizations() {
                                         </TableCell>
                                         <TableCell>{org.createdAt ? format(new Date(org.createdAt), "dd/MM/yyyy") : "-"}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm">
-                                                Detalhes
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    localStorage.setItem("active-org-id", org.id);
+                                                    // Force reload to update context or navigate
+                                                    window.location.href = "/Dashboard";
+                                                }}
+                                            >
+                                                Acessar
                                             </Button>
                                         </TableCell>
                                     </TableRow>
