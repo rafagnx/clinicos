@@ -45,7 +45,7 @@ const navigation = [
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // const [user, setUser] = useState(null); // Removed to fix lint error
+
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
