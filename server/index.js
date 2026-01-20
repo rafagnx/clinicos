@@ -90,7 +90,8 @@ const auth = betterAuth({
         "http://localhost:3001",
         "https://clinicos.unaux.com",
         "https://www.clinicos.unaux.com",
-        "http://clinicos.unaux.com"
+        "http://clinicos.unaux.com",
+        "https://clinicos-ruby.vercel.app"
     ]
 });
 
@@ -105,7 +106,8 @@ app.use(cors({
             "http://localhost:3001",
             "https://clinicos.unaux.com",
             "https://www.clinicos.unaux.com",
-            "http://clinicos.unaux.com"
+            "http://clinicos.unaux.com",
+            "https://clinicos-ruby.vercel.app"
         ];
 
         if (allowedOrigins.indexOf(origin) === -1) {
