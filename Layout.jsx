@@ -41,7 +41,7 @@ const navigation = [
   { name: "Financeiro", href: "Financial", icon: DollarSign }, // New Link
   { name: "Relatórios", href: "Reports", icon: BarChart3 },
   { name: "Configurações", href: "ClinicSettings", icon: Settings },
-  { name: "Procedimentos", href: "Settings/Procedures", icon: Stethoscope },
+  // { name: "Procedimentos", href: "Settings/Procedures", icon: Stethoscope }, // User prefers inline creation
 ];
 
 export default function Layout({ children }) {

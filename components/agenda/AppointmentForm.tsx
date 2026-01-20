@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, User, Check, Loader2 } from "lucide-react";
+import { CalendarIcon, User, Check, Loader2, Plus } from "lucide-react";
 import { format, addMinutes, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -164,6 +164,35 @@ export default function AppointmentForm({
 
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [newProcedureData, setNewProcedureData] = useState({ name: "", duration: 60 });
+
+    const handleCreateProcedure = async () => {
+        try {
+            if (!newProcedureData.name) return;
+
+            await base44.entities.ProcedureType.create({
+                name: newProcedureData.name,
+                duration_minutes: newProcedureData.duration,
+                category: "Meus Procedimentos",
+                active: true
+            });
+
+            toast.success("Procedimento criado!");
+            queryClient.invalidateQueries({ queryKey: ["procedure-types"] });
+
+            // Auto-select the new procedure
+            setFormData(prev => ({
+                ...prev,
+                procedure_name: newProcedureData.name,
+                duration: newProcedureData.duration
+            }));
+
+            // Reset temp state
+            setNewProcedureData({ name: "", duration: 60 });
+        } catch (error) {
+            toast.error("Erro ao criar procedimento");
+        }
+    };
 
     // Reset form when dialog opens/closes or appointment changes
     useEffect(() => {
@@ -539,6 +568,13 @@ export default function AppointmentForm({
                                         <SelectValue placeholder="Ou digite o nome do procedimento..." />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[300px]">
+                                        <SelectItem value="create_new" className="font-semibold text-emerald-600 focus:text-emerald-700 focus:bg-emerald-50">
+                                            <div className="flex items-center gap-2">
+                                                <Plus className="w-4 h-4" />
+                                                Criar Novo Procedimento...
+                                            </div>
+                                        </SelectItem>
+                                        <div className="h-px bg-slate-100 my-1" />
                                         {customProcedures.length > 0 && (
                                             <SelectGroup>
                                                 <SelectLabel className="font-bold text-slate-900 bg-emerald-50 text-emerald-700 px-2 py-1.5 flex justify-between items-center">
@@ -572,6 +608,50 @@ export default function AppointmentForm({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {formData.procedure_name === "create_new" && (
+                                    <div className="mt-2 p-3 bg-emerald-50 rounded-md border border-emerald-100 animate-in fade-in slide-in-from-top-2">
+                                        <div className="space-y-3">
+                                            <div>
+                                                <Label className="text-xs text-emerald-800">Nome do Novo Procedimento</Label>
+                                                <Input
+                                                    autoFocus
+                                                    placeholder="Ex: Harmonização Facial Completa"
+                                                    className="bg-white"
+                                                    onChange={(e) => {
+                                                        // We use a temporary state or just wait for Enter/Blur?
+                                                        // For simplicity, let's use a ref or just update a temp field in formData if we want, 
+                                                        // but cleaner is to have a local state for 'newProcedureName'.
+                                                        // Let's assume we added 'newProcedureName' and 'newProcedureDuration' state variables.
+                                                        setNewProcedureData(prev => ({ ...prev, name: e.target.value }));
+                                                    }}
+                                                    value={newProcedureData.name}
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div className="w-24">
+                                                    <Label className="text-xs text-emerald-800">Duração (min)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        className="bg-white"
+                                                        value={newProcedureData.duration}
+                                                        onChange={(e) => setNewProcedureData(prev => ({ ...prev, duration: parseInt(e.target.value) || 30 }))}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 flex items-end">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                                                        onClick={() => handleCreateProcedure()}
+                                                        disabled={!newProcedureData.name}
+                                                    >
+                                                        Salvar Novo Procedimento
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 {formData.procedure_name === "outro" && (
                                     <Input
                                         placeholder="Digite o nome do procedimento"
