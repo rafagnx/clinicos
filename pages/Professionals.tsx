@@ -138,7 +138,7 @@ export default function Professionals() {
 
   const getRoleLabel = (roleType) => {
     const labels = {
-      profissional: "Profissional",
+      profissional: "HOF ou Biomédico",
       secretaria: "Secretária",
       marketing: "Marketing",
       gerente: "Gerente",
@@ -397,7 +397,7 @@ export default function Professionals() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="profissional">Profissional (Médico/Dentista)</SelectItem>
+                  <SelectItem value="profissional">HOF ou Biomédico</SelectItem>
                   <SelectItem value="secretaria">Secretária</SelectItem>
                   <SelectItem value="marketing">Marketing</SelectItem>
                   <SelectItem value="gerente">Gerente</SelectItem>
