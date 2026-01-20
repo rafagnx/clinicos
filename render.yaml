@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: clinicos-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      - key: VITE_BACKEND_URL
+        value: https://clinicos-it4q.onrender.com
+      - key: NODE_VERSION
+        value: 20.10.0

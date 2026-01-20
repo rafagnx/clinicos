@@ -251,6 +251,38 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'ClinicOS Server is running' });
 });
 
+// Diagnostics Route (Check DB)
+app.get('/api/diagnostics', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT NOW()');
+        client.release();
+
+        res.json({
+            status: 'ok',
+            database: 'connected',
+            time: result.rows[0].now,
+            env: {
+                node_env: process.env.NODE_ENV,
+                has_db_url: !!process.env.DATABASE_URL,
+                has_auth_secret: !!process.env.BETTER_AUTH_SECRET,
+                backend_url: process.env.VITE_BACKEND_URL
+            }
+        });
+    } catch (error) {
+        console.error('Diagnostics Error:', error);
+        res.status(500).json({
+            status: 'error',
+            database: 'disconnected',
+            error: error.message,
+            env: {
+                node_env: process.env.NODE_ENV,
+                has_db_url: !!process.env.DATABASE_URL
+            }
+        });
+    }
+});
+
 
 const userScopedEntities = ['NotificationPreference'];
 
