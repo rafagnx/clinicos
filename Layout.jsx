@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
   Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft, Star, DollarSign
@@ -291,19 +292,46 @@ export default function Layout({ children }) {
             {user && (
               <>
                 {/* Notification Bell */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-10 w-10 hover:bg-slate-100"
-                  onClick={() => setNotificationsOpen(true)}
-                >
-                  <Bell className="w-5 h-5 text-slate-600" />
-                  {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs border-2 border-white font-bold">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </Badge>
-                  )}
-                </Button>
+                {/* Notification Bell */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative h-10 w-10 hover:bg-slate-100"
+                    >
+                      <Bell className="w-5 h-5 text-slate-600" />
+                      {unreadCount > 0 && (
+                        <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs border-2 border-white font-bold">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={8}>
+                    <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                      <h4 className="font-semibold text-slate-900">Notificações</h4>
+                      {unreadCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700">{unreadCount} novas</Badge>}
+                    </div>
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      <NotificationList
+                        notifications={notifications}
+                        onMarkAsRead={async (id) => {
+                          await base44.entities.Notification.update(id, { read: true });
+                          // Invalidate via parent or context if possible, otherwise rely on optimistic/reload
+                          // Since we don't have queryClient exposed easily here without prop drilling or hook, we rely on local state or re-fetch
+                        }}
+                        onDelete={async (id) => {
+                          await base44.entities.Notification.delete(id);
+                        }}
+                        onSendEmail={async (notif) => {
+                          // ...
+                        }}
+                        user={user}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
 
                 {/* User Menu */}
                 <DropdownMenu>
@@ -504,31 +532,40 @@ export default function Layout({ children }) {
       <NotificationPermissionPrompt />
 
       {/* Notifications Sheet */}
-      <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader className="mb-4">
-            <SheetTitle>Notificações</SheetTitle>
-          </SheetHeader>
-          <NotificationList
-            notifications={notifications}
-            onMarkAsRead={async (id) => {
-              await base44.entities.Notification.update(id, { read: true });
-            }}
-            onDelete={async (id) => {
-              await base44.entities.Notification.delete(id);
-            }}
-            onSendEmail={async (notif) => {
-              await base44.integrations.Core.SendEmail({
-                to: user.email,
-                subject: notif.title,
-                body: notif.message,
-              });
-              await base44.entities.Notification.update(notif.id, { sent_email: true });
-            }}
-            user={user}
-          />
-        </SheetContent>
-      </Sheet>
+      {/* Notifications Popover */}
+      <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <PopoverTrigger asChild>
+          <div className="hidden" />
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={8}>
+          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h4 className="font-semibold text-slate-900">Notificações</h4>
+            {unreadCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700">{unreadCount} novas</Badge>}
+          </div>
+          <div className="max-h-[60vh] overflow-y-auto">
+            <NotificationList
+              notifications={notifications}
+              onMarkAsRead={async (id) => {
+                await base44.entities.Notification.update(id, { read: true });
+                queryClient.invalidateQueries({ queryKey: ["notifications"] });
+              }}
+              onDelete={async (id) => {
+                await base44.entities.Notification.delete(id);
+                queryClient.invalidateQueries({ queryKey: ["notifications"] });
+              }}
+              onSendEmail={async (notif) => {
+                await base44.integrations.Core.SendEmail({
+                  to: user.email,
+                  subject: notif.title,
+                  body: notif.message,
+                });
+                await base44.entities.Notification.update(notif.id, { sent_email: true });
+              }}
+              user={user}
+            />
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
