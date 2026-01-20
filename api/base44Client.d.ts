@@ -8,6 +8,10 @@ export interface Base44Client {
         me: () => Promise<any>;
     };
 
+    admin: {
+        listOrganizations: () => Promise<any[]>;
+    };
+
     entities: {
         [key: string]: {
             list: (params?: any) => Promise<any[]>;
