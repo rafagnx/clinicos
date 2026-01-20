@@ -21,19 +21,31 @@ console.log("ClinicOS Client v1.1 Loaded - Debug Mode"); // Log to verify update
 
 // Interceptor to add Organization ID
 api.interceptors.request.use(async (config) => {
+    if (!config) config = {};
+    if (!config.headers) config.headers = {};
+
     // Try to get active org from localStorage (we will set this in our React UI)
     const activeOrgId = localStorage.getItem("active-org-id");
     if (activeOrgId) {
         config.headers["x-organization-id"] = activeOrgId;
     }
     return config;
+}, (error) => {
+    return Promise.reject(error);
 });
 
 const createEntityHandler = (entityName) => ({
     list: async (params = {}) => {
-        // Handle "params" being a string (legacy sort instruction from generated code)
-        // Axios expects an object, so we must sanitize.
-        const requestParams = (typeof params === 'object' && params !== null) ? params : {};
+        // Handle "params" safely. If it's a string (legacy), ignore it or wrap it.
+        // Axios params MUST be an object.
+        let requestParams = {};
+        if (params && typeof params === 'object') {
+            requestParams = { ...params };
+        } else if (typeof params === 'string') {
+            // If it's a string (like '-date'), we can't easily map it to generic params without knowing API specifics.
+            // For now, we ignore it to prevent the crash, essentially listing default order.
+            console.warn(`[Client] Ignoring string param for ${entityName}.list:`, params);
+        }
 
         try {
             const response = await api.get(`/${entityName}`, { params: requestParams });
@@ -47,7 +59,7 @@ const createEntityHandler = (entityName) => ({
     read: async (params = {}) => {
         try {
             let queryParams = {};
-            if (params.filter) {
+            if (params && typeof params === 'object' && params.filter) {
                 // Support all filters, not just ID
                 Object.assign(queryParams, params.filter);
             }
