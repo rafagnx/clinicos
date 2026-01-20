@@ -119,7 +119,8 @@ app.use(cors({
     },
     credentials: true // Required for auth cookies
 }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
