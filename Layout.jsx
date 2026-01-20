@@ -24,24 +24,48 @@ import NotificationPermissionPrompt from "@/components/notifications/Notificatio
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navigation = [
-  { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
-  { name: "Agenda", href: "Agenda", icon: Calendar },
-  { name: "Pacientes", href: "Patients", icon: Users },
-  { name: "Leads", href: "Leads", icon: Target },
-  { name: "Chat", href: "Chat", icon: MessageSquare },
-  { name: "Promoções", href: "Promotions", icon: Tag },
-  { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
-  { name: "Equipe", href: "Professionals", icon: Stethoscope },
-  { name: "Prontuários", href: "MedicalRecords", icon: FileText },
-  { name: "Financeiro", href: "Financial", icon: DollarSign },
-  { name: "Relatórios", href: "Reports", icon: BarChart3 },
-  { name: "Configurações", href: "ClinicSettings", icon: Settings },
+  {
+    group: "Principal",
+    items: [
+      { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
+      { name: "Agenda", href: "Agenda", icon: Calendar },
+    ]
+  },
+  {
+    group: "Clínica",
+    items: [
+      { name: "Pacientes", href: "Patients", icon: Users },
+      { name: "Prontuários", href: "MedicalRecords", icon: FileText },
+    ]
+  },
+  {
+    group: "Comercial",
+    items: [
+      { name: "Leads", href: "Leads", icon: Target },
+      { name: "Chat", href: "Chat", icon: MessageSquare },
+      { name: "Promoções", href: "Promotions", icon: Tag },
+      { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
+    ]
+  },
+  {
+    group: "Gestão",
+    items: [
+      { name: "Financeiro", href: "Financial", icon: DollarSign },
+      { name: "Equipe", href: "Professionals", icon: Stethoscope },
+      { name: "Relatórios", href: "Reports", icon: BarChart3 },
+    ]
+  },
+  {
+    group: "Sistema",
+    items: [
+      { name: "Configurações", href: "ClinicSettings", icon: Settings },
+    ]
+  }
 ];
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
 
@@ -49,8 +73,7 @@ export default function Layout({ children }) {
     queryKey: ["auth-user"],
     queryFn: async () => {
       try {
-        const u = await base44.auth.me();
-        return u;
+        return await base44.auth.me();
       } catch (e) {
         return null;
       }
@@ -84,23 +107,23 @@ export default function Layout({ children }) {
     <Link
       to={createPageUrl(item.href)}
       className={`
-        flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group relative
-        ${isCollapsed ? "justify-center px-0" : "px-4"}
+        flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative
+        ${isCollapsed ? "justify-center px-0" : "px-3 mx-2"}
         ${isActive
-          ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-          : "text-slate-400 hover:bg-slate-800 hover:text-white"
+          ? "bg-blue-600/10 text-blue-400"
+          : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
         }
       `}
       onClick={() => setSidebarOpen(false)}
     >
-      <div className={`${isActive ? "text-white" : "text-slate-400 group-hover:text-white"} transition-colors shrink-0`}>
+      <div className={`${isActive ? "text-blue-400" : "text-slate-400 group-hover:text-slate-200"} transition-colors shrink-0`}>
         <item.icon className={`h-5 w-5 ${isCollapsed ? "mx-auto" : ""}`} />
       </div>
       {!isCollapsed && (
         <span className="truncate">{item.name}</span>
       )}
-      {isCollapsed && isActive && (
-        <div className="absolute left-0 top-2 bottom-2 w-1 bg-white rounded-r-md"></div>
+      {isActive && !isCollapsed && (
+        <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-blue-500"></div>
       )}
     </Link>
   );
@@ -119,9 +142,9 @@ export default function Layout({ children }) {
       <aside
         className={`
           fixed top-0 bottom-0 left-0 z-50 h-[100dvh]
-          bg-[#111827] border-r border-[#1f2937]
-          transition-transform md:transition-all duration-300 ease-in-out
-          shadow-2xl md:shadow-none
+          bg-slate-900 border-r border-slate-800
+          transition-all duration-300 ease-in-out
+          shadow-2xl md:shadow-none flex flex-col
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
           ${isCollapsed ? "md:w-20" : "md:w-64"}
@@ -129,7 +152,7 @@ export default function Layout({ children }) {
         `}
       >
         {/* Sidebar Header */}
-        <div className={`flex items-center h-16 border-b border-[#1f2937] shrink-0 ${isCollapsed ? "justify-center px-0" : "justify-between px-6"}`}>
+        <div className={`flex items-center h-16 border-b border-slate-800 shrink-0 ${isCollapsed ? "justify-center px-0" : "justify-between px-6"}`}>
           {!isCollapsed ? (
             <>
               {clinicSettings?.logo_url ? (
@@ -140,13 +163,17 @@ export default function Layout({ children }) {
                 />
               ) : (
                 <div className="flex items-center gap-2 text-white">
-                  <Activity className="w-6 h-6 text-blue-500" />
-                  <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">ClinicOS</span>
+                  <div className="bg-gradient-to-tr from-blue-600 to-cyan-500 p-1.5 rounded-lg">
+                    <Activity className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-lg font-bold tracking-tight text-slate-100">ClinicOS</span>
                 </div>
               )}
             </>
           ) : (
-            <Activity className="w-8 h-8 text-blue-500" />
+            <div className="bg-gradient-to-tr from-blue-600 to-cyan-500 p-2 rounded-lg">
+              <Activity className="w-6 h-6 text-white" />
+            </div>
           )}
           {/* Mobile Close Button */}
           <Button
@@ -160,35 +187,47 @@ export default function Layout({ children }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-hide">
+        <nav className="flex-1 overflow-y-auto py-6 space-y-6 scrollbar-hide">
           <TooltipProvider delayDuration={0}>
-            {navigation.map((item) => {
-              const isActive = location.pathname.includes(item.href);
-              if (isCollapsed) {
-                return (
-                  <Tooltip key={item.name}>
-                    <TooltipTrigger asChild>
-                      <div><NavItem item={item} isActive={isActive} /></div>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700 ml-2 z-50">
-                      {item.name}
-                    </TooltipContent>
-                  </Tooltip>
-                )
-              }
-              return <NavItem key={item.name} item={item} isActive={isActive} />
-            })}
+            {navigation.map((group, idx) => (
+              <div key={idx}>
+                {!isCollapsed && group.group && (
+                  <h3 className="px-6 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {group.group}
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {group.items.map((item) => {
+                    const isActive = location.pathname.includes(item.href);
+                    if (isCollapsed) {
+                      return (
+                        <Tooltip key={item.name}>
+                          <TooltipTrigger asChild>
+                            <div><NavItem item={item} isActive={isActive} /></div>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700 ml-2 z-50 font-medium">
+                            {item.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    }
+                    return <NavItem key={item.name} item={item} isActive={isActive} />
+                  })}
+                </div>
+              </div>
+            ))}
           </TooltipProvider>
 
           {/* Admin Link */}
           {(user?.email === "rafamarketingdb@gmail.com" || user?.role === "admin") && (
-            <div className={`mt-6 pt-6 border-t border-[#1f2937] ${isCollapsed ? "px-2" : "px-4"}`}>
+            <div className="mt-8 pt-6 border-t border-slate-800 mx-4">
+              {!isCollapsed && <h3 className="mb-2 px-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Administração</h3>}
               <Link
                 to="/admin"
                 className={`
-                  flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
-                  ${isCollapsed ? "justify-center px-0" : "px-4"}
-                  text-rose-400 hover:bg-rose-900/20 hover:text-rose-300
+                  flex items-center gap-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group
+                  ${isCollapsed ? "justify-center px-0" : "px-3"}
+                  text-rose-400 bg-rose-950/30 hover:bg-rose-900/50 hover:text-rose-300 border border-rose-900/20
                 `}
                 onClick={() => setSidebarOpen(false)}
               >
