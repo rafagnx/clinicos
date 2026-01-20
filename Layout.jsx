@@ -87,7 +87,7 @@ export default function Layout({ children }) {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -98,10 +98,11 @@ export default function Layout({ children }) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-100 
-        transform transition-all duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 shadow-lg lg:shadow-none
+        transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 ${desktopSidebarOpen ? "lg:translate-x-0" : "lg:-translate-x-full"}
+        lg:translate-x-0 lg:static lg:h-screen lg:shrink-0
+        ${!desktopSidebarOpen && "lg:-translate-x-full lg:w-0 lg:overflow-hidden"}
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -254,7 +255,7 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main content */}
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${desktopSidebarOpen ? "lg:pl-64" : "lg:pl-0"}`}>
+      <div className="flex-1 min-w-0 transition-all duration-300 flex flex-col h-screen overflow-y-auto">
         {/* Desktop header */}
         <header className="hidden lg:flex sticky top-0 z-30 items-center justify-center gap-2 h-20 px-6 bg-white border-b border-slate-100 relative">
           {/* Menu Toggle Desktop */}
