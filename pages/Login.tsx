@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Activity, CheckCircle2 } from "lucide-react";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -13,7 +17,6 @@ export default function Login() {
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        console.log("Attempting login with:", email);
 
         try {
             const { data, error } = await authClient.signIn.email({
@@ -21,34 +24,25 @@ export default function Login() {
                 password,
             }, {
                 onSuccess: async () => {
-                    console.log("Login success! Fetching orgs...");
                     // Fetch organizations to set active context
                     const orgs = await authClient.organization.list();
-                    console.log("User orgs:", orgs);
-
                     if (orgs.data && orgs.data.length > 0) {
                         const firstOrgId = orgs.data[0].id;
                         localStorage.setItem("active-org-id", firstOrgId);
-                        console.log("Active Org set to:", firstOrgId);
-                    } else {
-                        console.log("No organizations found for this user.");
                     }
-
-                    toast.success("Login realizado com sucesso!");
+                    toast.success("Bem-vindo ao ClinicOS!");
                     navigate('/dashboard');
                 },
                 onError: (ctx) => {
-                    console.error("Login error:", ctx.error);
                     toast.error(ctx.error.message || "Falha no login");
+                    setIsLoading(false);
                 }
             });
 
             if (error) {
-                // Double check just in case onError didn't fire or wasn't handled
                 console.error("Login returned error object:", error);
                 setIsLoading(false);
             }
-
         } catch (err) {
             console.error("Unexpected login error:", err);
             toast.error("Erro inesperado ao tentar logar.");
@@ -56,82 +50,126 @@ export default function Login() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        console.log("Google login clicked - Not implemented yet");
-        toast.info("Login com Google em breve!");
-    };
-
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-                {/* Logo */}
-                <div className="flex justify-center mb-8">
-                    {/* Using a placeholder or the project logo if available locally, keep remote for now but maybe fix URL if broken */}
-                    <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            C
-                        </div>
-                        <span className="text-2xl font-bold text-slate-900">ClinicOS</span>
+        <div className="min-h-screen bg-white flex">
+            {/* Left Column - Hero Image & Branding */}
+            <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden flex-col justify-between p-12 text-white">
+                <div className="relative z-10 flex items-center gap-2">
+                    <div className="bg-blue-600 p-2 rounded-lg">
+                        <Activity className="w-6 h-6 text-white" />
                     </div>
+                    <span className="text-xl font-bold tracking-tight">ClinicOS</span>
                 </div>
 
-                <div className="text-center mb-8">
-                    <h1 className="text-2xl font-bold text-slate-800">Bem-vindo de volta</h1>
-                    <p className="text-slate-500 mt-2">Digite seus dados para entrar</p>
+                <div className="relative z-10 max-w-lg space-y-6">
+                    <h1 className="text-4xl font-bold leading-tight">
+                        Gestão inteligente para clínicas que não param de crescer.
+                    </h1>
+                    <ul className="space-y-4 text-slate-300">
+                        <li className="flex items-center gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                            <span>Controle total da sua agenda e pacientes</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                            <span>Prontuários eletrônicos seguros e acessíveis</span>
+                        </li>
+                        <li className="flex items-center gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
+                            <span>Gestão financeira simplificada</span>
+                        </li>
+                    </ul>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="h-12 rounded-xl"
-                            required
-                        />
+                <div className="relative z-10 text-sm text-slate-400">
+                    © {new Date().getFullYear()} ClinicOS Inc. Todos os direitos reservados.
+                </div>
+
+                {/* Decorative Background Image Overlay */}
+                <div className="absolute inset-0 z-0 opacity-20">
+                    <img
+                        src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
+                        alt="Hospital Background"
+                        className="w-full h-full object-cover grayscale"
+                    />
+                </div>
+            </div>
+
+            {/* Right Column - Login Form */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50">
+                <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
+                    <div className="text-center space-y-2">
+                        <h2 className="text-2xl font-bold text-slate-900">Acesse sua conta</h2>
+                        <p className="text-slate-500">Informe suas credenciais para continuar</p>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Senha</Label>
-                        <div className="relative">
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email Corporativo</Label>
                             <Input
-                                id="password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Sua senha"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="h-12 rounded-xl pr-10"
+                                id="email"
+                                type="email"
+                                placeholder="nome@clinica.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-all"
                                 required
                             />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                            >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
                         </div>
-                    </div>
 
-                    <Button
-                        type="submit"
-                        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm mt-2"
-                        disabled={isLoading}
-                    >
-                        {isLoading ? <span className="animate-pulse">Entrando...</span> : "Entrar"}
-                    </Button>
-                </form>
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-slate-500">
-                        Não tem uma conta?{" "}
-                        <a href="#" onClick={(e) => { e.preventDefault(); navigate("/signup"); }} className="font-medium text-blue-600 hover:underline">
-                            Criar conta
-                        </a>
-                    </p>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Senha</Label>
+                                <a href="#" className="text-xs font-medium text-blue-600 hover:text-blue-700">
+                                    Esqueceu a senha?
+                                </a>
+                            </div>
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02]"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Entrando...</span>
+                                </div>
+                            ) : "Entrar na Plataforma"}
+                        </Button>
+                    </form>
+
+                    <div className="pt-4 text-center border-t border-slate-100">
+                        <p className="text-sm text-slate-500">
+                            Novo por aqui?{" "}
+                            <a
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); navigate("/signup"); }}
+                                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                            >
+                                Criar uma conta
+                            </a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
