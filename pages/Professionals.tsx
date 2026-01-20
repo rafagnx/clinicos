@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { authClient } from "@/lib/auth-client";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,7 @@ export default function Professionals() {
     full_name: "", role_type: "profissional", specialty: "", council_number: "", council_state: "",
     phone: "", email: "", color: "#3B82F6", appointment_duration: 30, status: "ativo", photo_url: ""
   });
+  const [inviteLink, setInviteLink] = useState("");
   const [user, setUser] = useState(null);
   const [uploading, setUploading] = useState(false);
 
@@ -157,12 +159,44 @@ export default function Professionals() {
     setIsFormOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: formData });
     } else {
-      createMutation.mutate(formData);
+      // Invite Flow
+      try {
+        console.log("Inviting user:", formData.email);
+        const { data, error } = await authClient.organization.inviteMember({
+          email: formData.email,
+          role: "member", // or admin based on user selection? keeping simple for now
+        });
+
+        if (error) {
+          console.error("Invite error:", error);
+          toast.error("Erro ao enviar convite: " + error.message);
+          // We might proceed to create the record anyway if it's just an email failure, 
+          // but usually better to block.
+          // For MVP dev (without email server), this might fail or return a link.
+          // If it fails because "mail adapter not found", we might mock it.
+          return;
+        }
+
+        console.log("Invite success:", data);
+
+        // Should we show the link to the admin?
+        // In dev mode without emailer, better-auth might return the token/link in `data`?
+        // Checking better-auth docs memory: logic usually returns null data if email sent.
+        // If email fails, error.
+
+        // Create the professional record
+        const newProf = { ...formData, status: "convidado" };
+        createMutation.mutate(newProf);
+
+      } catch (err) {
+        console.error("Unexpected invite error:", err);
+        toast.error("Erro inesperado ao convidar.");
+      }
     }
   };
 
@@ -297,7 +331,7 @@ export default function Professionals() {
                         variant="secondary"
                         className={`text-xs ${prof.status === "ativo" ? "bg-emerald-50 text-emerald-700 font-medium" : "bg-slate-100 text-slate-500"}`}
                       >
-                        {prof.status === "ativo" ? "Ativo" : "Inativo"}
+                        {prof.status === "ativo" ? "Ativo" : prof.status === 'convidado' ? "Convidado" : "Inativo"}
                       </Badge>
                     </div>
                   </div>

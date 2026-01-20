@@ -9,7 +9,9 @@ import './index.css'
 import Layout from './Layout'
 // import Login from './pages/Login' // Deprecated
 import Auth from './pages/Auth' // New Auth Page
+import AcceptInvitation from './pages/AcceptInvitation'
 import Organization from './pages/Organization' // New Org Page
+import Financial from './pages/Financial' // New Financial Page
 
 import Dashboard from './pages/Dashboard'
 import Agenda from './pages/Agenda'
@@ -28,8 +30,10 @@ import ViewMedicalRecord from './pages/ViewMedicalRecord'
 import NewMedicalRecord from './pages/NewMedicalRecord'
 import PatientHistory from './pages/PatientHistory'
 import ImportPatients from './pages/ImportPatients'
+import ProcedureTypes from './pages/settings/ProcedureTypes'
 
 import AdminDashboard from './pages/AdminDashboard'
+import AdminOrganizations from './pages/admin/AdminOrganizations'
 
 const queryClient = new QueryClient()
 
@@ -40,12 +44,14 @@ const App = () => {
                 {/* Public Route */}
                 <Route path="/login" element={<Auth />} />
                 <Route path="/register" element={<Auth />} />
+                <Route path="/accept-invitation" element={<AcceptInvitation />} />
 
                 {/* Organization Setup */}
                 <Route path="/organization/new" element={<Organization />} />
 
                 {/* Admin - Standalone Layout */}
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/organizations" element={<AdminOrganizations />} />
 
                 {/* Authenticated Routes wrapped in Layout */}
                 <Route path="*" element={
@@ -54,11 +60,13 @@ const App = () => {
                             <Route path="/" element={<Navigate to="/Dashboard" replace />} />
 
                             <Route path="/Dashboard" element={<Dashboard />} />
+                            <Route path="/Financial" element={<Financial />} />
                             <Route path="/Agenda" element={<Agenda />} />
                             <Route path="/Patients" element={<Patients />} />
                             <Route path="/Leads" element={<Leads />} />
                             <Route path="/MedicalRecords" element={<MedicalRecords />} />
                             <Route path="/ClinicSettings" element={<ClinicSettings />} />
+                            <Route path="/Settings/Procedures" element={<ProcedureTypes />} />
                             <Route path="/Professionals" element={<Professionals />} />
                             <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
                             <Route path="/Promotions" element={<Promotions />} />

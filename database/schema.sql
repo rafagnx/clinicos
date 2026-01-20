@@ -210,3 +210,45 @@ CREATE TABLE IF NOT EXISTS "clinic_settings" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+
+-- Procedure Types (Custom & Standard)
+CREATE TABLE IF NOT EXISTS "procedure_types" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL,
+  "name" TEXT NOT NULL,
+  "duration_minutes" INT DEFAULT 30,
+  "price" DECIMAL(10, 2),
+  "color" TEXT DEFAULT '#3b82f6',
+  "active" BOOLEAN DEFAULT TRUE,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
+
+-- Prontuário (Medical Records)
+CREATE TABLE IF NOT EXISTS "medical_records" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL,
+  "patient_id" INT REFERENCES "patients"("id") ON DELETE CASCADE,
+  "professional_id" INT REFERENCES "professionals"("id"),
+  "content" TEXT,
+  "type" TEXT DEFAULT 'evolution', -- evolution, anamnesis, prescription
+  "date" TIMESTAMP DEFAULT NOW(),
+  "attachments" JSON,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
+
+-- Financial Transactions
+CREATE TABLE IF NOT EXISTS "financial_transactions" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL,
+  "description" TEXT NOT NULL,
+  "amount" DECIMAL(10, 2) NOT NULL,
+  "type" TEXT NOT NULL, -- income, expense
+  "category" TEXT,
+  "date" DATE DEFAULT CURRENT_DATE,
+  "status" TEXT DEFAULT 'paid', -- paid, pending
+  "patient_id" INT, -- Optional link to patient
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);

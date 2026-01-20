@@ -123,6 +123,8 @@ export const base44 = {
         Conversation: createEntityHandler("Conversation"), // Added missing entity
         ClinicSettings: createEntityHandler("ClinicSettings"), // Added for layout
         NotificationPreference: createEntityHandler("NotificationPreference"), // Added missing entity
+        ProcedureType: createEntityHandler("ProcedureType"), // Custom Procedures
+        FinancialTransaction: createEntityHandler("FinancialTransaction"), // Financial Management
     },
 
     auth: {

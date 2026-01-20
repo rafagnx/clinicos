@@ -242,6 +242,11 @@ export default function AppointmentForm({
         queryFn: () => base44.entities.Professional.list()
     });
 
+    const { data: customProcedures = [] } = useQuery({
+        queryKey: ["procedure-types"],
+        queryFn: () => base44.entities.ProcedureType.list()
+    });
+
     const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
         queryKey: ["patients", searchTerm],
         queryFn: () => {
@@ -505,11 +510,41 @@ export default function AppointmentForm({
 
                             <div className="space-y-2">
                                 <Label>Nome do Procedimento</Label>
-                                <Select value={formData.procedure_name} onValueChange={(v) => setFormData(p => ({ ...p, procedure_name: v }))}>
+                                <Select
+                                    value={formData.procedure_name}
+                                    onValueChange={(v) => {
+                                        setFormData(p => {
+                                            const updates = { ...p, procedure_name: v };
+                                            // Auto-update duration if it matches a custom procedure
+                                            const match = customProcedures.find(c => c.name === v);
+                                            if (match) {
+                                                updates.duration = match.duration_minutes;
+                                            }
+                                            return updates;
+                                        });
+                                    }}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Ou digite o nome do procedimento..." />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="max-h-[300px]">
+                                        {customProcedures.length > 0 && (
+                                            <SelectGroup>
+                                                <SelectLabel className="font-bold text-slate-900 bg-emerald-50 text-emerald-700 px-2 py-1.5 flex justify-between items-center">
+                                                    <span>Meus Procedimentos</span>
+                                                    <span className="text-[10px] font-normal opacity-70">Personalizados</span>
+                                                </SelectLabel>
+                                                {customProcedures.map((proc) => (
+                                                    <SelectItem key={proc.id} value={proc.name} className="pl-6">
+                                                        <div className="flex items-center justify-between w-full gap-2">
+                                                            <span>{proc.name}</span>
+                                                            <span className="text-xs text-slate-400">({proc.duration_minutes} min)</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        )}
+
                                         {PROCEDURES_OPTIONS.map((group) => (
                                             <SelectGroup key={group.category}>
                                                 <SelectLabel className="font-bold text-slate-900 bg-slate-50 px-2 py-1.5">{group.category}</SelectLabel>

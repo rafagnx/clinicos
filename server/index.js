@@ -11,17 +11,16 @@ import { organization } from "better-auth/plugins";
 import { toNodeHandler } from "better-auth/node";
 
 const { Pool } = pg;
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // FIX FOR RENDER SSL ISSUES with internal libraries like better-auth
 // This allows connections to Postgres with self-signed certs (common in Render internal network)
 if (process.env.NODE_ENV === 'production') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -126,8 +125,15 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // ------------------------------------------------------------------
 // BETTER AUTH ROUTE HANDLER
 // ------------------------------------------------------------------
-app.all("/api/auth/*", toNodeHandler(auth));
-
+console.log('Auth initialized:', !!auth);
+console.log('toNodeHandler type:', typeof toNodeHandler);
+try {
+    const handler = toNodeHandler(auth);
+    console.log('Handler generated type:', typeof handler);
+    app.all("/api/auth/*", handler);
+} catch (e) {
+    console.error('Failed to generate node handler:', e);
+}
 
 // Initial Schema Setup (Auto-Migration)
 const initSchema = async () => {
@@ -257,7 +263,9 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         'Message': 'messages',
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
-        'NotificationPreference': 'notification_preferences'
+        'NotificationPreference': 'notification_preferences',
+        'ProcedureType': 'procedure_types',
+        'FinancialTransaction': 'financial_transactions'
     };
 
     const tableName = tableMap[entity];
@@ -388,7 +396,8 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         'Message': 'messages',
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
-        'NotificationPreference': 'notification_preferences'
+        'NotificationPreference': 'notification_preferences',
+        'ProcedureType': 'procedure_types'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
@@ -448,7 +457,8 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         'Message': 'messages',
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
-        'NotificationPreference': 'notification_preferences'
+        'NotificationPreference': 'notification_preferences',
+        'ProcedureType': 'procedure_types'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
