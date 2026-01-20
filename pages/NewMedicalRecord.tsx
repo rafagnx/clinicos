@@ -62,6 +62,11 @@ export default function NewMedicalRecord() {
     queryFn: () => base44.read("Professional")
   });
 
+  const { data: customProcedures = [] } = useQuery({
+    queryKey: ["procedure-types"],
+    queryFn: () => (base44.entities.ProcedureType as any).list()
+  });
+
   const createMutation = useMutation({
     mutationFn: (data: any) => {
       // Serialize complex data into content field for now as backend might be simple
