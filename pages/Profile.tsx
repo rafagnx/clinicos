@@ -92,6 +92,7 @@ export default function Profile() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success("Perfil atualizado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["auth-user"] });
       loadUser();
     }
   });

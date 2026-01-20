@@ -49,18 +49,24 @@ export default function Layout({ children }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
 
-  useEffect(() => {
-    // Check if on a public route to avoid loop? No, Layout is only for protected routes.
-    // If better-auth session is missing, we redirect.
-    base44.auth.me().then((u) => {
-      if (!u && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        window.location.href = '/login';
+  const { data: user, isLoading: authLoading } = useQuery({
+    queryKey: ["auth-user"],
+    queryFn: async () => {
+      try {
+        const u = await base44.auth.me();
+        return u;
+      } catch (e) {
+        return null;
       }
-      setUser(u);
-    }).catch(() => {
+    },
+    retry: false
+  });
+
+  useEffect(() => {
+    if (!authLoading && !user && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
       window.location.href = '/login';
-    });
-  }, []);
+    }
+  }, [user, authLoading]);
 
   const { data: clinicSettings } = useQuery({
     queryKey: ["clinic-settings"],
@@ -188,8 +194,8 @@ export default function Layout({ children }) {
                     <div className="flex-1 text-left">
                       <p className="text-sm font-medium text-slate-800 truncate">
                         {user.email === "rafamarketingdb@gmail.com"
-                          ? (user.display_name || user.full_name || "Usuário")
-                          : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                          ? (user.name || user.display_name || user.full_name || "Usuário")
+                          : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
                         }
                       </p>
                       {user.email !== "rafamarketingdb@gmail.com" && (
@@ -202,7 +208,7 @@ export default function Layout({ children }) {
                 <DropdownMenuContent align="start" className="w-48">
                   <div className="px-3 py-2 border-b border-slate-100">
                     <p className="text-sm font-medium text-slate-800">
-                      {user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário"}
+                      {user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário"}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       {user.user_type && (
@@ -304,8 +310,8 @@ export default function Layout({ children }) {
                         <div className="flex items-center justify-end gap-2">
                           <p className="text-sm font-medium text-slate-800">
                             {user.email === "rafamarketingdb@gmail.com"
-                              ? (user.display_name || user.full_name || "Usuário")
-                              : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                              ? (user.name || user.display_name || user.full_name || "Usuário")
+                              : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
                             }
                           </p>
                           {user.role === "admin" && (
@@ -332,8 +338,8 @@ export default function Layout({ children }) {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-800 truncate">
                             {user.email === "rafamarketingdb@gmail.com"
-                              ? (user.display_name || user.full_name || "Usuário")
-                              : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                              ? (user.name || user.display_name || user.full_name || "Usuário")
+                              : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
                             }
                           </p>
                           {user.email !== "rafamarketingdb@gmail.com" && (
@@ -423,8 +429,8 @@ export default function Layout({ children }) {
                   <div className="px-3 py-2 border-b border-slate-100">
                     <p className="text-sm font-medium text-slate-800">
                       {user.email === "rafamarketingdb@gmail.com"
-                        ? (user.display_name || user.full_name || "Usuário")
-                        : (user.user_type === "profissional" ? `Dr(a). ${user.display_name || user.full_name || "Usuário"}` : user.display_name || user.full_name || "Usuário")
+                        ? (user.name || user.display_name || user.full_name || "Usuário")
+                        : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
                       }
                     </p>
                     {user.email !== "rafamarketingdb@gmail.com" && (
