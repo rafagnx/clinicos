@@ -91,9 +91,8 @@ export default function Profile() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
-      toast.success("Perfil atualizado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["auth-user"] });
-      loadUser();
+      toast.success("Perfil atualizado! Recarregando...");
+      setTimeout(() => window.location.reload(), 1000);
     }
   });
 
