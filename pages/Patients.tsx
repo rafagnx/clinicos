@@ -16,6 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, FileSpreadsheet } from "lucide-react";
 
 import PatientForm from "@/components/patients/PatientForm";
 import PatientCard from "@/components/patients/PatientCard";
@@ -148,11 +150,6 @@ export default function Patients() {
           <h1 className="text-2xl font-bold text-slate-900">Pacientes</h1>
           <p className="text-slate-500">Gerencie o cadastro e histórico dos seus pacientes</p>
         </div>
-        import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator} from "@/components/ui/dropdown-menu";
-        import {MoreHorizontal, FileSpreadsheet} from "lucide-react";
-
-        // ... inside the component, replacing the header action buttons ...
-
         <div className="flex flex-wrap gap-2">
           {/* Secondary Actions Menu */}
           <DropdownMenu>
