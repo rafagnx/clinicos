@@ -254,7 +254,6 @@ export default function Layout({ children }) {
         className={`
           flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out
           ${isCollapsed ? "md:ml-20" : "md:ml-64"}
-          ml-0
         `}
       >
         {/* Header - Sticky */}
