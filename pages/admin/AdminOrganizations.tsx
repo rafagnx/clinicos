@@ -86,7 +86,7 @@ export default function AdminOrganizations() {
             const org = await response.json();
             // End Manual Fallback
 
-            if (error) throw error;
+
 
             toast.success("Organização criada com sucesso!");
             setIsOpen(false);
