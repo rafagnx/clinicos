@@ -91,7 +91,8 @@ const auth = betterAuth({
         "https://clinicos.unaux.com",
         "https://www.clinicos.unaux.com",
         "http://clinicos.unaux.com",
-        "https://clinicos-ruby.vercel.app"
+        "https://clinicos-ruby.vercel.app",
+        "https://clinicos-black.vercel.app"
     ]
 });
 
@@ -107,7 +108,8 @@ app.use(cors({
             "https://clinicos.unaux.com",
             "https://www.clinicos.unaux.com",
             "http://clinicos.unaux.com",
-            "https://clinicos-ruby.vercel.app"
+            "https://clinicos-ruby.vercel.app",
+            "https://clinicos-black.vercel.app"
         ];
 
         if (allowedOrigins.indexOf(origin) === -1) {
