@@ -138,6 +138,7 @@ try {
     const handler = toNodeHandler(auth);
     console.log('Handler generated type:', typeof handler);
     app.all("/api/auth/*", handler);
+    app.all("/api/organization/*", handler); // Fix for missing /auth segment in organization requests
 } catch (e) {
     console.error('Failed to generate node handler:', e);
 }

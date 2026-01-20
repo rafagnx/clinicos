@@ -81,6 +81,20 @@ CREATE TABLE IF NOT EXISTS "organization" (
   "updatedAt" TIMESTAMP NOT NULL
 );
 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='slug') THEN
+        ALTER TABLE "organization" ADD COLUMN "slug" TEXT UNIQUE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='logo') THEN
+        ALTER TABLE "organization" ADD COLUMN "logo" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='metadata') THEN
+        ALTER TABLE "organization" ADD COLUMN "metadata" TEXT;
+    END IF;
+END
+$$;
+
 CREATE TABLE IF NOT EXISTS "member" (
   "id" TEXT PRIMARY KEY,
   "organizationId" TEXT NOT NULL REFERENCES "organization"("id"),
