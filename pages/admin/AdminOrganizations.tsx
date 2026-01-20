@@ -98,21 +98,30 @@ export default function AdminOrganizations() {
         }
     };
 
+    const handleInvite = (orgId) => {
+        // Placeholder for future invite logic
+        toast.info("Funcionalidade de convite rápido em desenvolvimento");
+    };
+
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-50/50">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Organizações</h1>
-                    <p className="text-slate-500 mt-2">Gerencie as empresas cadastradas no ClinicOS.</p>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <Globe className="w-8 h-8 text-blue-600" />
+                        Painel Master
+                    </h1>
+                    <p className="text-slate-500 mt-2 text-lg">Gerencie todas as clínicas e acessos do sistema.</p>
                 </div>
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Nova Empresa
+                        <Button className="bg-blue-600 hover:bg-blue-700 shadow-md transition-all hover:scale-105">
+                            <Plus className="w-5 h-5 mr-2" />
+                            Nova Organização
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle>Cadastrar Nova Empresa</DialogTitle>
                         </DialogHeader>
@@ -129,83 +138,126 @@ export default function AdminOrganizations() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="slug">Identificador (Slug)</Label>
-                                <Input
-                                    id="slug"
-                                    placeholder="ex: clinica-sorriso"
-                                    {...register("slug", { required: "Slug é obrigatório" })}
-                                />
+                                <div className="flex">
+                                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-sm">
+                                        clinicos.com/
+                                    </span>
+                                    <Input
+                                        id="slug"
+                                        className="rounded-l-none"
+                                        placeholder="clinica-sorriso"
+                                        {...register("slug", { required: "Slug é obrigatório" })}
+                                    />
+                                </div>
                                 <p className="text-xs text-slate-500">Usado na URL e identificação única.</p>
                             </div>
 
-                            <Button type="submit" className="w-full">Criar Empresa</Button>
+                            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Criar Empresa</Button>
                         </form>
                     </DialogContent>
                 </Dialog>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Empresas Cadastradas</CardTitle>
-                    <CardDescription>Lista de todas as organizações no sistema.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Slug</TableHead>
-                                <TableHead>Criado em</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-8 text-slate-500">
-                                        Carregando...
-                                    </TableCell>
-                                </TableRow>
-                            ) : organizations.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-8 text-slate-500">
-                                        Nenhuma organização encontrada.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                organizations.map((org) => (
-                                    <TableRow key={org.id}>
-                                        <TableCell className="font-medium">
-                                            <div className="flex items-center gap-2">
-                                                <Building2 className="w-4 h-4 text-blue-500" />
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loading ? (
+                    // Skeleton Loading State
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} className="animate-pulse">
+                            <CardHeader className="space-y-2">
+                                <div className="h-6 w-1/3 bg-slate-200 rounded"></div>
+                                <div className="h-4 w-1/4 bg-slate-200 rounded"></div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="h-24 bg-slate-100 rounded-lg"></div>
+                            </CardContent>
+                        </Card>
+                    ))
+                ) : organizations.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Building2 className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-slate-900">Nenhuma empresa encontrada</h3>
+                        <p className="text-slate-500">Comece criando sua primeira organização.</p>
+                    </div>
+                ) : (
+                    organizations.map((org) => (
+                        <Card key={org.id} className="group hover:shadow-lg transition-all duration-300 border-slate-200 overflow-hidden relative">
+                            {/* Decorative Top Border */}
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+
+                            <CardHeader className="pb-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl border border-blue-100">
+                                            {org.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <CardTitle className="text-lg font-semibold text-slate-900 line-clamp-1" title={org.name}>
                                                 {org.name}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className="font-mono bg-slate-50">
-                                                {org.slug}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{org.createdAt ? format(new Date(org.createdAt), "dd/MM/yyyy") : "-"}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    localStorage.setItem("active-org-id", org.id);
-                                                    // Force reload to update context or navigate
-                                                    window.location.href = "/Dashboard";
-                                                }}
-                                            >
-                                                Acessar
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                                            </CardTitle>
+                                            <p className="text-sm text-slate-500 font-mono">@{org.slug}</p>
+                                        </div>
+                                    </div>
+                                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        Operacional
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="py-4 bg-slate-50/50 space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-slate-500 mb-1">Criado em</p>
+                                        <p className="font-medium text-slate-700">
+                                            {org.createdAt ? format(new Date(org.createdAt), "dd MMM, yyyy") : "-"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-slate-500 mb-1">Status</p>
+                                        <div className="flex items-center gap-1 text-slate-700 font-medium">
+                                            <Building2 className="w-3 h-3 text-slate-400" />
+                                            <span>Ativo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+
+                            <div className="p-4 flex items-center gap-3 border-t border-slate-100 bg-white">
+                                <Button
+                                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
+                                    onClick={() => {
+                                        localStorage.setItem("active-org-id", org.id);
+                                        window.location.href = "/Dashboard";
+                                    }}
+                                >
+                                    Acessar Painel
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="px-3"
+                                    title="Convidar Gestor (Em breve)"
+                                    onClick={() => handleInvite(org.id)}
+                                >
+                                    <Users className="w-4 h-4 text-slate-600" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="px-3 hover:bg-slate-100"
+                                    title="Configurações"
+                                >
+                                    <Settings className="w-4 h-4 text-slate-400" />
+                                </Button>
+                            </div>
+                        </Card>
+                    ))
+                )}
+            </div>
         </div>
     );
 }
+
+// Importing icons locally to avoid top-level import errors if some look weird 
+import { Settings } from "lucide-react";
