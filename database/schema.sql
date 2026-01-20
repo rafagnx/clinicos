@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS "organization" (
   "slug" TEXT UNIQUE,
   "logo" TEXT,
   "metadata" TEXT,
-  "createdAt" TIMESTAMP NOT NULL,
-  "updatedAt" TIMESTAMP NOT NULL
+  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 DO $$
@@ -92,6 +92,12 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='metadata') THEN
         ALTER TABLE "organization" ADD COLUMN "metadata" TEXT;
     END IF;
+    
+    -- Fix Default Values for existing tables
+    ALTER TABLE "organization" ALTER COLUMN "createdAt" SET DEFAULT NOW();
+    ALTER TABLE "organization" ALTER COLUMN "updatedAt" SET DEFAULT NOW();
+    ALTER TABLE "member" ALTER COLUMN "createdAt" SET DEFAULT NOW();
+    ALTER TABLE "member" ALTER COLUMN "updatedAt" SET DEFAULT NOW();
 END
 $$;
 
