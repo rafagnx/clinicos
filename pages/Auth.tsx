@@ -26,10 +26,17 @@ export default function Auth() {
             if (error) {
                 toast.error(error.message || "Erro ao fazer login");
             } else {
+                // Fetch user's organizations to set context
+                const orgs = await authClient.organization.list();
+                if (orgs.data && orgs.data.length > 0) {
+                    localStorage.setItem("active-org-id", orgs.data[0].id);
+                }
+
                 toast.success("Login realizado com sucesso!");
                 navigate("/dashboard");
             }
         } catch (e) {
+            console.error("Login error:", e);
             toast.error("Erro inesperado");
         } finally {
             setLoading(false);

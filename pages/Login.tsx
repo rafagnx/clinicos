@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -12,19 +8,55 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate login delay
-        setTimeout(() => {
+        console.log("Attempting login with:", email);
+
+        try {
+            const { data, error } = await authClient.signIn.email({
+                email,
+                password,
+            }, {
+                onSuccess: async () => {
+                    console.log("Login success! Fetching orgs...");
+                    // Fetch organizations to set active context
+                    const orgs = await authClient.organization.list();
+                    console.log("User orgs:", orgs);
+
+                    if (orgs.data && orgs.data.length > 0) {
+                        const firstOrgId = orgs.data[0].id;
+                        localStorage.setItem("active-org-id", firstOrgId);
+                        console.log("Active Org set to:", firstOrgId);
+                    } else {
+                        console.log("No organizations found for this user.");
+                    }
+
+                    toast.success("Login realizado com sucesso!");
+                    navigate('/dashboard');
+                },
+                onError: (ctx) => {
+                    console.error("Login error:", ctx.error);
+                    toast.error(ctx.error.message || "Falha no login");
+                }
+            });
+
+            if (error) {
+                // Double check just in case onError didn't fire or wasn't handled
+                console.error("Login returned error object:", error);
+                setIsLoading(false);
+            }
+
+        } catch (err) {
+            console.error("Unexpected login error:", err);
+            toast.error("Erro inesperado ao tentar logar.");
             setIsLoading(false);
-            navigate('/Dashboard');
-        }, 800);
+        }
     };
 
     const handleGoogleLogin = () => {
-        console.log("Google login clicked");
-        // Mock action
+        console.log("Google login clicked - Not implemented yet");
+        toast.info("Login com Google em breve!");
     };
 
     return (
@@ -32,66 +64,45 @@ export default function Login() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/693c124e6b101587747b5b3e/13b7a1377_Designsemnome.png"
-                        alt="ClinicOS"
-                        className="h-12 w-auto"
-                    />
+                    {/* Using a placeholder or the project logo if available locally, keep remote for now but maybe fix URL if broken */}
+                    <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                            C
+                        </div>
+                        <span className="text-2xl font-bold text-slate-900">ClinicOS</span>
+                    </div>
                 </div>
 
                 <div className="text-center mb-8">
-                    <h1 className="text-2xl font-bold text-slate-800">Welcome back</h1>
-                    <p className="text-slate-500 mt-2">Please enter your details to sign in</p>
-                </div>
-
-                {/* Google Button */}
-                <Button
-                    variant="outline"
-                    className="w-full h-[54px] rounded-xl border-slate-200 text-slate-600 font-medium text-base hover:bg-slate-50 relative mb-6"
-                    onClick={handleGoogleLogin}
-                >
-                    <img
-                        src="https://www.svgrepo.com/show/475656/google-color.svg"
-                        alt="Google"
-                        className="w-6 h-6 mr-3"
-                    />
-                    Continue with Google
-                </Button>
-
-                <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-slate-100" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-slate-400">or</span>
-                    </div>
+                    <h1 className="text-2xl font-bold text-slate-800">Bem-vindo de volta</h1>
+                    <p className="text-slate-500 mt-2">Digite seus dados para entrar</p>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email address</Label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="Enter your email"
+                            placeholder="seu@email.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="h-12 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-colors"
+                            className="h-12 rounded-xl"
                             required
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="password" className="text-sm font-medium text-slate-700">Password</Label>
+                        <Label htmlFor="password">Senha</Label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Enter password"
+                                placeholder="Sua senha"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="h-12 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-colors pr-10"
+                                className="h-12 rounded-xl pr-10"
                                 required
                             />
                             <button
@@ -104,41 +115,22 @@ export default function Login() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="remember"
-                                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                            />
-                            <label htmlFor="remember" className="text-sm text-slate-600">Remember me</label>
-                        </div>
-                        <a href="#" className="text-sm font-medium text-slate-900 hover:underline">
-                            Forgot password?
-                        </a>
-                    </div>
-
                     <Button
                         type="submit"
-                        className="w-full h-12 rounded-xl bg-slate-900 text-white hover:bg-slate-800 font-medium text-sm mt-2"
+                        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm mt-2"
                         disabled={isLoading}
                     >
-                        {isLoading ? "Signing in..." : "Sign in"}
+                        {isLoading ? <span className="animate-pulse">Entrando...</span> : "Entrar"}
                     </Button>
-
-                    <div className="text-center mt-6">
-                        <p className="text-sm text-slate-500">
-                            Don't have an account?{" "}
-                            <a href="#" className="font-medium text-slate-900 hover:underline">
-                                Sign up
-                            </a>
-                        </p>
-                    </div>
                 </form>
-            </div>
-
-            <div className="mt-8 text-center text-xs text-slate-400">
-                <p>&copy; {new Date().getFullYear()} ClinicOS. All rights reserved.</p>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-slate-500">
+                        Não tem uma conta?{" "}
+                        <a href="#" onClick={(e) => { e.preventDefault(); navigate("/signup"); }} className="font-medium text-blue-600 hover:underline">
+                            Criar conta
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
     );
