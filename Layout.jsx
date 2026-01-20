@@ -23,10 +23,12 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
-  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft, Star, DollarSign
+  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft, Star, DollarSign,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navigation = [
   { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
@@ -38,16 +40,14 @@ const navigation = [
   { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
   { name: "Equipe", href: "Professionals", icon: Stethoscope },
   { name: "Prontuários", href: "MedicalRecords", icon: FileText },
-  { name: "Financeiro", href: "Financial", icon: DollarSign }, // New Link
+  { name: "Financeiro", href: "Financial", icon: DollarSign },
   { name: "Relatórios", href: "Reports", icon: BarChart3 },
   { name: "Configurações", href: "ClinicSettings", icon: Settings },
-  // { name: "Procedimentos", href: "Settings/Procedures", icon: Stethoscope }, // User prefers inline creation
 ];
 
 export default function Layout({ children }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile Drawer State
+  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop Mini Sidebar State
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
@@ -87,368 +87,255 @@ export default function Layout({ children }) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Render a Nav Link
+  const NavItem = ({ item, isActive }) => (
+    <Link
+      to={createPageUrl(item.href)}
+      className={`
+          flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
+          ${isCollapsed ? "justify-center px-2" : "px-4"}
+          ${isActive
+          ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
+          : "text-slate-400 hover:bg-slate-800 hover:text-white"
+        }
+        `}
+      onClick={() => setSidebarOpen(false)}
+    >
+      <div className={`${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`}>
+        <item.icon className="w-5 h-5" />
+      </div>
+      {!isCollapsed && (
+        <span className="truncate">{item.name}</span>
+      )}
+    </Link>
+  );
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Desktop & Mobile */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-100 shadow-lg lg:shadow-none
-        transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 bg-[#111827] border-r border-[#1f2937] shadow-xl md:shadow-none
+        transform transition-all duration-300 ease-in-out shrink-0 flex flex-col
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 lg:static lg:h-screen lg:shrink-0
-        ${!desktopSidebarOpen && "lg:-translate-x-full lg:w-0 lg:overflow-hidden"}
+        md:translate-x-0 md:static md:h-screen
+        ${isCollapsed ? "md:w-20" : "md:w-64"}
+        w-64
       `}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-20 px-6 border-b border-slate-100 relative z-10">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/693c124e6b101587747b5b3e/13b7a1377_Designsemnome.png"
-              alt="ClinicOS"
-              className="h-16 w-auto"
-            />
-            <div className="w-9" />
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 relative z-10">
-            {navigation.map((item, idx) => {
-              const isActive = location.pathname.includes(item.href);
-              return (
-                <motion.div
-                  key={item.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05, duration: 0.3 }}
-                >
-                  <Link
-                    to={createPageUrl(item.href)}
-                    className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
-                      transition-all duration-200
-                      ${isActive
-                        ? "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 shadow-sm"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:translate-x-1"
-                      }
-                    `}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                    >
-                      <item.icon className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
-                    </motion.div>
-                    {item.name}
-                  </Link>
-                </motion.div>
-              );
-            })}
-            {/* System Admin Link */}
-            {(user?.email === "rafamarketingdb@gmail.com" || user?.role === "admin") && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5, duration: 0.3 }}
-              >
-                <Link
-                  to="/admin"
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-800 transition-all duration-200 mt-4 border border-rose-100"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                  >
-                    <Target className="w-5 h-5" />
-                  </motion.div>
-                  Super Admin
-                </Link>
-              </motion.div>
-            )}
-          </nav>
-
-          {/* User */}
-          {user && (
-            <div className="p-4 border-t border-slate-100 relative z-10">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-3">
-                    <div className="relative">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.photo_url} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {user.display_name?.charAt(0) || user.full_name?.charAt(0) || user.email?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-slate-800 truncate">
-                        {user.email === "rafamarketingdb@gmail.com"
-                          ? (user.name || user.display_name || user.full_name || "Usuário")
-                          : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
-                        }
-                      </p>
-                      {user.email !== "rafamarketingdb@gmail.com" && (
-                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                      )}
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  <div className="px-3 py-2 border-b border-slate-100">
-                    <p className="text-sm font-medium text-slate-800">
-                      {user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário"}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {user.user_type && (
-                        <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-                          <div className={`w-2 h-2 rounded-full ${user.user_type === "profissional" ? "bg-blue-500" :
-                            user.user_type === "secretaria" ? "bg-green-500" :
-                              "bg-purple-500"
-                            }`} />
-                          {user.user_type === "profissional" ? "Profissional" :
-                            user.user_type === "secretaria" ? "Secretária" :
-                              "Marketing"}
-                        </span>
-                      )}
-                      {user.role === "admin" && (
-                        <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
-                          ADMIN
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl("Profile")} className="gap-2 cursor-pointer">
-                      <Settings className="w-4 h-4" />
-                      Meu Perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="gap-2 text-rose-600"
-                    onClick={() => base44.auth.logout()}
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <div className="flex-1 min-w-0 transition-all duration-300 flex flex-col h-screen overflow-y-auto">
-        {/* Desktop header */}
-        <header className="hidden lg:flex sticky top-0 z-30 items-center justify-center gap-2 h-20 px-6 bg-white border-b border-slate-100 relative">
-          {/* Menu Toggle Desktop */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-4"
-            onClick={() => setDesktopSidebarOpen(!desktopSidebarOpen)}
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-
-          {/* Logo da Clínica */}
-          <div className="flex items-center justify-center">
-            {clinicSettings?.logo_url ? (
-              <img
-                src={clinicSettings.logo_url}
-                alt={clinicSettings.clinic_name || "Clínica"}
-                className="h-12 w-auto object-contain"
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <Building2 className="w-8 h-8 text-slate-400" />
-                <span className="text-lg font-semibold text-slate-600">
-                  {clinicSettings?.clinic_name || "Clínica"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center gap-4 absolute right-4">
-            {user && (
-              <>
-                {/* Notification Bell */}
-                {/* Notification Bell */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="relative h-10 w-10 hover:bg-slate-100"
-                    >
-                      <Bell className="w-5 h-5 text-slate-600" />
-                      {unreadCount > 0 && (
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs border-2 border-white font-bold">
-                          {unreadCount > 9 ? "9+" : unreadCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={8}>
-                    <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                      <h4 className="font-semibold text-slate-900">Notificações</h4>
-                      {unreadCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700">{unreadCount} novas</Badge>}
-                    </div>
-                    <div className="max-h-[60vh] overflow-y-auto">
-                      <NotificationList
-                        notifications={notifications}
-                        onMarkAsRead={async (id) => {
-                          await base44.entities.Notification.update(id, { read: true });
-                          // Invalidate via parent or context if possible, otherwise rely on optimistic/reload
-                          // Since we don't have queryClient exposed easily here without prop drilling or hook, we rely on local state or re-fetch
-                        }}
-                        onDelete={async (id) => {
-                          await base44.entities.Notification.delete(id);
-                        }}
-                        onSendEmail={async (notif) => {
-                          // ...
-                        }}
-                        user={user}
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
-
-                {/* User Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="gap-3 h-auto p-2 hover:bg-slate-50">
-                      <div className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <p className="text-sm font-medium text-slate-800">
-                            {user.email === "rafamarketingdb@gmail.com"
-                              ? (user.name || user.display_name || user.full_name || "Usuário")
-                              : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
-                            }
-                          </p>
-                          {user.role === "admin" && (
-                            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium text-[9px]">
-                              Admin
-                            </span>
-                          )}
-                        </div>
-                        {user.email !== "rafamarketingdb@gmail.com" && (
-                          <p className="text-xs text-slate-500">{user.email}</p>
-                        )}
-                      </div>
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.photo_url} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {user.display_name?.charAt(0) || user.full_name?.charAt(0) || user.email?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64">
-                    <div className="px-3 py-2 border-b border-slate-100">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-800 truncate">
-                            {user.email === "rafamarketingdb@gmail.com"
-                              ? (user.name || user.display_name || user.full_name || "Usuário")
-                              : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
-                            }
-                          </p>
-                          {user.email !== "rafamarketingdb@gmail.com" && (
-                            <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                          )}
-                        </div>
-                        {user.role === "admin" && (
-                          <span className="shrink-0 px-2 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
-                            ADMIN
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl("Profile")} className="gap-2 cursor-pointer">
-                        <Settings className="w-4 h-4" />
-                        Meu Perfil
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="gap-2 text-rose-600"
-                      onClick={() => base44.auth.logout()}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sair
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-          </div>
-        </header>
-
-        {/* Mobile header */}
-        <header className="sticky top-0 z-30 flex items-center justify-between h-20 px-4 bg-white border-b border-slate-100 lg:hidden">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
-              <Menu className="w-5 h-5" />
-            </Button>
-            {clinicSettings?.logo_url ? (
-              <img
-                src={clinicSettings.logo_url}
-                alt={clinicSettings.clinic_name || "Clínica"}
-                className="h-12 w-auto object-contain"
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <Building2 className="w-6 h-6 text-slate-400" />
-                <span className="text-sm font-semibold text-slate-600">
-                  {clinicSettings?.clinic_name || "Clínica"}
-                </span>
-              </div>
-            )}
-          </div>
-          {user && (
-            <div className="flex items-center gap-2">
-              {/* Mobile Notification Bell */}
+        {/* Sidebar Header / Logo */}
+        <div className={`flex items-center h-20 border-b border-[#1f2937] relative z-10 ${isCollapsed ? "justify-center px-2" : "justify-between px-6"}`}>
+          {!isCollapsed ? (
+            <>
+              {clinicSettings?.logo_url ? (
+                <img
+                  src={clinicSettings.logo_url}
+                  alt={clinicSettings.clinic_name}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <div className="flex items-center gap-2 text-white">
+                  <Building2 className="w-8 h-8 text-blue-500" />
+                  <span className="text-lg font-bold tracking-tight">ClinicOS</span>
+                </div>
+              )}
+              {/* Mobile Close Button */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative h-10 w-10 hover:bg-slate-100"
-                onClick={() => setNotificationsOpen(true)}
+                onClick={() => setSidebarOpen(false)}
+                className="md:hidden text-slate-400 hover:text-white"
               >
-                <Bell className="w-5 h-5 text-slate-600" />
-                {unreadCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs border-2 border-white font-bold">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </Badge>
-                )}
+                <ArrowLeft className="w-5 h-5" />
               </Button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center">
+              <Building2 className="w-8 h-8 text-blue-500" />
+            </div>
+          )}
 
-              {/* Mobile User Menu */}
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto scrollbar-hide">
+          <TooltipProvider delayDuration={0}>
+            {navigation.map((item) => {
+              const isActive = location.pathname.includes(item.href);
+              if (isCollapsed) {
+                return (
+                  <Tooltip key={item.name}>
+                    <TooltipTrigger asChild>
+                      <div><NavItem item={item} isActive={isActive} /></div>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="bg-slate-900 text-white border-slate-700">
+                      {item.name}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+              return <NavItem key={item.name} item={item} isActive={isActive} />
+            })}
+          </TooltipProvider>
+
+          {/* System Admin Link */}
+          {(user?.email === "rafamarketingdb@gmail.com" || user?.role === "admin") && (
+            <div className="pt-4 mt-4 border-t border-[#1f2937]">
+              <Link
+                to="/admin"
+                className={`
+                        flex items-center gap-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group
+                        ${isCollapsed ? "justify-center px-2" : "px-4"}
+                        text-rose-400 hover:bg-rose-900/20 hover:text-rose-300
+                      `}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Target className="w-5 h-5" />
+                {!isCollapsed && <span>Super Admin</span>}
+              </Link>
+            </div>
+          )}
+        </nav>
+
+        {/* User Profile */}
+        {user && (
+          <div className="p-4 border-t border-[#1f2937] relative z-10 w-full">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className={`w-full h-auto p-0 hover:bg-[#1f2937] ${isCollapsed ? "justify-center py-2" : "justify-start px-2 py-2"}`}>
+                  <Avatar className="h-9 w-9 border border-[#374151]">
+                    <AvatarImage src={user.photo_url} />
+                    <AvatarFallback className="bg-blue-600 text-white font-medium">
+                      {user.display_name?.charAt(0) || user.full_name?.charAt(0) || user.email?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {!isCollapsed && (
+                    <div className="flex-1 text-left ml-3 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">
+                        {user.name || user.display_name || user.full_name || "Usuário"}
+                      </p>
+                      <p className="text-xs text-slate-400 truncate w-full">{user.email}</p>
+                    </div>
+                  )}
+                  {!isCollapsed && <ChevronDown className="w-4 h-4 text-slate-500 ml-2" />}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-[#1f2937] border-[#374151] text-white">
+                <div className="px-3 py-2 border-b border-[#374151]">
+                  <p className="text-sm font-medium text-white">
+                    {user.name || user.display_name || user.full_name || "Usuário"}
+                  </p>
+                  <span className="text-xs text-slate-400 capitalize">{user.role || "Usuário"}</span>
+                </div>
+                <DropdownMenuSeparator className="bg-[#374151]" />
+                <DropdownMenuItem asChild className="focus:bg-[#374151] focus:text-white">
+                  <Link to={createPageUrl("Profile")} className="gap-2 cursor-pointer">
+                    <Settings className="w-4 h-4" />
+                    Meu Perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2 text-rose-400 focus:bg-rose-900/20 focus:text-rose-300"
+                  onClick={() => base44.auth.logout()}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+      </aside>
+
+      {/* Main content */}
+      <div className={`flex-1 min-w-0 flex flex-col h-screen overflow-y-auto transition-all duration-300`}>
+        {/* Desktop Header */}
+        <header className="hidden md:flex sticky top-0 z-30 items-center justify-between gap-4 h-16 px-6 bg-white border-b border-slate-200">
+          {/* Left: Toggle & Page Info */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="text-slate-500 hover:text-slate-700"
+              title={isCollapsed ? "Expandir Menu" : "Recolher Menu"}
+            >
+              {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            </Button>
+            {/* Optional: Breadcrumbs or Page Title could go here */}
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            {/* Notification Bell */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-10 w-10 hover:bg-slate-100"
+                >
+                  <Bell className="w-5 h-5 text-slate-600" />
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-500 text-white text-xs border-2 border-white font-bold">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={8}>
+                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                  <h4 className="font-semibold text-slate-900">Notificações</h4>
+                  {unreadCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700">{unreadCount} novas</Badge>}
+                </div>
+                <div className="max-h-[60vh] overflow-y-auto">
+                  <NotificationList
+                    notifications={notifications}
+                    onMarkAsRead={async (id) => {
+                      await base44.entities.Notification.update(id, { read: true });
+                    }}
+                    onDelete={async (id) => {
+                      await base44.entities.Notification.delete(id);
+                    }}
+                    onSendEmail={async (notif) => {
+                      // ...
+                    }}
+                    user={user}
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* User Menu */}
+            {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-10 w-10">
-                    <Avatar className="h-9 w-9">
+                  <Button variant="ghost" className="gap-3 h-auto p-2 hover:bg-slate-50">
+                    <div className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <p className="text-sm font-medium text-slate-800">
+                          {user.email === "rafamarketingdb@gmail.com"
+                            ? (user.name || user.display_name || user.full_name || "Usuário")
+                            : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
+                          }
+                        </p>
+                        {user.role === "admin" && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium text-[9px]">
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      {user.email !== "rafamarketingdb@gmail.com" && (
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      )}
+                    </div>
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={user.photo_url} />
                       <AvatarFallback className="bg-blue-100 text-blue-600">
                         {user.display_name?.charAt(0) || user.full_name?.charAt(0) || user.email?.charAt(0)}
@@ -456,42 +343,23 @@ export default function Layout({ children }) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-64">
                   <div className="px-3 py-2 border-b border-slate-100">
-                    <p className="text-sm font-medium text-slate-800">
-                      {user.email === "rafamarketingdb@gmail.com"
-                        ? (user.name || user.display_name || user.full_name || "Usuário")
-                        : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
-                      }
-                    </p>
-                    {user.email !== "rafamarketingdb@gmail.com" && (
-                      <p className="text-xs text-slate-500">{user.email}</p>
-                    )}
-                    <div className="flex items-center gap-2 mt-2">
-                      {user.user_type && (
-                        <span className="text-xs">
-                          <div className={`inline-block w-2 h-2 rounded-full mr-1 ${user.user_type === "profissional" ? "bg-blue-500" :
-                            user.user_type === "secretaria" ? "bg-green-500" :
-                              "bg-purple-500"
-                            }`} />
-                          <span className="text-slate-500">
-                            {user.user_type === "profissional" ? "Profissional" :
-                              user.user_type === "secretaria" ? "Secretária" :
-                                user.user_type === "marketing" ? "Marketing" :
-                                  user.user_type === "gerente" ? "Gerente" : "Administrador"}
-                          </span>
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-800 truncate">
+                          {user.email === "rafamarketingdb@gmail.com"
+                            ? (user.name || user.display_name || user.full_name || "Usuário")
+                            : (user.user_type === "profissional" ? `Dr(a). ${user.name || user.display_name || user.full_name || "Usuário"}` : user.name || user.display_name || user.full_name || "Usuário")
+                          }
+                        </p>
+                        {user.email !== "rafamarketingdb@gmail.com" && (
+                          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                        )}
+                      </div>
                       {user.role === "admin" && (
-                        <span className="ml-auto px-2 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
+                        <span className="shrink-0 px-2 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold text-[10px] shadow-lg">
                           ADMIN
-                        </span>
-                      )}
-
-                      {/* Exclusive Golden Badge */}
-                      {user.email === "rafamarketingdb@gmail.com" && (
-                        <span className="ml-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold text-[10px] shadow-lg flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-white" /> ADMIN
                         </span>
                       )}
                     </div>
@@ -513,59 +381,50 @@ export default function Layout({ children }) {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-          )}
+            )}
+          </div>
         </header>
 
-        {/* Page content */}
-        <main className="pb-12">{children}</main>
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-white border-b border-slate-200 md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-6 h-6 text-slate-700" />
+          </Button>
 
-        {/* Footer */}
-        <footer className="fixed bottom-0 right-0 left-0 bg-white border-t border-slate-100 py-3 px-4">
-          <p className="text-center text-xs text-slate-400 font-medium">
-            DESIGNED BY EUSOULRAFA
-          </p>
-        </footer>
+          <span className="font-semibold text-slate-800">ClinicOS</span>
+
+          <div className="flex items-center gap-2">
+            {/* Mobile Notifications */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => setNotificationsOpen(true)}
+            >
+              <Bell className="w-6 h-6 text-slate-600" />
+              {unreadCount > 0 && (
+                <Badge className="absolute -1 -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full p-0 flex items-center justify-center text-[10px] text-white">
+                  {unreadCount}
+                </Badge>
+              )}
+            </Button>
+
+            {/* Mobile Profile Avatar */}
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user?.photo_url} />
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-0 overflow-x-hidden">
+          {children}
+        </main>
       </div>
 
       {/* Notification Permission Prompt */}
       <NotificationPermissionPrompt />
-
-      {/* Notifications Sheet */}
-      {/* Notifications Popover */}
-      <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-        <PopoverTrigger asChild>
-          <div className="hidden" />
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={8}>
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h4 className="font-semibold text-slate-900">Notificações</h4>
-            {unreadCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700">{unreadCount} novas</Badge>}
-          </div>
-          <div className="max-h-[60vh] overflow-y-auto">
-            <NotificationList
-              notifications={notifications}
-              onMarkAsRead={async (id) => {
-                await base44.entities.Notification.update(id, { read: true });
-                queryClient.invalidateQueries({ queryKey: ["notifications"] });
-              }}
-              onDelete={async (id) => {
-                await base44.entities.Notification.delete(id);
-                queryClient.invalidateQueries({ queryKey: ["notifications"] });
-              }}
-              onSendEmail={async (notif) => {
-                await base44.integrations.Core.SendEmail({
-                  to: user.email,
-                  subject: notif.title,
-                  body: notif.message,
-                });
-                await base44.entities.Notification.update(notif.id, { sent_email: true });
-              }}
-              user={user}
-            />
-          </div>
-        </PopoverContent>
-      </Popover>
     </div>
   );
 }
