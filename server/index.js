@@ -138,10 +138,94 @@ try {
     const handler = toNodeHandler(auth);
     console.log('Handler generated type:', typeof handler);
     app.all("/api/auth/*", handler);
-    app.all("/api/organization/*", handler); // Fix for missing /auth segment in organization requests
+    app.all("/api/organization/*", handler);
 } catch (e) {
     console.error('Failed to generate node handler:', e);
 }
+
+// MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
+app.post("/api/debug/migrate", async (req, res) => {
+    try {
+        console.log("Starting manual migration...");
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // 1. Create Notifications Table (missing in logs)
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "notification" (
+                    "id" TEXT PRIMARY KEY,
+                    "title" TEXT,
+                    "message" TEXT,
+                    "user_id" TEXT NOT NULL REFERENCES "user"("id"),
+                    "read" BOOLEAN DEFAULT FALSE,
+                    "action_url" TEXT,
+                    "created_date" TIMESTAMP DEFAULT NOW(),
+                    "updated_date" TIMESTAMP DEFAULT NOW()
+                );
+            `);
+            console.log("Checked/Created notification table");
+
+            // 2. Add organization_id to key tables if missing
+            const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
+
+            for (const table of tablesToCheck) {
+                // Check if table exists first
+                const tableExists = await client.query(`
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = $1
+                    );
+                `, [table]);
+
+                if (tableExists.rows[0].exists) {
+                    // Check if column exists
+                    const colExists = await client.query(`
+                        SELECT column_name 
+                        FROM information_schema.columns 
+                        WHERE table_name=$1 AND column_name='organization_id';
+                    `, [table]);
+
+                    if (colExists.rows.length === 0) {
+                        console.log(`Adding organization_id to ${table}`);
+                        // Determine type. Usually TEXT for our new schema, might be INT for legacy.
+                        // Let's use TEXT to be compatible with Better Auth organization IDs.
+                        // We set it nullable first to avoid errors on existing data, then you can backfill.
+                        await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT;`);
+                        await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}" ("organization_id");`);
+                    } else {
+                        console.log(`organization_id already exists in ${table}`);
+                    }
+                } else {
+                    console.log(`Table ${table} does not exist yet.`);
+                }
+            }
+
+            // 3. Ensure 'organization' table has correct columns (Better Auth)
+            const orgColExists = await client.query(`
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='organization' AND column_name='createdAt';
+            `);
+            if (orgColExists.rows.length === 0) {
+                await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW();`);
+                await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW();`);
+            }
+
+            await client.query('COMMIT');
+            res.json({ success: true, message: "Migration completed successfully" });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        console.error("Migration failed:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 // Initial Schema Setup (Auto-Migration)
 const initSchema = async () => {
