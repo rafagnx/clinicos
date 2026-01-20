@@ -7,8 +7,8 @@ import { Toaster as ToasterOriginal } from "@/components/ui/toaster"
 import './index.css'
 
 import Layout from './Layout'
-// import Login from './pages/Login' // Deprecated
-import Auth from './pages/Auth' // New Auth Page
+import Login from './pages/Login'
+import Auth from './pages/Auth' // Keep for register if needed
 import AcceptInvitation from './pages/AcceptInvitation'
 import Organization from './pages/Organization' // New Org Page
 import Financial from './pages/Financial' // New Financial Page
@@ -42,7 +42,7 @@ const App = () => {
         <Router>
             <Routes>
                 {/* Public Route */}
-                <Route path="/login" element={<Auth />} />
+                <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Auth />} />
                 <Route path="/accept-invitation" element={<AcceptInvitation />} />
 
