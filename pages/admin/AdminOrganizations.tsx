@@ -59,11 +59,32 @@ export default function AdminOrganizations() {
             // Importing authClient locally to avoid messing with base44Client if it doesn't have it exposed 
             const { authClient } = await import("@/lib/auth-client");
 
-            const { data: org, error } = await authClient.organization.create({
-                name: data.name,
-                slug: data.slug,
-                // The creator becomes the owner automatically
+            // MANUAL CREATE FALLBACK
+            // Using direct API call to bypass potential Auth Plugin issues
+            const token = localStorage.getItem("clinicos-token"); // If we store token? 
+            // Better-auth cookies are httpOnly, so we can't read them easily unless we use the client to fetch.
+            // Let's use the base44 generic fetcher if possible or standard fetch that includes credentials.
+
+            // Using authClient.fetch to benefit from auto-header injection? No, authClient is for auth routes.
+            // Let's try standard fetch with credentials: include
+
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com"}/api/admin/organization/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // We need to rely on the cookie being sent automatically
+                },
+                credentials: "include",
+                body: JSON.stringify({ name: data.name, slug: data.slug })
             });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Failed to create organization");
+            }
+
+            const org = await response.json();
+            // End Manual Fallback
 
             if (error) throw error;
 

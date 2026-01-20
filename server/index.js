@@ -242,6 +242,46 @@ app.get('/api/admin/organizations', requireAuth, async (req, res) => {
     }
 });
 
+// Manual Organization Create (Bypass Better-Auth plugin if failing)
+app.post('/api/admin/organization/create', requireAuth, async (req, res) => {
+    // Basic validation
+    const { name, slug } = req.body;
+    const { user } = req.auth;
+
+    if (!name || !slug) return res.status(400).json({ error: "Name and Slug required" });
+
+    try {
+        // 1. Check if slug exists
+        const check = await pool.query('SELECT id FROM "organization" WHERE slug = $1', [slug]);
+        if (check.rows.length > 0) {
+            return res.status(400).json({ error: "Slug already exists" });
+        }
+
+        // 2. Create Organization
+        const orgId = uuidv4();
+        const now = new Date();
+        const newOrg = await pool.query(
+            `INSERT INTO "organization" (id, name, slug, "createdAt", "updatedAt") 
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [orgId, name, slug, now, now]
+        );
+
+        // 3. Add User as Owner/Admin Member
+        const memberId = uuidv4();
+        await pool.query(
+            `INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [memberId, orgId, user.id, "owner", now, now]
+        );
+
+        res.json(newOrg.rows[0]);
+
+    } catch (error) {
+        console.error("Manual Org Create Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 // ------------------------------------------------------------------
 // ROUTES
