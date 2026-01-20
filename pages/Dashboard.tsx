@@ -89,25 +89,30 @@ export default function Dashboard() {
     // Implement mutation here
   };
 
+  // Time-based greeting logic
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const firstName = (user?.name || user?.display_name || user?.full_name || "Usuário").split(" ")[0];
+
   return (
-    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-slate-50/30">
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Olá, {(user?.name || user?.display_name || user?.full_name || "Usuário").split(" ")[0]}! 👋
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-blue-600 tracking-wide uppercase">{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+            {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">{firstName}</span>! 👋
           </h1>
-          <p className="text-slate-500">Aqui está o resumo da sua clínica para hoje, {format(new Date(), "dd 'de' MMMM", { locale: ptBR })}.</p>
+          <p className="text-slate-500 text-lg">Aqui está o pulso da sua clínica hoje.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setSelectorOpen(true)}>
-            <Settings className="w-4 h-4 mr-2" />
-            Personalizar Painel
+        <div className="flex items-center gap-3 pb-2">
+          <Button variant="ghost" className="text-slate-500 hover:text-slate-800" onClick={() => setSelectorOpen(true)}>
+            <Settings className="w-5 h-5" />
           </Button>
-          <Button size="sm" asChild>
+          <Button className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-200 transition-all hover:scale-105" asChild>
             <Link to={createPageUrl("Agenda")}>
               <Calendar className="w-4 h-4 mr-2" />
-              Ver Agenda
+              Ver Agenda Completa
             </Link>
           </Button>
         </div>
