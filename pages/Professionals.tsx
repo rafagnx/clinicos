@@ -233,11 +233,25 @@ export default function Professionals() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-3 text-slate-500">Carregando equipe...</span>
           </div>
         ) : professionals.length === 0 ? (
           <div className="text-center py-12">
-            <Users className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-500">Nenhum membro cadastrado</p>
+            <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+               <Shield className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900">Nenhum membro encontrado</h3>
+            <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-6">
+              Parece que não conseguimos carregar a lista de profissionais. Isso pode ser um problema de conexão.
+            </p>
+             {isAdmin && (
+                <Button 
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                >
+                  Tentar Novamente
+                </Button>
+             )}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
