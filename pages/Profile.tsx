@@ -59,7 +59,7 @@ export default function Profile() {
       const me = await base44.auth.me();
       setUser(me);
       setFormData({
-        display_name: me.display_name || "",
+        display_name: me.name || me.display_name || "",
         phone: me.phone || "",
         user_type: me.user_type || "profissional",
         specialty: me.specialty || "",
@@ -144,7 +144,7 @@ export default function Profile() {
         </div>
 
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900">{user?.display_name || "Usuário"}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{user?.name || user?.display_name || "Usuário"}</h1>
           <div className="flex items-center gap-2">
             <Badge className={USER_TYPE_COLORS[formData.user_type]}>
               {USER_TYPE_LABELS[formData.user_type]}
