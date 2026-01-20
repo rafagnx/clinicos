@@ -68,7 +68,7 @@ export default function AdminOrganizations() {
             // Using authClient.fetch to benefit from auto-header injection? No, authClient is for auth routes.
             // Let's try standard fetch with credentials: include
 
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com"}/api/admin/organization/create`, {
+            const response = await fetch(`${(import.meta as any).env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com"}/api/admin/organization/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
