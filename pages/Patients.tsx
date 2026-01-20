@@ -148,63 +148,82 @@ export default function Patients() {
           <h1 className="text-2xl font-bold text-slate-900">Pacientes</h1>
           <p className="text-slate-500">Gerencie o cadastro e histórico dos seus pacientes</p>
         </div>
+        import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator} from "@/components/ui/dropdown-menu";
+        import {MoreHorizontal, FileSpreadsheet} from "lucide-react";
+
+        // ... inside the component, replacing the header action buttons ...
+
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="text-rose-600 border-rose-200 hover:bg-rose-50 hover:text-rose-700">
-            <Trash2 className="w-4 h-4 mr-2" />
-            Excluir Múltiplos
-          </Button>
-          <Button
-            variant="outline"
-            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
-            onClick={() => {
-              try {
-                if (!patients.length) {
-                  toast.error("Não há pacientes para exportar.");
-                  return;
-                }
+          {/* Secondary Actions Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="bg-white hover:bg-slate-50">
+                <MoreHorizontal className="w-4 h-4 mr-2 text-slate-500" />
+                Mais Ações
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => navigate(createPageUrl("ImportPatients"))} className="gap-2 cursor-pointer">
+                <Upload className="w-4 h-4 text-slate-500" />
+                Importar Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  try {
+                    if (!patients.length) {
+                      toast.error("Não há pacientes para exportar.");
+                      return;
+                    }
+                    const headers = ["ID", "Nome Completo", "Email", "Telefone", "CPF", "Status", "Data Cadastro"];
+                    const csvContent = [
+                      headers.join(","),
+                      ...patients.map(p => {
+                        return [
+                          p.id,
+                          `"${p.full_name || ''}"`,
+                          p.email || '',
+                          p.phone || '',
+                          p.cpf || '',
+                          p.status || '',
+                          p.created_date || ''
+                        ].join(",");
+                      })
+                    ].join("\n");
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `pacientes_export_${new Date().toISOString().split('T')[0]}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    toast.success("Exportação concluída!");
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("Erro ao exportar.");
+                  }
+                }}
+                className="gap-2 cursor-pointer"
+              >
+                <Download className="w-4 h-4 text-slate-500" />
+                Exportar CSV
+              </DropdownMenuItem>
+              {user?.role === "admin" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setShowBulkDelete(!showBulkDelete)}
+                    className="gap-2 text-rose-600 focus:text-rose-700 focus:bg-rose-50 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {showBulkDelete ? "Sair da Seleção" : "Excluir Múltiplos"}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-                const headers = ["ID", "Nome Completo", "Email", "Telefone", "CPF", "Status", "Data Cadastro"];
-                const csvContent = [
-                  headers.join(","),
-                  ...patients.map(p => {
-                    return [
-                      p.id,
-                      `"${p.full_name || ''}"`,
-                      p.email || '',
-                      p.phone || '',
-                      p.cpf || '',
-                      p.status || '',
-                      p.created_date || ''
-                    ].join(",");
-                  })
-                ].join("\n");
-
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `pacientes_export_${new Date().toISOString().split('T')[0]}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                toast.success("Exportação concluída!");
-              } catch (err) {
-                console.error(err);
-                toast.error("Erro ao exportar.");
-              }
-            }}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Exportar Excel (CSV)
-          </Button>
-          <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700" asChild>
-            <Link to={createPageUrl("ImportPatients")}>
-              <Upload className="w-4 h-4 mr-2" />
-              Importar Excel
-            </Link>
-          </Button>
-          <Button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:scale-105">
             <UserPlus className="w-4 h-4 mr-2" />
             Novo Paciente
           </Button>
