@@ -134,7 +134,13 @@ export const base44 = {
         me: async () => {
             // For layout compat
             const { data } = await authClient.getSession();
-            return data?.user || null;
+            if (data?.user) {
+                return {
+                    ...data.user,
+                    photo_url: data.user.image || data.user.photo_url
+                };
+            }
+            return null;
         },
         updateMe: async (data) => {
             // Map legacy form data to better-auth keys
@@ -170,7 +176,14 @@ export const base44 = {
         }
     },
     storage: {
-        upload: async () => "https://via.placeholder.com/150"
+        upload: async (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        }
     },
     functions: {
         invoke: async () => ({ success: true })
