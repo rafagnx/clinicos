@@ -93,6 +93,20 @@ BEGIN
         ALTER TABLE "organization" ADD COLUMN "metadata" TEXT;
     END IF;
     
+    -- Stripe Subscription Columns
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='subscription_status') THEN
+        ALTER TABLE "organization" ADD COLUMN "subscription_status" TEXT DEFAULT 'trialing';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='stripe_customer_id') THEN
+        ALTER TABLE "organization" ADD COLUMN "stripe_customer_id" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='stripe_subscription_id') THEN
+        ALTER TABLE "organization" ADD COLUMN "stripe_subscription_id" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='trial_ends_at') THEN
+        ALTER TABLE "organization" ADD COLUMN "trial_ends_at" TIMESTAMP;
+    END IF;
+    
     -- Fix Default Values for existing tables
     ALTER TABLE "organization" ALTER COLUMN "createdAt" SET DEFAULT NOW();
     ALTER TABLE "organization" ALTER COLUMN "updatedAt" SET DEFAULT NOW();
@@ -215,12 +229,25 @@ CREATE TABLE IF NOT EXISTS "notifications" (
   "user_id" TEXT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
   "title" TEXT,
   "message" TEXT,
+  "type" TEXT DEFAULT 'info',
   "read" BOOLEAN DEFAULT FALSE,
   "action_url" TEXT,
   "organization_id" TEXT,
+  "metadata" TEXT,
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='notifications' AND column_name='type') THEN
+        ALTER TABLE "notifications" ADD COLUMN "type" TEXT DEFAULT 'info';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='notifications' AND column_name='metadata') THEN
+        ALTER TABLE "notifications" ADD COLUMN "metadata" TEXT;
+    END IF;
+END
+$$;
 
 -- Clinic Settings
 CREATE TABLE IF NOT EXISTS "clinic_settings" (
