@@ -111,6 +111,24 @@ export default function Layout() {
     }
   });
 
+  const { data: organization } = useQuery({
+    queryKey: ["active-org", user?.active_organization_id],
+    queryFn: async () => {
+      if (!user?.active_organization_id) return null;
+      // Fetch organization details including subscription status
+      // Using direct fetch if entity not exposed, or create a simple getter
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/organization/${user.active_organization_id}`);
+        if (res.ok) return await res.json();
+
+        // Fallback: use generic filtering if specific endpoint doesn't exist
+        const list = await base44.entities.Organization.filter({ id: user.active_organization_id });
+        return list[0];
+      } catch (e) { return null; }
+    },
+    enabled: !!user?.active_organization_id
+  });
+
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: () => base44.entities.Notification.filter({ user_id: user.id }, "-created_date"),
@@ -226,6 +244,17 @@ export default function Layout() {
                   isDark ? "text-white" : "text-slate-900"
                 )}>
                   {clinicSettings?.clinic_name || "ClinicOS"}
+
+                  {/* Subscription Badge */}
+                  {organization?.subscription_status === 'active' ? (
+                    <span className="text-[10px] bg-gradient-to-r from-purple-500 to-pink-500 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-purple-500/30">
+                      PRO
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-md font-bold tracking-widest ml-2 uppercase">
+                      {organization?.subscription_status === 'trialing' ? 'FREE 7D' : 'FREE'}
+                    </span>
+                  )}
                 </span>
 
                 {/* Fallback Icon (Hidden by default) */}
