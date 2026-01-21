@@ -153,18 +153,19 @@ app.post("/api/debug/migrate", async (req, res) => {
 
             // 1. Create Notifications Table (missing in logs)
             await client.query(`
-                CREATE TABLE IF NOT EXISTS "notification" (
-                    "id" TEXT PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS "notifications" (
+                    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
                     "title" TEXT,
                     "message" TEXT,
                     "user_id" TEXT NOT NULL REFERENCES "user"("id"),
                     "read" BOOLEAN DEFAULT FALSE,
                     "action_url" TEXT,
-                    "created_date" TIMESTAMP DEFAULT NOW(),
-                    "updated_date" TIMESTAMP DEFAULT NOW()
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW(),
+                    "updated_at" TIMESTAMP DEFAULT NOW()
                 );
             `);
-            console.log("Checked/Created notification table");
+            console.log("Checked/Created notifications table");
 
             // 2. Add organization_id to key tables if missing
             const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
@@ -409,7 +410,7 @@ app.get('/api/diagnostics', async (req, res) => {
 });
 
 
-const userScopedEntities = ['NotificationPreference'];
+const userScopedEntities = ['NotificationPreference', 'Notification'];
 
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
