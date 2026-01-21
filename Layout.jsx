@@ -319,32 +319,63 @@ export default function Layout() {
           {/* Footer User Profile */}
           {user && (
             <div className={cn(
-              "p-4 border-t relative overflow-hidden",
-              isDark ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50"
+              "p-4 border-t relative overflow-hidden transition-colors duration-300",
+              isDark ? "border-slate-800/50 bg-[#0B0F17]" : "border-slate-200/50 bg-white"
             )}>
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5" />
+              {/* Neon Glow Background for Container */}
+              {user.email === 'rafamarketingdb@gmail.com' && (
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-purple-900/20 to-transparent pointer-events-none" />
+              )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start p-0 hover:bg-transparent relative z-10">
+                  <Button variant="ghost" className="w-full justify-start p-0 hover:bg-transparent relative z-10 h-auto">
                     <div className={cn("flex items-center gap-3 w-full", isCollapsed && "justify-center")}>
+
+                      {/* Avatar with Neon Glow */}
                       <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full blur-md opacity-50" />
-                        <Avatar className="w-10 h-10 border-2 border-indigo-500/30 relative">
-                          <AvatarImage src={user.photo_url} />
+                        {user.email === 'rafamarketingdb@gmail.com' && (
+                          <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full opacity-70 blur-sm animate-pulse-soft" />
+                        )}
+                        <Avatar className={cn(
+                          "w-10 h-10 relative shadow-xl",
+                          user.email === 'rafamarketingdb@gmail.com' ? "border-2 border-white/10" : "border-2 border-indigo-500/30"
+                        )}>
+                          <AvatarImage
+                            src={user.email === 'rafamarketingdb@gmail.com' ? '/rafa-avatar.png' : user.photo_url}
+                            className="object-cover"
+                          />
                           <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold">
                             {user.name?.substring(0, 2).toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
                       </div>
+
                       {!isCollapsed && (
-                        <div className="text-left overflow-hidden flex-1">
-                          <p className={cn("text-sm font-semibold truncate", isDark ? "text-slate-200" : "text-slate-900")}>
-                            {user.name || user.display_name || "Usuário"}
-                          </p>
-                          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                        <div className="text-left overflow-hidden flex-1 group">
+                          {user.email === 'rafamarketingdb@gmail.com' ? (
+                            <>
+                              <p className={cn(
+                                "text-base font-bold truncate leading-none mb-1",
+                                isDark ? "text-white" : "text-slate-900"
+                              )}>
+                                Rafa
+                              </p>
+                              <p className="text-[10px] font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 uppercase drop-shadow-sm">
+                                SUPER ADMIN
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className={cn("text-sm font-semibold truncate", isDark ? "text-slate-200" : "text-slate-900")}>
+                                {user.name || "Usuário"}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                            </>
+                          )}
                         </div>
                       )}
-                      {!isCollapsed && <ChevronDown className="w-4 h-4 text-slate-500 ml-auto" />}
+                      {!isCollapsed && <ChevronDown className={cn("w-4 h-4 ml-auto transition-colors", isDark ? "text-slate-600" : "text-slate-400")} />}
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
