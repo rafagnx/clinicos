@@ -104,15 +104,25 @@ export default function AdminOrganizations() {
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen bg-slate-50/50">
+        <div className="p-6 max-w-7xl mx-auto space-y-6 min-h-screen bg-slate-50/50">
+            <style>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
+            
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
                         <Globe className="w-8 h-8 text-blue-600" />
                         Painel Master
                     </h1>
-                    <p className="text-slate-500 mt-2 text-lg">Gerencie todas as clínicas e acessos do sistema.</p>
+                    <p className="text-slate-500 mt-1 text-lg">Gerencie todas as clínicas e acessos do sistema.</p>
                 </div>
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
@@ -187,7 +197,7 @@ export default function AdminOrganizations() {
                             {/* Decorative Top Border */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
 
-                            <CardHeader className="pb-4">
+                            <CardHeader className="pb-3 pt-5">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl border border-blue-100">
@@ -207,7 +217,7 @@ export default function AdminOrganizations() {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="py-4 bg-slate-50/50 space-y-4">
+                            <CardContent className="py-3 bg-slate-50/50 space-y-3">
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                         <p className="text-slate-500 mb-1">Criado em</p>
@@ -227,7 +237,7 @@ export default function AdminOrganizations() {
 
                             <div className="p-4 flex items-center gap-3 border-t border-slate-100 bg-white">
                                 <Button
-                                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
+                                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
                                     onClick={() => {
                                         localStorage.setItem("active-org-id", org.id);
                                         window.location.href = "/Dashboard";

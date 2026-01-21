@@ -83,9 +83,18 @@ export default function Layout({ children, currentPageName }) {
       <NotificationPermissionPrompt />
 
       {/* Sidebar Desktop */}
-      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-200 sticky top-0 h-screen">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-8">
+      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-hidden">
+        <style>{`
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        `}</style>
+        <div className="p-6 flex flex-col h-full">
+          <div className="flex items-center gap-3 mb-6 shrink-0">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 overflow-hidden">
               {clinicSettings?.logo_url ? (
                 <img src={clinicSettings.logo_url} alt="Logo" className="w-full h-full object-cover" />
@@ -103,7 +112,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1 flex-1 overflow-y-auto scrollbar-hide -mx-2 px-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname.includes(item.href);
@@ -111,7 +120,7 @@ export default function Layout({ children, currentPageName }) {
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/20"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                     }`}
@@ -124,7 +133,7 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </div>
 
-        <div className="mt-auto p-6 border-t border-slate-100">
+        <div className="p-6 border-t border-slate-100 shrink-0">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
             <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
               <AvatarImage src={user?.photo_url} />
