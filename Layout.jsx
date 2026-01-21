@@ -194,61 +194,69 @@ export default function Layout() {
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
-            "fixed top-0 bottom-0 left-0 z-50 h-[100dvh] flex flex-col",
+            "fixed top-0 bottom-0 left-0 z-50 h-[100dvh] flex flex-col transition-all duration-300",
             isDark
-              ? "glass-strong border-r border-slate-800/50 shadow-2xl shadow-black/20"
-              : "glass-strong border-r border-slate-200/50 shadow-2xl shadow-slate-300/20"
+              ? "bg-[#0B0F17] border-r border-[#1E293B] shadow-2xl shadow-black/40 text-slate-200"
+              : "bg-white/90 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl shadow-slate-200/50"
           )}
         >
           {/* Header with Logo */}
           <div className={cn(
-            "h-14 flex items-center px-4 border-b shrink-0",
-            isDark ? "border-slate-800/50" : "border-slate-200/50",
+            "h-14 flex items-center px-4 border-b shrink-0 transition-all duration-300",
+            isDark ? "border-[#1E293B]" : "border-slate-200/50",
             isCollapsed && "justify-center px-0"
           )}>
             {!isCollapsed ? (
-              <div className="flex items-center gap-3">
-                {clinicSettings?.logo_url ? (
-                  <img
-                    src={clinicSettings.logo_url}
-                    alt={clinicSettings.clinic_name || "ClinicOS"}
-                    className="h-8 w-auto object-contain"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <span className={cn(
-                      "text-lg font-display font-bold",
-                      isDark ? "text-white" : "text-slate-900"
-                    )}>
-                      {clinicSettings?.clinic_name || "ClinicOS"}
-                    </span>
+              <div className="flex items-center gap-3 animate-in fade-in duration-300 slide-in-from-left-2">
+                <img
+                  src={clinicSettings?.logo_url || "/logo-clinica.png"}
+                  alt={clinicSettings?.clinic_name || "ClinicOS"}
+                  className="h-9 w-auto object-contain max-w-[180px]"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                {/* Fallback if both image loads fail */}
+                <div className="hidden flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <Sparkles className="w-5 h-5 text-white" />
                   </div>
-                )}
+                  <span className={cn(
+                    "text-xl font-display font-bold tracking-tight",
+                    isDark ? "text-white" : "text-slate-900"
+                  )}>
+                    ClinicOS
+                  </span>
+                </div>
               </div>
             ) : (
-              clinicSettings?.logo_url ? (
+              <div className="flex items-center justify-center w-full">
                 <img
-                  src={clinicSettings.logo_url}
+                  src={clinicSettings?.logo_url || "/logo-clinica.png"}
                   alt="Logo"
                   className="h-8 w-8 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="hidden w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
-              )
+              </div>
             )}
 
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="md:hidden absolute right-2">
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="md:hidden absolute right-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
               <X className="w-5 h-5" />
             </Button>
           </div>
 
+          {/* Neon Separator for Premium Feel */}
+          <div className={cn("h-[1px] w-full", isDark ? "bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" : "bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent")} />
+
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-2 space-y-1 scrollbar-thin px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <nav className="flex-1 overflow-y-auto py-2 space-y-0.5 scrollbar-thin px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <style>{`
               .scrollbar-hide::-webkit-scrollbar {
                   display: none;
