@@ -92,15 +92,19 @@ export default function AdminLayout() {
                                             : (isDark ? "text-slate-400 hover:text-slate-200 hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")
                                     )}
                                 >
-                                    <item.icon className={cn("w-5 h-5 flex-shrink-0", sidebarOpen ? "" : "mx-auto")} />
-                                    {sidebarOpen && <span>{item.name}</span>}
-                                    {!sidebarOpen && (
-                                        <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 z-50 whitespace-nowrap pointer-events-none">
-                                            {item.name}
-                                        </div>
-                                    )}
-                                    {isActive && sidebarOpen && (
-                                        <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                    {({ isActive }) => (
+                                        <>
+                                            <item.icon className={cn("w-5 h-5 flex-shrink-0", sidebarOpen ? "" : "mx-auto")} />
+                                            {sidebarOpen && <span>{item.name}</span>}
+                                            {!sidebarOpen && (
+                                                <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 z-50 whitespace-nowrap pointer-events-none">
+                                                    {item.name}
+                                                </div>
+                                            )}
+                                            {isActive && sidebarOpen && (
+                                                <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                            )}
+                                        </>
                                     )}
                                 </NavLink>
                             ))}
