@@ -12,6 +12,7 @@ import Auth from './pages/Auth' // Keep for register if needed
 import AcceptInvitation from './pages/AcceptInvitation'
 import Organization from './pages/Organization' // New Org Page
 import Financial from './pages/Financial' // New Financial Page
+import PlanilhaLP from './pages/PlanilhaLP'
 
 import Dashboard from './pages/Dashboard'
 import Agenda from './pages/Agenda'
@@ -50,6 +51,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Auth />} />
                 <Route path="/accept-invitation" element={<AcceptInvitation />} />
+                <Route path="/planilha" element={<PlanilhaLP />} />
 
                 {/* Organization Setup */}
                 <Route path="/organization/new" element={<Organization />} />
