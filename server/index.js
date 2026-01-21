@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { betterAuth } from "better-auth";
 import { organization } from "better-auth/plugins";
 import { toNodeHandler } from "better-auth/node";
+import { stripeService } from './stripe-service.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -125,6 +126,20 @@ app.use(cors({
     },
     credentials: true // Required for auth cookies
 }));
+
+// STRIPE WEBHOOK (Must be before bodyParser to access raw body)
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const signature = req.headers['stripe-signature'];
+    try {
+        // Pass the raw body directly
+        const result = await stripeService.handleWebhook(signature, req.body, pool);
+        res.json(result);
+    } catch (err) {
+        console.error("Webhook Error:", err);
+        res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+});
+
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
@@ -169,36 +184,61 @@ app.post("/api/debug/migrate", async (req, res) => {
             `);
             console.log("Checked/Created notifications table");
 
+            // STRIPE MIGRATION
+            // Add Stripe Columns to organization table
+            console.log("Checking Stripe columns in organization table...");
+            const orgTableExists = await client.query(`SELECT to_regclass('public.organization'); `);
+            if (orgTableExists.rows[0].to_regclass) {
+                const stripeCols = [
+                    { name: 'stripe_customer_id', type: 'TEXT' },
+                    { name: 'stripe_subscription_id', type: 'TEXT' },
+                    { name: 'subscription_status', type: 'TEXT' },
+                    { name: 'trial_ends_at', type: 'TIMESTAMP' }
+                ];
+
+                for (const col of stripeCols) {
+                    const colCheck = await client.query(`
+                       SELECT column_name FROM information_schema.columns 
+                       WHERE table_name = 'organization' AND column_name = $1;
+`, [col.name]);
+
+                    if (colCheck.rows.length === 0) {
+                        console.log(`Adding ${col.name} to organization table`);
+                        await client.query(`ALTER TABLE "organization" ADD COLUMN "${col.name}" ${col.type}; `);
+                    }
+                }
+            }
+
             // 2. Add organization_id to key tables if missing
             const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
 
             for (const table of tablesToCheck) {
                 // Check if table exists first
                 const tableExists = await client.query(`
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.tables 
+                    SELECT EXISTS(
+    SELECT FROM information_schema.tables 
                         WHERE table_schema = 'public' 
                         AND table_name = $1
-                    );
-                `, [table]);
+);
+`, [table]);
 
                 if (tableExists.rows[0].exists) {
                     // Check if column exists
                     const colExists = await client.query(`
                         SELECT column_name 
                         FROM information_schema.columns 
-                        WHERE table_name=$1 AND column_name='organization_id';
-                    `, [table]);
+                        WHERE table_name = $1 AND column_name = 'organization_id';
+`, [table]);
 
                     if (colExists.rows.length === 0) {
-                        console.log(`Adding organization_id to ${table}`);
+                        console.log(`Adding organization_id to ${table} `);
                         // Determine type. Usually TEXT for our new schema, might be INT for legacy.
                         // Let's use TEXT to be compatible with Better Auth organization IDs.
                         // We set it nullable first to avoid errors on existing data, then you can backfill.
-                        await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT;`);
-                        await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}" ("organization_id");`);
+                        await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT; `);
+                        await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}"("organization_id"); `);
                     } else {
-                        console.log(`organization_id already exists in ${table}`);
+                        console.log(`organization_id already exists in ${table} `);
                     }
                 } else {
                     console.log(`Table ${table} does not exist yet.`);
@@ -209,23 +249,23 @@ app.post("/api/debug/migrate", async (req, res) => {
             const profStatusExists = await client.query(`
                 SELECT column_name 
                 FROM information_schema.columns 
-                WHERE table_name='professionals' AND column_name='status';
-            `);
+                WHERE table_name = 'professionals' AND column_name = 'status';
+`);
 
             if (profStatusExists.rows.length === 0) {
                 console.log("Adding status column to professionals table");
-                await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo';`);
+                await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo'; `);
             }
 
             // 3. Ensure 'organization' table has correct columns (Better Auth)
             const orgColExists = await client.query(`
                 SELECT column_name 
                 FROM information_schema.columns 
-                WHERE table_name='organization' AND column_name='createdAt';
-            `);
+                WHERE table_name = 'organization' AND column_name = 'createdAt';
+`);
             if (orgColExists.rows.length === 0) {
-                await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW();`);
-                await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW();`);
+                await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW(); `);
+                await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW(); `);
             }
 
             await client.query('COMMIT');
@@ -271,12 +311,12 @@ const initSchema = async () => {
                 const profStatusExists = await client.query(`
                     SELECT column_name 
                     FROM information_schema.columns 
-                    WHERE table_name='professionals' AND column_name='status';
-                `);
+                    WHERE table_name = 'professionals' AND column_name = 'status';
+`);
 
                 if (profStatusExists.rows.length === 0) {
                     console.log("Auto-Migration: Adding status column to professionals table");
-                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo';`);
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo'; `);
                 }
             }
 
@@ -286,12 +326,12 @@ const initSchema = async () => {
                 const orgColExists = await client.query(`
                     SELECT column_name 
                     FROM information_schema.columns 
-                    WHERE table_name='organization' AND column_name='createdAt';
-                `);
+                    WHERE table_name = 'organization' AND column_name = 'createdAt';
+`);
                 if (orgColExists.rows.length === 0) {
                     console.log("Auto-Migration: Adding timestamps to organization table");
-                    await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW();`);
-                    await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW();`);
+                    await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW(); `);
+                    await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW(); `);
                 }
             }
 
@@ -398,16 +438,16 @@ app.post('/api/admin/organization/create', requireAuth, async (req, res) => {
         const orgId = uuidv4();
         const now = new Date();
         const newOrg = await pool.query(
-            `INSERT INTO "organization" (id, name, slug, "createdAt", "updatedAt") 
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            `INSERT INTO "organization"(id, name, slug, "createdAt", "updatedAt")
+VALUES($1, $2, $3, $4, $5) RETURNING * `,
             [orgId, name, slug, now, now]
         );
 
         // 3. Add User as Owner/Admin Member
         const memberId = uuidv4();
         await pool.query(
-            `INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
-             VALUES ($1, $2, $3, $4, $5, $6)`,
+            `INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
+VALUES($1, $2, $3, $4, $5, $6)`,
             [memberId, orgId, user.id, "owner", now, now]
         );
 
@@ -498,21 +538,21 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
     }
 
     try {
-        let query = `SELECT * FROM ${tableName}`;
+        let query = `SELECT * FROM ${tableName} `;
         let params = [];
         let whereClauses = [];
         let paramIndex = 1;
 
         if (isUserScoped) {
-            whereClauses.push(`user_id = $${paramIndex++}`);
+            whereClauses.push(`user_id = $${paramIndex++} `);
             params.push(user.id);
         } else {
-            whereClauses.push(`organization_id = $${paramIndex++}`);
+            whereClauses.push(`organization_id = $${paramIndex++} `);
             params.push(organizationId);
         }
 
         if (req.query.id) {
-            whereClauses.push(`id = $${paramIndex++}`);
+            whereClauses.push(`id = $${paramIndex++} `);
             params.push(req.query.id);
         }
 
@@ -528,24 +568,24 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             if (typeof value === 'object' && value !== null) {
                 // Handle Operators
                 if (value._gte) {
-                    whereClauses.push(`"${key}" >= $${paramIndex++}`);
+                    whereClauses.push(`"${key}" >= $${paramIndex++} `);
                     params.push(value._gte);
                 }
                 if (value._gt) {
-                    whereClauses.push(`"${key}" > $${paramIndex++}`);
+                    whereClauses.push(`"${key}" > $${paramIndex++} `);
                     params.push(value._gt);
                 }
                 if (value._lt) {
-                    whereClauses.push(`"${key}" < $${paramIndex++}`);
+                    whereClauses.push(`"${key}" < $${paramIndex++} `);
                     params.push(value._lt);
                 }
                 if (value._lte) {
-                    whereClauses.push(`"${key}" <= $${paramIndex++}`);
+                    whereClauses.push(`"${key}" <= $${paramIndex++} `);
                     params.push(value._lte);
                 }
             } else {
                 // Exact Match
-                whereClauses.push(`"${key}" = $${paramIndex++}`);
+                whereClauses.push(`"${key}" = $${paramIndex++} `);
                 params.push(value);
             }
         });
@@ -561,14 +601,14 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         if (req.query.limit) {
-            query += ` LIMIT $${paramIndex++}`;
+            query += ` LIMIT $${paramIndex++} `;
             params.push(parseInt(req.query.limit));
         }
 
         const { rows } = await pool.query(query, params);
         res.json(rows);
     } catch (error) {
-        console.error(`Error fetching ${entity}:`, error);
+        console.error(`Error fetching ${entity}: `, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -613,15 +653,15 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     try {
         const keys = Object.keys(data);
         const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
-        const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
+        const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
-        const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`;
+        const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
 
         const { rows } = await pool.query(query, values);
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error creating ${entity}:`, error);
+        console.error(`Error creating ${entity}: `, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -659,20 +699,20 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         const keys = Object.keys(data);
         const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
 
-        const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+        const setClause = keys.map((k, i) => `${k} = $${i + 1} `).join(', ');
 
-        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1}`;
+        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} `;
         const queryParams = [...values, id];
 
         if (isUserScoped) {
-            query += ` AND user_id = $${keys.length + 2}`;
+            query += ` AND user_id = $${keys.length + 2} `;
             queryParams.push(user.id);
         } else {
-            query += ` AND organization_id = $${keys.length + 2}`;
+            query += ` AND organization_id = $${keys.length + 2} `;
             queryParams.push(organizationId);
         }
 
-        query += ` RETURNING *`;
+        query += ` RETURNING * `;
 
         const { rows } = await pool.query(query, queryParams);
 
@@ -682,7 +722,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error updating ${entity}:`, error);
+        console.error(`Error updating ${entity}: `, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -733,7 +773,7 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         }
         res.json({ success: true });
     } catch (error) {
-        console.error(`Error deleting ${entity}:`, error);
+        console.error(`Error deleting ${entity}: `, error);
         res.status(500).json({ error: error.message });
     }
 });

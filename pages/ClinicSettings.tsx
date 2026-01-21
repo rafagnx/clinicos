@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin } from "lucide-react";
+import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ClinicSettings() {
@@ -103,6 +103,38 @@ export default function ClinicSettings() {
     }
   };
 
+  const handleSubscribe = async () => {
+    if (!user?.email) return toast.error("Email não encontrado");
+
+    const loadingToast = toast.loading("Iniciando checkout...");
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId: user?.active_organization_id || user?.id, // Fallback to user ID if no org
+          email: user?.email
+        })
+      });
+      const data = await res.json();
+      toast.dismiss(loadingToast);
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error("Erro ao iniciar checkout: " + (data.error || "Desconhecido"));
+      }
+    } catch (e) {
+      toast.dismiss(loadingToast);
+      toast.error("Erro de conexão");
+    }
+  };
+
+  const handlePortal = () => {
+    // TODO: Implement portal session fetch
+    toast.info("Gerenciamento de assinatura em breve.");
+  };
+
   if (isUnauthorized) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -137,6 +169,7 @@ export default function ClinicSettings() {
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="contact">Contato & Social</TabsTrigger>
           <TabsTrigger value="whatsapp">WhatsApp (Meta)</TabsTrigger>
+          <TabsTrigger value="billing">Assinatura</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -287,7 +320,44 @@ export default function ClinicSettings() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+
+        <TabsContent value="billing" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Plano e Assinatura</CardTitle>
+              <CardDescription>Gerencie seu plano de acesso ao ClinicOS</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className={cn("p-6 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-6", isDark ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-200")}>
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <CreditCard className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg">ClinicOS PRO</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Acesso completo + 7 Dias Grátis</p>
+                    <div className="mt-2 text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded inline-block">
+                      Status: Aguardando Assinatura
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 w-full md:w-auto">
+                  <Button
+                    onClick={handleSubscribe}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/20"
+                  >
+                    Assinar Agora (Teste Grátis)
+                  </Button>
+                  <Button variant="outline" onClick={handlePortal}>
+                    Gerenciar Faturas
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs >
 
       <div className="flex items-center justify-end gap-4 pt-4 border-t">
         <Button
@@ -299,6 +369,6 @@ export default function ClinicSettings() {
           Salvar Alterações
         </Button>
       </div>
-    </div>
+    </div >
   );
 }
