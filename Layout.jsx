@@ -121,7 +121,7 @@ export default function Layout() {
     <Link
       to={createPageUrl(item.href)}
       className={cn(
-        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 group relative",
         isCollapsed ? "justify-center px-0" : "mx-2",
         isActive
           ? (isDark ? "bg-indigo-600/10 text-indigo-400" : "bg-indigo-50 text-indigo-600")
@@ -171,10 +171,7 @@ export default function Layout() {
             {!isCollapsed ? (
               <div className="flex items-center">
                 <img src="/clinicos-logo.png" alt="ClinicOS" className="w-8 h-8 object-contain mr-3" />
-                <div className="flex flex-col">
-                  <span className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>ClinicOS</span>
-                  <span className="text-[10px] uppercase tracking-wider opacity-50">SaaS</span>
-                </div>
+                <span className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>ClinicOS</span>
               </div>
             ) : (
               <img src="/clinicos-logo.png" alt="ClinicOS" className="w-8 h-8 object-contain" />
@@ -186,16 +183,21 @@ export default function Layout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-6 space-y-6 scrollbar-hide px-2">
+          <nav className="flex-1 overflow-y-auto py-4 space-y-2 scrollbar-hide px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <style>{`
+              .scrollbar-hide::-webkit-scrollbar {
+                  display: none;
+              }
+            `}</style>
             <TooltipProvider delayDuration={0}>
               {navigation.map((group, idx) => (
                 <div key={idx}>
                   {!isCollapsed && group.group && (
-                    <h3 className="px-4 mb-2 text-[10px] font-bold uppercase tracking-wider opacity-50">
+                    <h3 className="px-4 mb-1 text-[10px] font-bold uppercase tracking-wider opacity-50">
                       {group.group}
                     </h3>
                   )}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const isActive = location.pathname.includes(item.href);
                       if (isCollapsed) {
