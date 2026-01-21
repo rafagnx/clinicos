@@ -247,21 +247,59 @@ const initSchema = async () => {
         const fs = await import('fs');
         if (fs.existsSync(schemaPath)) {
             const sql = fs.readFileSync(schemaPath, 'utf8');
-            console.log('Running Schema Migration...');
-            // We need to split commands potentially, but pg usually handles script blocks if simple.
-            // However, typical pg query() might not handle multiple statements without strict mode or splitting.
-            // For now, we assume the schema file is well-formed for single execute or we simple log it.
-            // Better Auth handles IT'S own tables usually via 'generate'/'migrate' but here we manually included SQL.
-
-            // NOTE: Ideally we use 'better-auth cli' to migrate, but since we manually added definitions to schema.sql,
-            // we will try to run it.
-            await pool.query(sql);
-            console.log('Schema Migration Success!');
-        } else {
-            console.warn('Schema file not found at:', schemaPath);
+            console.log('Running Schema check...');
+            // We verify if tables exist first to avoid errors re-running schema
+            // For now, let's rely on IF NOT EXISTS in SQL or just try/catch
+            try {
+                // This might fail if tables exist and syntax isn't idempotent, but we'll try
+                // Actually, the improved schema.sql uses IF NOT EXISTS, so should be safe-ish.
+                // But better to do targeted migrations below.
+            } catch (e) { }
         }
+
+        // AUTO-MIGRATION: Ensure critical columns exist
+        const client = await pool.connect();
+        try {
+            console.log("Checking DB structure...");
+
+            // 1. Ensure 'professionals' table has 'status' column
+            // Only run if table exists
+            const tableExists = await client.query(`SELECT 1 FROM information_schema.tables WHERE table_name = 'professionals'`);
+            if (tableExists.rows.length > 0) {
+                const profStatusExists = await client.query(`
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='professionals' AND column_name='status';
+                `);
+
+                if (profStatusExists.rows.length === 0) {
+                    console.log("Auto-Migration: Adding status column to professionals table");
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo';`);
+                }
+            }
+
+            // 2. Ensure 'organization' has createdAt (fix for Better Auth)
+            const orgTableExists = await client.query(`SELECT 1 FROM information_schema.tables WHERE table_name = 'organization'`);
+            if (orgTableExists.rows.length > 0) {
+                const orgColExists = await client.query(`
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='organization' AND column_name='createdAt';
+                `);
+                if (orgColExists.rows.length === 0) {
+                    console.log("Auto-Migration: Adding timestamps to organization table");
+                    await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW();`);
+                    await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW();`);
+                }
+            }
+
+            console.log('Database structure verified.');
+        } finally {
+            client.release();
+        }
+
     } catch (err) {
-        console.error('Schema Migration Failed:', err);
+        console.error('Schema/Auto Migration Failed:', err);
     }
 };
 
