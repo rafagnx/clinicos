@@ -33,22 +33,45 @@ import RescheduleDialog from "@/components/agenda/RescheduleDialog";
 import AdvancedFilters from "@/components/agenda/AdvancedFilters";
 
 const statusConfig = {
-  agendado: { label: "Agendado", class: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700" },
-  confirmado: { label: "Confirmado", class: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" },
-  aguardando: { label: "Aguardando", class: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800" },
-  em_atendimento: { label: "Em atendimento", class: "bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800" },
-  finalizado: { label: "Finalizado", class: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800" },
-  faltou: { label: "Faltou", class: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800" },
-  cancelado: { label: "Cancelado", class: "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700" },
+  agendado: {
+    label: "Agendado",
+    class: "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 border border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:text-slate-300 dark:border-slate-700 shadow-sm"
+  },
+  confirmado: {
+    label: "Confirmado",
+    class: "bg-gradient-to-r from-blue-100 to-cyan-50 text-blue-700 border border-blue-200 dark:from-blue-900/30 dark:to-cyan-900/20 dark:text-blue-400 dark:border-blue-800 shadow-sm"
+  },
+  aguardando: {
+    label: "Aguardando",
+    class: "bg-gradient-to-r from-amber-100 to-orange-50 text-amber-700 border border-amber-200 dark:from-amber-900/30 dark:to-orange-900/20 dark:text-amber-400 dark:border-amber-800 shadow-sm"
+  },
+  em_atendimento: {
+    label: "Em atendimento",
+    class: "bg-gradient-to-r from-violet-100 to-purple-50 text-violet-700 border border-violet-200 dark:from-violet-900/30 dark:to-purple-900/20 dark:text-violet-400 dark:border-violet-800 shadow-sm"
+  },
+  finalizado: {
+    label: "Finalizado",
+    class: "bg-gradient-to-r from-emerald-100 to-teal-50 text-emerald-700 border border-emerald-200 dark:from-emerald-900/30 dark:to-teal-900/20 dark:text-emerald-400 dark:border-emerald-800 shadow-sm"
+  },
+  faltou: {
+    label: "Faltou",
+    class: "bg-gradient-to-r from-rose-100 to-pink-50 text-rose-700 border border-rose-200 dark:from-rose-900/30 dark:to-pink-900/20 dark:text-rose-400 dark:border-rose-800 shadow-sm"
+  },
+  cancelado: {
+    label: "Cancelado",
+    class: "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-400 border border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:text-slate-500 dark:border-slate-700 shadow-sm"
+  },
 };
 
 // Função para determinar a cor do card baseado no profissional e tipo
 const getAppointmentCardColor = (apt, isDark) => {
   // Compromisso = Cinza
   if (apt.type === "compromisso") {
-    return isDark ? "border-l-slate-600 bg-slate-800/50" : "border-l-slate-400 bg-slate-50/50";
+    return isDark ? "border-l-slate-600 bg-gradient-to-r from-slate-800/80 to-slate-900/80" : "border-l-slate-400 bg-gradient-to-r from-slate-50 to-white";
   }
-  return isDark ? "border-l-indigo-500 bg-[#1C2333]" : "border-l-indigo-500 bg-white";
+  return isDark
+    ? "border-l-indigo-500 bg-gradient-to-r from-[#1C2333] to-[#232936] hover:from-[#232936] hover:to-[#2A303F]"
+    : "border-l-indigo-500 bg-gradient-to-r from-white to-slate-50/50 hover:to-indigo-50/30";
 };
 
 // Helper to deduplicate professionals
@@ -127,7 +150,7 @@ export default function Agenda() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.delete("Appointment", id),
+    mutationFn: (id: string | number) => base44.delete("Appointment", id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Agendamento removido");
@@ -434,10 +457,12 @@ export default function Agenda() {
                   <div className="relative w-full h-full pointer-events-none">
                     <Card
                       className={cn(
-                        "absolute shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col pointer-events-auto",
-                        "border-l-4 rounded-r-md rounded-l-sm border-y border-r",
+                        "absolute shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden flex flex-col pointer-events-auto",
+                        "border-l-[3px] rounded-r-xl rounded-l-sm border-y border-r backdrop-blur-sm",
                         getAppointmentCardColor(apt, isDark),
-                        isDark ? "border-slate-700" : "border-slate-200"
+                        isDark
+                          ? "border-slate-700/50 shadow-black/20"
+                          : "border-slate-200/60 shadow-indigo-100/50"
                       )}
                       style={style}
                       onClick={(e) => {
@@ -446,48 +471,54 @@ export default function Agenda() {
                         setIsFormOpen(true);
                       }}
                     >
-                      <div className="p-2 flex flex-col h-full gap-0.5">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className={cn("text-[10px] font-bold", isDark ? "text-slate-300" : "text-slate-700")}>
+                      <div className="p-2 flex flex-col h-full gap-0.5 relative z-10">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={cn(
+                            "text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-tight",
+                            isDark ? "bg-black/20 text-white/90" : "bg-white/60 text-indigo-900/80"
+                          )}>
                             {apt.start_time}
                           </span>
-                          <span className={cn("text-xs font-semibold truncate", isDark ? "text-white" : "text-slate-900")}>
+                          <span className={cn(
+                            "text-xs font-semibold truncate tracking-tight",
+                            isDark ? "text-slate-100" : "text-slate-900"
+                          )}>
                             {apt.patient?.full_name?.split(" ")[0] || "Paciente"}
                           </span>
                         </div>
 
                         {height > 40 && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Badge variant="outline" className={cn("text-[9px] px-1 py-0 h-4 border-0 font-medium rounded-sm", status.class)}>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border-0 shadow-none font-medium rounded-md bg-opacity-70 backdrop-blur-md", status.class)}>
                               {status.label}
                             </Badge>
-                            {view !== "week" && <span className={cn("text-[9px]", isDark ? "text-slate-500" : "text-slate-400")}>•</span>}
+                            {/* ... */}
+                            {view !== "week" && <span className={cn("text-[9px] opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>•</span>}
                             {apt.procedure_name && (
-                              <span className={cn("text-[9px] uppercase tracking-tighter truncate opacity-80", isDark ? "text-slate-400" : "text-slate-600")}>
+                              <span className={cn("text-[9px] font-medium uppercase tracking-wide truncate opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
                                 {apt.procedure_name}
                               </span>
                             )}
                           </div>
                         )}
 
-                        {/* Hover Actions (Only show on tall enough cards or hover) */}
-                        <div className="mt-auto hidden group-hover:flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {/* Actions would go here but might be too cluttered, sticking to click to open details */}
-                        </div>
-
-                        <div className="absolute top-1 right-1 opacity-0 hover:opacity-100 group-hover:opacity-100 transition-opacity">
+                        {/* Hover Actions */}
+                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className={cn("h-5 w-5", isDark ? "text-slate-400 hover:text-white" : "text-slate-400 hover:text-slate-900")}
+                                className={cn(
+                                  "h-6 w-6 rounded-lg transition-colors",
+                                  isDark ? "hover:bg-black/20 text-slate-300 hover:text-white" : "hover:bg-white/50 text-slate-500 hover:text-indigo-700"
+                                )}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <MoreVertical className="w-3 h-3" />
+                                <MoreVertical className="w-3.5 h-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className={isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : ""}>
+                            <DropdownMenuContent align="end" className={cn("min-w-[140px]", isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : "")}>
                               <DropdownMenuItem onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedAppointment(apt);
