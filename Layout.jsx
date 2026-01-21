@@ -202,37 +202,44 @@ export default function Layout() {
         >
           {/* Header with Logo */}
           <div className={cn(
-            "h-16 flex items-center px-6 border-b shrink-0 relative overflow-hidden",
+            "h-14 flex items-center px-4 border-b shrink-0",
             isDark ? "border-slate-800/50" : "border-slate-200/50",
             isCollapsed && "justify-center px-0"
           )}>
-            {/* Animated gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 animate-shimmer" />
-
             {!isCollapsed ? (
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-50" />
-                  <div className="relative w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-3">
+                {clinicSettings?.logo_url ? (
+                  <img
+                    src={clinicSettings.logo_url}
+                    alt={clinicSettings.clinic_name || "ClinicOS"}
+                    className="h-8 w-auto object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <span className={cn(
+                      "text-lg font-display font-bold",
+                      isDark ? "text-white" : "text-slate-900"
+                    )}>
+                      {clinicSettings?.clinic_name || "ClinicOS"}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <span className={cn(
-                    "text-xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
-                  )}>
-                    ClinicOS
-                  </span>
-                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 tracking-wide">PREMIUM EDITION</p>
-                </div>
+                )}
               </div>
             ) : (
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-50" />
-                <div className="relative w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
+              clinicSettings?.logo_url ? (
+                <img
+                  src={clinicSettings.logo_url}
+                  alt="Logo"
+                  className="h-8 w-8 object-contain"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
-              </div>
+              )
             )}
 
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="md:hidden absolute right-2">
@@ -241,7 +248,7 @@ export default function Layout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 space-y-1 scrollbar-thin px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <nav className="flex-1 overflow-y-auto py-2 space-y-1 scrollbar-thin px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <style>{`
               .scrollbar-hide::-webkit-scrollbar {
                   display: none;
@@ -249,13 +256,13 @@ export default function Layout() {
             `}</style>
             <TooltipProvider delayDuration={0}>
               {navigation.map((group, idx) => (
-                <div key={idx} className="mb-6">
+                <div key={idx} className="mb-3">
                   {!isCollapsed && group.group && (
-                    <h3 className="px-4 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
+                    <h3 className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
                       {group.group}
                     </h3>
                   )}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const isActive = location.pathname.includes(item.href);
                       if (isCollapsed) {
