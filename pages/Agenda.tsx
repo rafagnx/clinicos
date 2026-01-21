@@ -145,9 +145,9 @@ export default function Agenda() {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
-      apt.patient?.full_name?.toLowerCase().includes(search) ||
-      apt.procedure_name?.toLowerCase().includes(search) ||
-      apt.professional?.full_name?.toLowerCase().includes(search)
+      (apt.patient?.full_name || "").toLowerCase().includes(search) ||
+      (apt.procedure_name || "").toLowerCase().includes(search) ||
+      (apt.professional?.full_name || "").toLowerCase().includes(search)
     );
   });
 
@@ -402,7 +402,7 @@ export default function Agenda() {
               let left = "0";
               let width = "100%";
 
-              if (view === "week") {
+              if (view === "week" && apt.date) {
                 const [y, mm, d] = apt.date.split("-").map(Number); // parse date string parts
                 const localDate = new Date(y, mm - 1, d); // Construct date
                 const dayIndex = localDate.getDay(); // 0 (Sun) - 6 (Sat). Our week starts on Sun (0) per startOfWeek logic above.
@@ -461,7 +461,7 @@ export default function Agenda() {
                             <Badge variant="outline" className={cn("text-[9px] px-1 py-0 h-4 border-0 font-medium rounded-sm", status.class)}>
                               {status.label}
                             </Badge>
-                            {!view === "week" && <span className={cn("text-[9px]", isDark ? "text-slate-500" : "text-slate-400")}>•</span>}
+                            {view !== "week" && <span className={cn("text-[9px]", isDark ? "text-slate-500" : "text-slate-400")}>•</span>}
                             {apt.procedure_name && (
                               <span className={cn("text-[9px] uppercase tracking-tighter truncate opacity-80", isDark ? "text-slate-400" : "text-slate-600")}>
                                 {apt.procedure_name}
