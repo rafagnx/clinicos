@@ -417,10 +417,10 @@ export default function Layout() {
         )}>
           {/* Top Header */}
           <header className={cn(
-            "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 relative overflow-hidden",
+            "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 relative overflow-hidden transition-colors duration-300",
             isDark
-              ? "glass-strong border-slate-800/50 shadow-lg shadow-black/5"
-              : "glass-strong border-slate-200/50 shadow-lg shadow-slate-200/20"
+              ? "bg-slate-950/80 backdrop-blur-xl border-slate-800 shadow-lg shadow-black/20"
+              : "bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-lg shadow-slate-200/20"
           )}>
             {/* Subtle gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />

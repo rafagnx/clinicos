@@ -137,7 +137,7 @@ export default function Leads() {
             <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie e converta seus leads em pacientes</p>
           </div>
           <Link to={createPageUrl("ClinicSettings")}>
-            <Button variant="outline" className={cn(isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white" : "")}>
+            <Button variant="outline" className={cn(isDark ? "bg-white/5 border-slate-700 text-slate-200 hover:bg-white/10 hover:text-white hover:border-slate-600 shadow-sm backdrop-blur-sm" : "bg-white hover:bg-slate-50")}>
               Configurar Integrações
             </Button>
           </Link>
