@@ -33,6 +33,21 @@ const ThemeContext = React.createContext({
 
 export const useAppTheme = () => React.useContext(ThemeContext);
 
+const SubscriptionBadge = ({ org, user }) => {
+  if (user?.email === 'rafamarketingdb@gmail.com') {
+    return <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-600 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-amber-500/30">MASTER</span>;
+  }
+  // Check for 'active' or our manual override status
+  if (org?.subscription_status === 'active' || org?.subscription_status === 'manual_override') {
+    return <span className="text-[10px] bg-gradient-to-r from-purple-500 to-pink-500 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-purple-500/30">PRO</span>;
+  }
+  return (
+    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-md font-bold tracking-widest ml-2 uppercase">
+      {org?.subscription_status === 'trialing' ? 'FREE 7D' : 'FREE'}
+    </span>
+  );
+};
+
 const navigation = [
   {
     group: "Principal",
@@ -246,15 +261,7 @@ export default function Layout() {
                   {clinicSettings?.clinic_name || "ClinicOS"}
 
                   {/* Subscription Badge */}
-                  {organization?.subscription_status === 'active' ? (
-                    <span className="text-[10px] bg-gradient-to-r from-purple-500 to-pink-500 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-purple-500/30">
-                      PRO
-                    </span>
-                  ) : (
-                    <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-md font-bold tracking-widest ml-2 uppercase">
-                      {organization?.subscription_status === 'trialing' ? 'FREE 7D' : 'FREE'}
-                    </span>
-                  )}
+                  <SubscriptionBadge org={organization} user={user} />
                 </span>
 
                 {/* Fallback Icon (Hidden by default) */}

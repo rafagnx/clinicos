@@ -504,6 +504,34 @@ app.get('/api/diagnostics', async (req, res) => {
 
 const userScopedEntities = ['NotificationPreference', 'Notification'];
 
+// Admin Bypass Subscription (Super Admin Only)
+app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { active } = req.body;
+    const { user } = req.auth;
+
+    if (user.email !== 'rafamarketingdb@gmail.com') {
+        return res.status(403).json({ error: "Access Denied. Super Admin only." });
+    }
+
+    try {
+        const status = active ? 'manual_override' : 'canceled';
+
+        const result = await pool.query(`
+            UPDATE organization 
+            SET subscription_status = $1, 
+                updated_at = NOW()
+            WHERE id = $2
+            RETURNING *
+        `, [status, id]);
+
+        res.json({ success: true, organization: result.rows[0] });
+    } catch (error) {
+        console.error('Bypass error', error);
+        res.status(500).json({ error: 'Failed to bypass subscription' });
+    }
+});
+
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
