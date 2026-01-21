@@ -502,24 +502,21 @@ export default function Layout() {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-indigo-500/10 transition-colors">
-                    <Bell className="w-5 h-5" />
+                    <Bell className={cn("w-5 h-5", unreadCount > 0 && "animate-wiggle")} />
                     {unreadCount > 0 && (
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full border-2 border-background animate-pulse-soft"></span>
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full border-2 border-background animate-pulse-soft shadow-lg">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className={cn("w-80 p-0", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
-                  <div className={cn("p-4 border-b", isDark ? "border-slate-800" : "border-slate-100")}>
-                    <h4 className="font-semibold">Notificações</h4>
-                  </div>
-                  <div className="max-h-[60vh] overflow-y-auto">
-                    <NotificationList
-                      notifications={notifications}
-                      onMarkAsRead={async (id) => await base44.entities.Notification.update(id, { read: true })}
-                      onDelete={async (id) => await base44.entities.Notification.delete(id)}
-                      user={user}
-                    />
-                  </div>
+                <PopoverContent align="end" className={cn("w-80 p-4", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
+                  <NotificationList
+                    notifications={notifications}
+                    onMarkAsRead={async (id) => await base44.entities.Notification.update(id, { read: true })}
+                    onDelete={async (id) => await base44.entities.Notification.delete(id)}
+                    user={user}
+                  />
                 </PopoverContent>
               </Popover>
             </div>
