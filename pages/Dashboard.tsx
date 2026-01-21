@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar, Users, Clock, CheckCircle2, UserPlus, Settings, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { createPageUrl, cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import UrgentRemindersWidget from "@/components/dashboard/UrgentRemindersWidget"
 import WidgetSelector from "@/components/dashboard/WidgetSelector";
 
 export default function Dashboard() {
+  const { isDark } = useOutletContext<{ isDark: boolean }>();
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
   const [user, setUser] = useState(null);
@@ -95,21 +96,21 @@ export default function Dashboard() {
   const firstName = (user?.name || user?.display_name || user?.full_name || "Usuário").split(" ")[0];
 
   return (
-    <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-10 min-h-screen bg-slate-50/30">
+    <div className={cn("p-6 lg:p-10 max-w-7xl mx-auto space-y-10 min-h-screen", isDark ? "bg-[#151A25]" : "bg-slate-50")}>
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b border-slate-100">
+      <div className={cn("flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2 border-b", isDark ? "border-slate-800" : "border-slate-100")}>
         <div className="space-y-1">
           <p className="text-sm font-medium text-blue-600 tracking-wide uppercase">{format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+          <h1 className={cn("text-3xl md:text-4xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>
             {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600">{firstName}</span>! 👋
           </h1>
-          <p className="text-slate-500 text-lg">Aqui está o pulso da sua clínica hoje.</p>
+          <p className={cn("text-lg", isDark ? "text-slate-400" : "text-slate-500")}>Aqui está o pulso da sua clínica hoje.</p>
         </div>
         <div className="flex items-center gap-3 pb-2">
-          <Button variant="ghost" className="text-slate-500 hover:text-slate-800" onClick={() => setSelectorOpen(true)}>
+          <Button variant="ghost" className={cn(isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-800")} onClick={() => setSelectorOpen(true)}>
             <Settings className="w-5 h-5" />
           </Button>
-          <Button className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-200 transition-all hover:scale-105" asChild>
+          <Button className={cn("text-white shadow-lg transition-all hover:scale-105", isDark ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20" : "bg-slate-900 hover:bg-slate-800 shadow-slate-200")} asChild>
             <Link to={createPageUrl("Agenda")}>
               <Calendar className="w-4 h-4 mr-2" />
               Ver Agenda Completa
