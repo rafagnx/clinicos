@@ -211,23 +211,25 @@ export default function Layout() {
                 <img
                   src={clinicSettings?.logo_url || "/logo-clinica.png"}
                   alt={clinicSettings?.clinic_name || "ClinicOS"}
-                  className="h-9 w-auto object-contain max-w-[180px]"
+                  className="h-8 w-auto object-contain"
                   onError={(e) => {
+                    // Fallback to stylized icon if image fails
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    e.currentTarget.parentElement.querySelector('.fallback-icon')?.classList.remove('hidden');
                   }}
                 />
-                {/* Fallback if both image loads fail */}
-                <div className="hidden flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <span className={cn(
-                    "text-xl font-display font-bold tracking-tight",
-                    isDark ? "text-white" : "text-slate-900"
-                  )}>
-                    ClinicOS
-                  </span>
+
+                {/* Stylized Text Name */}
+                <span className={cn(
+                  "text-xl font-display font-bold tracking-tight",
+                  isDark ? "text-white" : "text-slate-900"
+                )}>
+                  {clinicSettings?.clinic_name || "ClinicOS"}
+                </span>
+
+                {/* Fallback Icon (Hidden by default) */}
+                <div className="fallback-icon hidden w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
               </div>
             ) : (
