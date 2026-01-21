@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
+import PWAInstallPrompt from "@/components/pwa/PWAInstallPrompt";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -495,6 +496,7 @@ export default function Layout() {
         </div>
 
         <NotificationPermissionPrompt />
+        <PWAInstallPrompt />
       </div>
     </ThemeContext.Provider>
   );
