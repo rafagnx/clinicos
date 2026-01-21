@@ -181,8 +181,8 @@ export default function AdminLayout() {
                                         <AvatarFallback>AD</AvatarFallback>
                                     </Avatar>
                                     <div className="hidden md:block text-left">
-                                        <p className="text-sm font-medium leading-none">Alex Johnson</p>
-                                        <p className="text-xs text-slate-500 mt-1">Administrator</p>
+                                        <p className="text-sm font-medium leading-none">Rafa</p>
+                                        <p className="text-xs text-slate-500 mt-1">Super Admin</p>
                                     </div>
                                 </div>
                             </div>

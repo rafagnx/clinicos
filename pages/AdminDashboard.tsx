@@ -19,51 +19,51 @@ import { useAdminTheme } from "./admin/AdminLayout";
 export default function AdminDashboard() {
     const { isDark } = useAdminTheme();
 
-    // Stats Configuration
+    // Stats Configuration (Zeroed out for fresh start)
     const stats = [
         {
-            title: "Total Revenue",
-            value: "$124,563",
-            trend: "+12.5%",
+            title: "Receita Total",
+            value: "R$ 0,00",
+            trend: "0%",
             trendUp: true,
             icon: DollarSign,
             color: "text-emerald-500",
             bgColor: "bg-emerald-500/10",
             barColor: "bg-emerald-500",
-            progress: 75
+            progress: 0
         },
         {
-            title: "Active Users",
-            value: "8,549",
-            trend: "+8.2%",
+            title: "Usuários Ativos",
+            value: "1", // Just the admin for now
+            trend: "+1",
             trendUp: true,
             icon: Users,
             color: "text-blue-500",
             bgColor: "bg-blue-500/10",
             barColor: "bg-blue-500",
-            progress: 60
+            progress: 100
         },
         {
-            title: "Total Orders",
-            value: "2,847",
-            trend: "+15.3%",
+            title: "Total de Vendas",
+            value: "0",
+            trend: "0%",
             trendUp: true,
             icon: ShoppingCart,
             color: "text-purple-500",
             bgColor: "bg-purple-500/10",
             barColor: "bg-purple-500",
-            progress: 45
+            progress: 0
         },
         {
-            title: "Page Views",
-            value: "45,892",
-            trend: "-2.1%",
-            trendUp: false,
+            title: "Visualizações",
+            value: "12", // Simulation
+            trend: "+12%",
+            trendUp: true,
             icon: Eye,
             color: "text-orange-500",
             bgColor: "bg-orange-500/10",
             barColor: "bg-orange-500",
-            progress: 30
+            progress: 10
         },
     ];
 
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                     <p className={isDark ? "text-slate-400" : "text-slate-500"}>
-                        Welcome back, Alex! Here's what's happening today.
+                        Bem-vindo de volta, Rafa! Aqui está o resumo de hoje.
                     </p>
                 </div>
             </div>
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
                                     <span className={stat.trendUp ? "text-emerald-500" : "text-red-500"}>
                                         {stat.trend}
                                     </span>
-                                    <span className={isDark ? "text-slate-500" : "text-slate-400"}>vs last month</span>
+                                    <span className={isDark ? "text-slate-500" : "text-slate-400"}>vs mês anterior</span>
                                 </div>
                             </div>
 
@@ -132,28 +132,28 @@ export default function AdminDashboard() {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className={cn("text-lg font-semibold", isDark ? "text-white" : "text-slate-900")}>
-                                Revenue Overview
+                                Visão Geral de Receita
                             </CardTitle>
-                            <p className="text-sm text-slate-500">Monthly revenue and expenses</p>
+                            <p className="text-sm text-slate-500">Receitas e despesas mensais</p>
                         </div>
                         <div className="flex gap-4 text-xs font-medium">
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                <span className={isDark ? "text-slate-300" : "text-slate-600"}>Revenue</span>
+                                <span className={isDark ? "text-slate-300" : "text-slate-600"}>Receita</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-slate-600"></span>
-                                <span className={isDark ? "text-slate-300" : "text-slate-600"}>Expenses</span>
+                                <span className={isDark ? "text-slate-300" : "text-slate-600"}>Despesas</span>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[300px] w-full flex items-end justify-between gap-2 pt-8 px-2">
-                            {[40, 65, 45, 70, 50, 60, 55, 80, 75, 85, 90, 60].map((h, i) => (
+                            {[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((h, i) => (
                                 <div key={i} className="flex-1 flex gap-1 h-full items-end group">
                                     <div
                                         className="flex-1 bg-indigo-500 rounded-t-sm hover:bg-indigo-400 transition-all cursor-pointer relative"
-                                        style={{ height: `${h}%` }}
+                                        style={{ height: `5%` }} // Minimum height for visual
                                     >
                                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                                             ${h}k
@@ -161,13 +161,13 @@ export default function AdminDashboard() {
                                     </div>
                                     <div
                                         className="flex-1 bg-slate-700/50 rounded-t-sm hover:bg-slate-600 transition-all cursor-pointer"
-                                        style={{ height: `${h * 0.6}%` }}
+                                        style={{ height: `5%` }} // Minimum height for visual
                                     ></div>
                                 </div>
                             ))}
                         </div>
                         <div className="flex justify-between mt-4 text-xs text-slate-500 px-2 uppercase font-medium">
-                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                            {['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'].map(m => (
                                 <span key={m}>{m}</span>
                             ))}
                         </div>
@@ -178,34 +178,21 @@ export default function AdminDashboard() {
                 <Card className={cn("lg:col-span-1 border-none shadow-lg", isDark ? "bg-[#1C2333]" : "bg-white")}>
                     <CardHeader>
                         <CardTitle className={cn("text-lg font-semibold", isDark ? "text-white" : "text-slate-900")}>
-                            Sales by Category
+                            Vendas por Categoria
                         </CardTitle>
-                        <p className="text-sm text-slate-500">Product distribution</p>
+                        <p className="text-sm text-slate-500">Distribuição de produtos</p>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center pt-8">
                         <div className="relative w-48 h-48 rounded-full border-[1.5rem] border-transparent"
                             style={{
-                                backgroundImage: `conic-gradient(#6366f1 0deg 162deg, #8b5cf6 162deg 270deg, #10b981 270deg 324deg, #f59e0b 324deg 360deg)`
+                                backgroundImage: `conic-gradient(#6366f1 0deg 0deg, #334155 0deg 360deg)`
                             }}
                         >
                             <div className={cn("absolute inset-0 m-auto w-32 h-32 rounded-full", isDark ? "bg-[#1C2333]" : "bg-white")}></div>
                         </div>
 
                         <div className="w-full mt-8 space-y-4">
-                            {[
-                                { label: 'Electronics', val: '45%', color: 'bg-indigo-500' },
-                                { label: 'Clothing', val: '30%', color: 'bg-purple-500' },
-                                { label: 'Books', val: '15%', color: 'bg-emerald-500' },
-                                { label: 'Other', val: '10%', color: 'bg-amber-500' }
-                            ].map((c, i) => (
-                                <div key={i} className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn("w-3 h-3 rounded-full", c.color)}></div>
-                                        <span className={isDark ? "text-slate-300" : "text-slate-600"}>{c.label}</span>
-                                    </div>
-                                    <span className={cn("font-medium", isDark ? "text-white" : "text-slate-900")}>{c.val}</span>
-                                </div>
-                            ))}
+                            <p className="text-center text-sm text-slate-500">Sem dados suficientes</p>
                         </div>
                     </CardContent>
                 </Card>
