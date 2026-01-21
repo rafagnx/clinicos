@@ -179,13 +179,18 @@ export default function AdminLayout() {
                                 </Button>
 
                                 <div className="flex items-center gap-3 pl-2">
-                                    <Avatar className="w-9 h-9 border-2 border-indigo-500/30 cursor-pointer">
-                                        <AvatarImage src="https://github.com/shadcn.png" />
-                                        <AvatarFallback>AD</AvatarFallback>
-                                    </Avatar>
+                                    <div className="relative group cursor-pointer">
+                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-1000 group-hover:duration-200"></div>
+                                        <Avatar className="w-9 h-9 relative border-2 border-[#0B0E14]">
+                                            <AvatarImage src="https://github.com/shadcn.png" />
+                                            <AvatarFallback>RA</AvatarFallback>
+                                        </Avatar>
+                                    </div>
                                     <div className="hidden md:block text-left">
-                                        <p className="text-sm font-medium leading-none">Rafa</p>
-                                        <p className="text-xs text-slate-500 mt-1">Super Admin</p>
+                                        <p className="text-sm font-medium leading-none text-slate-200">Rafa</p>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 animate-pulse drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">
+                                            Super Admin
+                                        </span>
                                     </div>
                                 </div>
                             </div>
