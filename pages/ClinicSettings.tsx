@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useOutletContext } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +14,10 @@ import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, M
 import { toast } from "sonner";
 
 export default function ClinicSettings() {
+  const { isDark } = useOutletContext<{ isDark: boolean }>();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
 
   useEffect(() => {
@@ -123,10 +126,10 @@ export default function ClinicSettings() {
   }
 
   return (
-    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-8">
+    <div className={cn("p-4 lg:p-8 max-w-5xl mx-auto space-y-8", isDark ? "text-slate-100" : "")}>
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Configurações da Clínica</h1>
-        <p className="text-slate-500">Gerencie as informações públicas e integrações do seu estabelecimento</p>
+        <h1 className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>Configurações da Clínica</h1>
+        <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie as informações públicas e integrações do seu estabelecimento</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">

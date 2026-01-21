@@ -49,7 +49,7 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
     // 2. Fetch Messages
     const { data: messages = [] } = useQuery({
         queryKey: ["messages", conversation?.id],
-        queryFn: () => base44.entities.Message.filter({ conversation_id: conversation.id }),
+        queryFn: () => base44.read("Message", { filter: { conversation_id: conversation.id } }),
         enabled: !!conversation,
         refetchInterval: 3000
     });
@@ -62,19 +62,15 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
     }, [messages, isMinimized]);
 
     // 3. Send Mutation
-    const sendMessageMutation = useMutation({
-        mutationFn: async (text) => {
+    const sendMessageMutation = useMutation<any, Error, string>({
+        mutationFn: async (text: string) => {
             let convId = conversation?.id;
 
             if (!convId) {
                 // Create new conversation
-                // Determine IDs
-                // If both are professionals, this schema might struggle if it STRICTLY enforces pat/prof columns.
-                // We'll try to map one to patient_id purely for storage if needed, or hope schema is flexible.
-                // For 'Chat Equipe', we assume it works.
                 const newConv = await base44.entities.Conversation.create({
                     professional_id: currentUser.id,
-                    patient_id: recipient.id, // Hacky if recipient is professional, but standard for this schema type
+                    patient_id: recipient.id,
                     status: 'active',
                     last_message_at: new Date().toISOString()
                 });
@@ -95,7 +91,7 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         }
     });
 
-    const handleSend = (e) => {
+    const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
         if (!inputText.trim()) return;
         sendMessageMutation.mutate(inputText);
