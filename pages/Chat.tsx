@@ -23,22 +23,22 @@ export default function Chat() {
 
   const { data: professionals = [], isLoading } = useQuery({
     queryKey: ["professionals"],
-    queryFn: () => base44.entities.Professional.list("-full_name")
+    queryFn: () => base44.entities.Professional.list({ sort: [{ field: "full_name", direction: "asc" }] })
   });
 
-  const filteredProfessionals = professionals
-    .filter(p => p.id !== currentUser?.id) // Exclude self
-    .filter(p =>
-      p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProfessionals = (professionals || [])
+    .filter((p: any) => p.id !== currentUser?.id) // Exclude self
+    .filter((p: any) =>
+      (p.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.specialty || "").toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   // Mock status for now - random online/offline
   // In a real app, this would come from a websocket or polling 'last_active'
-  const getStatus = (id) => {
+  const getStatus = (id: any) => {
     // Deterministic random based on ID char code sum
-    const sum = id.toString().split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    const sum = id.toString().split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
     return sum % 3 === 0 ? "offline" : (sum % 3 === 1 ? "busy" : "online");
   };
 
@@ -69,7 +69,7 @@ export default function Chat() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredProfessionals.map((prof) => {
+        {filteredProfessionals.map((prof: any) => {
           const status = getStatus(prof.id);
           return (
             <Card
@@ -143,7 +143,6 @@ export default function Chat() {
         <FloatingChatWindow
           recipient={activeRecipient}
           currentUser={currentUser}
-          isOpen={!!activeRecipient}
           onClose={() => setActiveRecipient(null)}
           isMinimized={isMinimized}
           onToggleMinimize={() => setIsMinimized(!isMinimized)}

@@ -61,9 +61,9 @@ export default function Dashboard() {
   const safeProfessionals = Array.isArray(professionals) ? professionals : [];
 
   const stats = {
-    todayAppointments: safeAppointments.filter(a => a?.date === today).length,
+    todayAppointments: safeAppointments.filter(a => a?.date === today && a?.type !== 'compromisso').length,
     totalPatients: safePatients.length,
-    pendingConfirmations: safeAppointments.filter(a => a?.status === "agendado").length,
+    pendingConfirmations: safeAppointments.filter(a => a?.status === "agendado" && a?.type !== 'compromisso').length,
     activeProfessionals: safeProfessionals.length
   };
 
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
   const renderWidget = (id) => {
     switch (id) {
-      case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments} patients={safePatients} />;
+      case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} />;
       case "financial_summary": return <FinancialSummaryWidget appointments={safeAppointments} />;
       case "chat_activity": return <ChatActivityWidget conversations={[]} currentUserEmail={user?.email} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
