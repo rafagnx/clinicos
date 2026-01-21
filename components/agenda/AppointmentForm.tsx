@@ -122,11 +122,7 @@ const PROCEDURES_OPTIONS = [
     }
 ];
 
-const SECRETARIES_LIST = [
-    "Tainara",
-    "Fernanda",
-    "Jessica"
-];
+// Mock list removed as requested
 
 const TYPES_LIST = [
     "Consulta",
@@ -663,16 +659,11 @@ export default function AppointmentForm({
 
                             <div className="space-y-2">
                                 <Label>Agendado por</Label>
-                                <Select value={formData.scheduled_by} onValueChange={(v) => setFormData(p => ({ ...p, scheduled_by: v }))}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione a secretária" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {SECRETARIES_LIST.map(sec => (
-                                            <SelectItem key={sec} value={sec}>{sec}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    placeholder="Nome da atendente (opcional)"
+                                    value={formData.scheduled_by}
+                                    onChange={(e) => setFormData(p => ({ ...p, scheduled_by: e.target.value }))}
+                                />
                             </div>
 
                             <div className="space-y-2">
