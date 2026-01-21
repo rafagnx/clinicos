@@ -147,8 +147,14 @@ export default function Dashboard() {
                 {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
               </p>
             </div>
-            <h1 className={cn("text-4xl md:text-5xl font-display font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-              {greeting}, <span className="text-gradient-primary">{firstName}</span>! 👋
+            <h1 className={cn("text-4xl md:text-5xl font-display font-bold tracking-tight flex items-center flex-wrap gap-x-4 gap-y-2", isDark ? "text-white" : "text-slate-900")}>
+              {user?.email === 'rafamarketingdb@gmail.com' && (
+                <div className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full opacity-70 blur-md animate-pulse-soft" />
+                  <img src="/rafa-avatar.png" alt="Rafa" className="relative w-full h-full object-cover rounded-full border-2 border-white/20 shadow-2xl" />
+                </div>
+              )}
+              <span>{greeting}, <span className="text-gradient-primary">{user?.email === 'rafamarketingdb@gmail.com' ? 'Rafa' : firstName}</span>! 👋</span>
             </h1>
             <p className={cn("text-lg", isDark ? "text-slate-400" : "text-slate-600")}>
               Aqui está o pulso da sua clínica hoje.
