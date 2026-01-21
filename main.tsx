@@ -64,36 +64,32 @@ const App = () => {
                     <Route path="reports" element={<AdminReports />} />
                 </Route>
 
-                {/* Authenticated Routes wrapped in Layout */}
-                <Route path="*" element={
-                    <Layout>
-                        <Routes>
-                            <Route path="/" element={<Navigate to="/Dashboard" replace />} />
+                {/* Authenticated Routes */}
+                <Route element={<Layout />}>
+                    <Route path="/" element={<Navigate to="/Dashboard" replace />} />
 
-                            <Route path="/Dashboard" element={<Dashboard />} />
-                            <Route path="/Financial" element={<Financial />} />
-                            <Route path="/Agenda" element={<Agenda />} />
-                            <Route path="/Patients" element={<Patients />} />
-                            <Route path="/Leads" element={<Leads />} />
-                            <Route path="/MedicalRecords" element={<MedicalRecords />} />
-                            <Route path="/ClinicSettings" element={<ClinicSettings />} />
-                            <Route path="/Settings/Procedures" element={<ProcedureTypes />} />
-                            <Route path="/Professionals" element={<Professionals />} />
-                            <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
-                            <Route path="/Promotions" element={<Promotions />} />
-                            <Route path="/Reports" element={<Reports />} />
-                            <Route path="/Chat" element={<Chat />} />
-                            <Route path="/Profile" element={<Profile />} />
+                    <Route path="/Dashboard" element={<Dashboard />} />
+                    <Route path="/Financial" element={<Financial />} />
+                    <Route path="/Agenda" element={<Agenda />} />
+                    <Route path="/Patients" element={<Patients />} />
+                    <Route path="/Leads" element={<Leads />} />
+                    <Route path="/MedicalRecords" element={<MedicalRecords />} />
+                    <Route path="/ClinicSettings" element={<ClinicSettings />} />
+                    <Route path="/Settings/Procedures" element={<ProcedureTypes />} />
+                    <Route path="/Professionals" element={<Professionals />} />
+                    <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
+                    <Route path="/Promotions" element={<Promotions />} />
+                    <Route path="/Reports" element={<Reports />} />
+                    <Route path="/Chat" element={<Chat />} />
+                    <Route path="/Profile" element={<Profile />} />
 
-                            {/* Subroutes */}
-                            <Route path="/AgendaReports" element={<AgendaReports />} />
-                            <Route path="/ViewMedicalRecord" element={<ViewMedicalRecord />} />
-                            <Route path="/NewMedicalRecord" element={<NewMedicalRecord />} />
-                            <Route path="/PatientHistory" element={<PatientHistory />} />
-                            <Route path="/ImportPatients" element={<ImportPatients />} />
-                        </Routes>
-                    </Layout>
-                } />
+                    {/* Subroutes */}
+                    <Route path="/AgendaReports" element={<AgendaReports />} />
+                    <Route path="/ViewMedicalRecord" element={<ViewMedicalRecord />} />
+                    <Route path="/NewMedicalRecord" element={<NewMedicalRecord />} />
+                    <Route path="/PatientHistory" element={<PatientHistory />} />
+                    <Route path="/ImportPatients" element={<ImportPatients />} />
+                </Route>
             </Routes >
             <Toaster />
             <ToasterOriginal />
