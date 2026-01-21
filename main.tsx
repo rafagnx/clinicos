@@ -51,7 +51,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Auth />} />
                 <Route path="/accept-invitation" element={<AcceptInvitation />} />
-                <Route path="/planilha" element={<PlanilhaLP />} />
+                <Route path="/lp" element={<PlanilhaLP />} />
 
                 {/* Organization Setup */}
                 <Route path="/organization/new" element={<Organization />} />
