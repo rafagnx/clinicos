@@ -38,6 +38,7 @@ import AdminLayout from './pages/admin/AdminLayout'
 import AdminFinancial from './pages/admin/AdminFinancial'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminReports from './pages/admin/AdminReports'
 
 const queryClient = new QueryClient()
 
@@ -60,6 +61,7 @@ const App = () => {
                     <Route path="financial" element={<AdminFinancial />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="users" element={<AdminUsers />} />
+                    <Route path="reports" element={<AdminReports />} />
                 </Route>
 
                 {/* Authenticated Routes wrapped in Layout */}

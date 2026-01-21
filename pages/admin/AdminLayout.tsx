@@ -154,7 +154,10 @@ export default function AdminLayout() {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                <Button className="hidden sm:flex bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 gap-2 shadow-lg shadow-indigo-500/20">
+                                <Button
+                                    className="hidden sm:flex bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-5 gap-2 shadow-lg shadow-indigo-500/20"
+                                    onClick={() => navigate('/organization/new')}
+                                >
                                     <PlusCircle className="w-4 h-4" />
                                     New
                                 </Button>
