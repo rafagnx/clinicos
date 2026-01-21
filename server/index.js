@@ -203,6 +203,18 @@ app.post("/api/debug/migrate", async (req, res) => {
                 }
             }
 
+            // 4. Ensure 'professionals' table has 'status' column
+            const profStatusExists = await client.query(`
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='professionals' AND column_name='status';
+            `);
+
+            if (profStatusExists.rows.length === 0) {
+                console.log("Adding status column to professionals table");
+                await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo';`);
+            }
+
             // 3. Ensure 'organization' table has correct columns (Better Auth)
             const orgColExists = await client.query(`
                 SELECT column_name 

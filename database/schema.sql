@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS professionals (
   is_admin BOOLEAN DEFAULT FALSE,
   photo_url TEXT,
   agenda_config JSON,
+  status VARCHAR(50) DEFAULT 'ativo',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
