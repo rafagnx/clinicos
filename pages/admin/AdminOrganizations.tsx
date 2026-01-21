@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Plus, Users, Globe } from "lucide-react";
+import { Building2, Plus, Users, Globe, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -246,7 +246,8 @@ export default function AdminOrganizations() {
                                 <Button
                                     variant="ghost"
                                     className="px-3 hover:bg-slate-100"
-                                    title="Configurações"
+                                    title="Configurações (Em breve)"
+                                    onClick={() => toast.info("Configurações da organização em breve")}
                                 >
                                     <Settings className="w-4 h-4 text-slate-400" />
                                 </Button>
@@ -259,5 +260,4 @@ export default function AdminOrganizations() {
     );
 }
 
-// Importing icons locally to avoid top-level import errors if some look weird 
-import { Settings } from "lucide-react";
+
