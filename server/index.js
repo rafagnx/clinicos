@@ -464,10 +464,39 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             params.push(req.query.id);
         }
 
-        // Support filter by user_id explicit (for Profile.tsx compat)
-        if (req.query.user_id && isUserScoped) {
-            // already handled by implicit scope above, but if needed we can ignore or validate
-        }
+        // Generic Filtering
+        const reservedParams = ['id', 'limit', 'sort', 'include', 'fields'];
+        Object.keys(req.query).forEach(key => {
+            if (reservedParams.includes(key)) return;
+            // Skip invalid keys to avoid SQL errors (simple regex to allow alphanum + underscore)
+            if (!/^[a-zA-Z0-9_]+$/.test(key)) return;
+
+            const value = req.query[key];
+
+            if (typeof value === 'object' && value !== null) {
+                // Handle Operators
+                if (value._gte) {
+                    whereClauses.push(`"${key}" >= $${paramIndex++}`);
+                    params.push(value._gte);
+                }
+                if (value._gt) {
+                    whereClauses.push(`"${key}" > $${paramIndex++}`);
+                    params.push(value._gt);
+                }
+                if (value._lt) {
+                    whereClauses.push(`"${key}" < $${paramIndex++}`);
+                    params.push(value._lt);
+                }
+                if (value._lte) {
+                    whereClauses.push(`"${key}" <= $${paramIndex++}`);
+                    params.push(value._lte);
+                }
+            } else {
+                // Exact Match
+                whereClauses.push(`"${key}" = $${paramIndex++}`);
+                params.push(value);
+            }
+        });
 
         if (whereClauses.length > 0) {
             query += ` WHERE ` + whereClauses.join(' AND ');
