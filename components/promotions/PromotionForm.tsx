@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,10 +18,13 @@ interface PromotionFormProps {
 export default function PromotionForm({ promotion, onSuccess, onCancel }: PromotionFormProps) {
     const [formData, setFormData] = useState({
         title: "",
+        procedure_name: "",
         description: "",
         status: "ativa",
         type: "desconto",
         discount_value: 0,
+        original_price: "",
+        promotional_price: "",
         end_date: "",
         image_url: ""
     });
@@ -30,10 +33,13 @@ export default function PromotionForm({ promotion, onSuccess, onCancel }: Promot
         if (promotion) {
             setFormData({
                 title: promotion.title || "",
+                procedure_name: promotion.procedure_name || "",
                 description: promotion.description || "",
                 status: promotion.status || "ativa",
                 type: promotion.type || "desconto",
                 discount_value: promotion.discount_value || 0,
+                original_price: promotion.original_price || "",
+                promotional_price: promotion.promotional_price || "",
                 end_date: promotion.end_date ? promotion.end_date.split('T')[0] : "",
                 image_url: promotion.image_url || ""
             });
@@ -62,7 +68,7 @@ export default function PromotionForm({ promotion, onSuccess, onCancel }: Promot
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="title">Título da Promoção</Label>
+                <Label htmlFor="title">Título da Campanha</Label>
                 <Input
                     id="title"
                     value={formData.title}
@@ -73,7 +79,43 @@ export default function PromotionForm({ promotion, onSuccess, onCancel }: Promot
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="procedure_name">Procedimento em Promoção</Label>
+                <Input
+                    id="procedure_name"
+                    value={formData.procedure_name}
+                    onChange={e => setFormData(prev => ({ ...prev, procedure_name: e.target.value }))}
+                    placeholder="Ex: Toxina Botulínica, Preenchimento Labial..."
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="original_price">Valor Original (De)</Label>
+                    <Input
+                        id="original_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.original_price}
+                        onChange={e => setFormData(prev => ({ ...prev, original_price: e.target.value }))}
+                        placeholder="R$ 0,00"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="promotional_price" className="text-emerald-700 font-bold">Valor Promocional (Por)</Label>
+                    <Input
+                        id="promotional_price"
+                        type="number"
+                        step="0.01"
+                        value={formData.promotional_price}
+                        onChange={e => setFormData(prev => ({ ...prev, promotional_price: e.target.value }))}
+                        className="border-emerald-200 bg-emerald-50 text-emerald-900 font-bold"
+                        placeholder="R$ 0,00"
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="description">Descrição / Regras</Label>
                 <Textarea
                     id="description"
                     value={formData.description}
@@ -129,8 +171,6 @@ export default function PromotionForm({ promotion, onSuccess, onCancel }: Promot
                     )}
                 </div>
             </div>
-
-
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
