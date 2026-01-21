@@ -271,77 +271,85 @@ const MockupSection = () => {
 };
 
 const Pricing = () => {
-    const plans = [
-        {
-            name: "Starter",
-            price: "97",
-            desc: "Para profissionais autônomos",
-            features: ["Agenda Inteligente", "Prontuário Básico", "1 Profissional", "Suporte por Email"]
-        },
-        {
-            name: "Growth",
-            price: "197",
-            popular: true,
-            desc: "Para clínicas em crescimento",
-            features: ["Tudo do Starter", "Gestão Financeira Completa", "CRM Integrado", "Até 3 Profissionais", "Campanhas WhatsApp"]
-        },
-        {
-            name: "Scale",
-            price: "297",
-            desc: "Para redes e grandes clínicas",
-            features: ["Tudo do Growth", "Múltiplas Unidades", "Profissionais Ilimitados", "API Aberta", "Gerente de Conta"]
-        }
-    ];
-
     return (
-        <section id="planos" className="py-32 bg-slate-950 relative">
+        <section id="planos" className="py-32 bg-slate-950 relative overflow-hidden">
+            {/* Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
+
             <div className="container mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Planos que <span className="text-purple-500">Crescem com Você</span></h2>
-                    <p className="text-slate-400 max-w-lg mx-auto">Experimente 7 dias grátis em qualquer plano. Sem cartão de crédito.</p>
+                <div className="text-center mb-16">
+                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Simplifique. <span className="text-blue-500">Um Plano, Tudo Incluso.</span></h2>
+                    <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+                        Sem pegadinhas, sem limites ocultos. Você tem acesso a 100% da plataforma durante o teste.
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
-                    {plans.map((plan, idx) => (
-                        <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            whileHover={{ y: -10 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className={cn(
-                                "p-8 rounded-3xl border relative transition-all duration-300",
-                                plan.popular ? "bg-slate-900/80 border-purple-500 shadow-2xl shadow-purple-900/20 z-10 scale-105" : "bg-slate-950 border-slate-800 hover:border-slate-700"
-                            )}
-                        >
-                            {plan.popular && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
-                                    Mais Escolhido
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="max-w-4xl mx-auto"
+                >
+                    <div className="relative p-1 rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-2xl shadow-blue-900/40">
+                        <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-6 py-2 rounded-full font-black uppercase tracking-wider text-sm shadow-xl flex items-center gap-2 z-20">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                            7 Dias Grátis
+                        </div>
+
+                        <div className="bg-slate-900 rounded-[22px] p-8 md:p-12 relative overflow-hidden h-full">
+                            <div className="flex flex-col md:flex-row gap-12 items-center">
+                                {/* Left Side: Price & CTA */}
+                                <div className="md:w-1/2 text-center md:text-left">
+                                    <h3 className="text-2xl font-bold text-white mb-2">ClinicOS <span className="text-purple-400">PRO</span></h3>
+                                    <p className="text-slate-400 mb-8">Gestão completa para clínicas que querem crescer.</p>
+
+                                    <div className="flex items-end justify-center md:justify-start gap-2 mb-8">
+                                        <span className="text-lg text-slate-500 line-through mb-2">R$ 297</span>
+                                        <div className="text-6xl font-black text-white tracking-tight">R$ 197</div>
+                                        <span className="text-slate-500 font-medium mb-2">/mês</span>
+                                    </div>
+
+                                    <Link to="/register">
+                                        <Button className="w-full h-16 text-xl font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-900/20 mb-4 transition-all hover:scale-105">
+                                            Começar Teste Grátis
+                                        </Button>
+                                    </Link>
+                                    <p className="text-xs text-center text-slate-500">
+                                        Cancele a qualquer momento. Nenhum valor será cobrado hoje.
+                                    </p>
                                 </div>
-                            )}
-                            <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                            <p className="text-slate-500 text-sm mb-6 h-10">{plan.desc}</p>
-                            <div className="mb-8">
-                                <span className="text-sm text-slate-500">R$</span>
-                                <span className="text-5xl font-black text-white">{plan.price}</span>
-                                <span className="text-slate-500">/mês</span>
+
+                                {/* Right Side: Features */}
+                                <div className="md:w-1/2 w-full bg-slate-800/50 p-6 rounded-2xl border border-slate-700/50">
+                                    <div className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-6 pb-4 border-b border-slate-700">O que está incluso:</div>
+                                    <ul className="space-y-4">
+                                        {[
+                                            "Agenda Inteligente & Confirmações",
+                                            "Prontuário e Ficha de Anamnese",
+                                            "Gestão Financeira Completa",
+                                            "Sem limite de Profissionais",
+                                            "Sem limite de Pacientes",
+                                            "Fotos de Antes e Depois",
+                                            "Suporte Prioritário WhatsApp",
+                                            "Acesso Mobile (App)"
+                                        ].map((feat, i) => (
+                                            <li key={i} className="flex items-start gap-3 text-slate-300 font-medium">
+                                                <div className="mt-1 w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 shrink-0">
+                                                    <Check className="w-3 h-3" strokeWidth={3} />
+                                                </div>
+                                                {feat}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             </div>
-                            <Button className={cn(
-                                "w-full mb-8 h-12 font-bold rounded-xl",
-                                plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-900/40" : "bg-slate-800 hover:bg-slate-700 text-white"
-                            )}>
-                                Começar Agora
-                            </Button>
-                            <ul className="space-y-4">
-                                {plan.features.map((feat, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-sm text-slate-400">
-                                        <div className={cn("w-1.5 h-1.5 rounded-full", plan.popular ? "bg-purple-500" : "bg-slate-600")}></div>
-                                        {feat}
-                                    </li>
-                                ))}
-                            </ul>
-                        </motion.div>
-                    ))}
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Guarantee */}
+                <div className="mt-12 text-center max-w-2xl mx-auto flex items-center justify-center gap-4 text-slate-400 opacity-80 hover:opacity-100 transition-opacity">
+                    <ShieldCheck className="w-6 h-6 text-slate-300" />
+                    <p>Experimente por 7 dias. Se não amar, você não paga nem um centavo.</p>
                 </div>
             </div>
         </section>
