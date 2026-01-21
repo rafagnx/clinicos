@@ -60,10 +60,7 @@ export default function Login() {
 
             {/* Left Column - Branding (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-1/2 relative z-10 flex-col justify-between p-16">
-                <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => navigate('/')}
-                >
+                <div className="flex items-center gap-3">
                     <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
                         <Activity className="w-6 h-6 text-white" />
                     </div>

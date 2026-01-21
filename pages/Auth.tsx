@@ -80,10 +80,7 @@ export default function Auth() {
 
             {/* Left Column - Branding (Hidden on mobile) */}
             <div className="hidden lg:flex lg:w-1/2 relative z-10 flex-col justify-between p-16 border-r border-white/5 bg-slate-950/30 backdrop-blur-sm">
-                <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => navigate('/')}
-                >
+                <div className="flex items-center gap-3">
                     <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
                         {/* Assuming Activity icon is available or imported */}
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
