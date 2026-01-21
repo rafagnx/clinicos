@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Plus, Users, Globe, Settings, ExternalLink } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Building2, Plus, Users, Globe, Settings, ExternalLink, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAdminTheme } from "./AdminLayout";
@@ -23,6 +24,28 @@ export default function AdminOrganizations() {
     const [invitingOrg, setInvitingOrg] = useState(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
+
+    const handleProToggle = async (orgId: string, currentStatus: string) => {
+        const isCurrentlyPro = currentStatus === 'active' || currentStatus === 'manual_override';
+        const newActive = !isCurrentlyPro;
+
+        try {
+            const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'https://clinicos-it4q.onrender.com'}/api/admin/organizations/${orgId}/bypass`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ active: newActive })
+            });
+
+            if (!response.ok) throw new Error('Failed to toggle PRO status');
+
+            toast.success(newActive ? '✨ PRO Ativado!' : '❌ PRO Removido');
+            fetchOrganizations(); // Refresh list
+        } catch (error) {
+            console.error('Toggle error:', error);
+            toast.error('Erro ao alterar status PRO');
+        }
+    };
 
     const fetchOrganizations = async () => {
         try {
@@ -187,10 +210,32 @@ export default function AdminOrganizations() {
                                             <p className="text-sm text-slate-500 font-mono">@{org.slug}</p>
                                         </div>
                                     </div>
-                                    <Badge variant="outline" className={cn("flex items-center gap-1", isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                        Ativo
-                                    </Badge>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <Badge variant="outline" className={cn("flex items-center gap-1", isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                            Ativo
+                                        </Badge>
+                                        {/* PRO Toggle */}
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn("text-xs font-medium",
+                                                org.subscription_status === 'active' || org.subscription_status === 'manual_override'
+                                                    ? "text-purple-500"
+                                                    : "text-slate-500"
+                                            )}>
+                                                {org.subscription_status === 'active' || org.subscription_status === 'manual_override' ? (
+                                                    <span className="flex items-center gap-1">
+                                                        <Crown className="w-3 h-3" />
+                                                        PRO
+                                                    </span>
+                                                ) : 'FREE'}
+                                            </span>
+                                            <Switch
+                                                checked={org.subscription_status === 'active' || org.subscription_status === 'manual_override'}
+                                                onCheckedChange={() => handleProToggle(org.id, org.subscription_status || 'canceled')}
+                                                className="data-[state=checked]:bg-purple-600"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </CardHeader>
 
