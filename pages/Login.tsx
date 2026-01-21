@@ -51,76 +51,83 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-white flex">
-            {/* Left Column - Hero Image & Branding */}
-            <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative overflow-hidden flex-col justify-between p-12 text-white">
-                <div className="relative z-10 flex items-center gap-2">
-                    <div className="bg-blue-600 p-2 rounded-lg">
+        <div className="min-h-screen bg-slate-950 flex relative overflow-hidden">
+            {/* Background Ambience */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+                <div className="absolute -top-[20%] -left-[10%] w-[700px] h-[700px] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+                <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] animate-pulse-slow delay-1000"></div>
+            </div>
+
+            {/* Left Column - Branding (Hidden on mobile) */}
+            <div className="hidden lg:flex lg:w-1/2 relative z-10 flex-col justify-between p-16">
+                <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => navigate('/')}
+                >
+                    <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
                         <Activity className="w-6 h-6 text-white" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight">ClinicOS</span>
+                    <span className="text-2xl font-bold tracking-tight text-white">ClinicOS</span>
                 </div>
 
-                <div className="relative z-10 max-w-lg space-y-6">
-                    <h1 className="text-4xl font-bold leading-tight">
-                        Gestão inteligente para clínicas que não param de crescer.
+                <div className="max-w-xl space-y-8">
+                    <h1 className="text-5xl font-bold leading-tight text-white">
+                        Bem-vindo ao futuro da <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">sua clínica</span>.
                     </h1>
-                    <ul className="space-y-4 text-slate-300">
-                        <li className="flex items-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                            <span>Controle total da sua agenda e pacientes</span>
-                        </li>
-                        <li className="flex items-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                            <span>Prontuários eletrônicos seguros e acessíveis</span>
-                        </li>
-                        <li className="flex items-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-blue-500" />
-                            <span>Gestão financeira simplificada</span>
-                        </li>
-                    </ul>
+                    <p className="text-lg text-slate-400">
+                        A plataforma completa para gerenciar, escalar e fidelizar pacientes com inteligência e design premium.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-6 pt-8">
+                        <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                            <div className="text-3xl font-bold text-white mb-1">10k+</div>
+                            <div className="text-sm text-slate-500">Pacientes Ativos</div>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm">
+                            <div className="text-3xl font-bold text-white mb-1">99%</div>
+                            <div className="text-sm text-slate-500">Satisfação</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="relative z-10 text-sm text-slate-400">
-                    © {new Date().getFullYear()} ClinicOS Inc. Todos os direitos reservados.
-                </div>
-
-                {/* Decorative Background Image Overlay */}
-                <div className="absolute inset-0 z-0 opacity-20">
-                    <img
-                        src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
-                        alt="Hospital Background"
-                        className="w-full h-full object-cover grayscale"
-                    />
+                <div className="text-sm text-slate-500">
+                    © {new Date().getFullYear()} ClinicOS Inc.
                 </div>
             </div>
 
             {/* Right Column - Login Form */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50">
-                <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
-                    <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-bold text-slate-900">Acesse sua conta</h2>
-                        <p className="text-slate-500">Informe suas credenciais para continuar</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 relative z-10">
+                <div className="w-full max-w-md">
+                    <div className="mb-10 text-center lg:text-left">
+                        <div className="lg:hidden flex justify-center mb-6">
+                            <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2.5 rounded-xl shadow-lg">
+                                <Activity className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                        <h2 className="text-3xl font-bold text-white mb-2">Acesse sua conta</h2>
+                        <p className="text-slate-400">Entre com suas credenciais para continuar gerenciando.</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email Corporativo</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="nome@clinica.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-all"
-                                required
-                            />
+                            <Label htmlFor="email" className="text-slate-300">Email Corporativo</Label>
+                            <div className="relative group">
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="nome@clinica.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="h-12 bg-slate-900/50 border-slate-800 text-white placeholder:text-slate-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all rounded-xl"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">Senha</Label>
-                                <a href="#" className="text-xs font-medium text-blue-600 hover:text-blue-700">
+                                <Label htmlFor="password" className="text-slate-300">Senha</Label>
+                                <a href="#" className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors">
                                     Esqueceu a senha?
                                 </a>
                             </div>
@@ -131,13 +138,13 @@ export default function Login() {
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="h-11 bg-slate-50 border-slate-200 focus:bg-white transition-all pr-10"
+                                    className="h-12 bg-slate-900/50 border-slate-800 text-white placeholder:text-slate-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all rounded-xl pr-10"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -146,27 +153,27 @@ export default function Login() {
 
                         <Button
                             type="submit"
-                            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02]"
+                            className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02] active:scale-95"
                             disabled={isLoading}
                         >
                             {isLoading ? (
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    <span>Entrando...</span>
+                                    <span>Verificando...</span>
                                 </div>
                             ) : "Entrar na Plataforma"}
                         </Button>
                     </form>
 
-                    <div className="pt-4 text-center border-t border-slate-100">
-                        <p className="text-sm text-slate-500">
-                            Novo por aqui?{" "}
+                    <div className="pt-8 mt-8 border-t border-slate-800 text-center">
+                        <p className="text-slate-500">
+                            Ainda não tem uma conta?{" "}
                             <a
                                 href="#"
-                                onClick={(e) => { e.preventDefault(); navigate("/signup"); }}
-                                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                onClick={(e) => { e.preventDefault(); navigate("/register"); }}
+                                className="font-bold text-blue-400 hover:text-blue-300 transition-colors"
                             >
-                                Criar uma conta
+                                Criar conta grátis
                             </a>
                         </p>
                     </div>
