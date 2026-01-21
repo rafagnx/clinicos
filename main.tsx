@@ -34,6 +34,10 @@ import ProcedureTypes from './pages/settings/ProcedureTypes'
 
 import AdminDashboard from './pages/AdminDashboard'
 import AdminOrganizations from './pages/admin/AdminOrganizations'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminFinancial from './pages/admin/AdminFinancial'
+import AdminSettings from './pages/admin/AdminSettings'
+import AdminUsers from './pages/admin/AdminUsers'
 
 const queryClient = new QueryClient()
 
@@ -49,9 +53,14 @@ const App = () => {
                 {/* Organization Setup */}
                 <Route path="/organization/new" element={<Organization />} />
 
-                {/* Admin - Standalone Layout */}
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/organizations" element={<AdminOrganizations />} />
+                {/* Admin - Dedicated System */}
+                <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="organizations" element={<AdminOrganizations />} />
+                    <Route path="financial" element={<AdminFinancial />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="users" element={<AdminUsers />} />
+                </Route>
 
                 {/* Authenticated Routes wrapped in Layout */}
                 <Route path="*" element={
@@ -83,10 +92,10 @@ const App = () => {
                         </Routes>
                     </Layout>
                 } />
-            </Routes>
+            </Routes >
             <Toaster />
             <ToasterOriginal />
-        </Router>
+        </Router >
     )
 }
 
