@@ -14,16 +14,36 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+interface ImportResult {
+  total: number;
+  imported: number;
+  failed: number;
+  errors: { row: number; message: string }[];
+}
+
+interface PatientData {
+  full_name?: string | null;
+  email?: string | null;
+  cpf?: string | null;
+  address?: string | null;
+  gender?: string | null;
+  phone?: string | null;
+  birth_date?: string | null;
+  status: string;
+  phone_alt?: string | null;
+  [key: string]: any;
+}
+
 export default function ImportPatients() {
   const navigate = useNavigate();
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ImportResult | null>(null);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       const fileName = selectedFile.name.toLowerCase();
 
@@ -46,11 +66,18 @@ export default function ImportPatients() {
       setIsUploading(true);
       setProgress(10);
 
-      // Read file content
       const text = await file.text();
       const rows = text.split("\n").map(r => r.trim()).filter(r => r);
 
-      const headers = rows[0].split(",").map(h => h.trim().replace(/"/g, ''));
+      if (rows.length < 2) {
+        throw new Error("Arquivo vazio ou inválido.");
+      }
+
+      // Detect delimiter
+      const firstLine = rows[0];
+      const delimiter = firstLine.includes(";") ? ";" : ",";
+
+      const rawHeaders = rows[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, '')); // Remove outer quotes
       const dataRows = rows.slice(1);
 
       setIsUploading(false);
@@ -59,31 +86,109 @@ export default function ImportPatients() {
 
       let imported = 0;
       let failed = 0;
-      const errors = [];
+      const errors: { row: number; message: string }[] = [];
       const total = dataRows.length;
 
-      // Process batches
+      // Column Mappings (CSV Header -> Internal Field)
+      const columnMap: Record<string, string> = {
+        "Nome Completo": "full_name",
+        "full_name": "full_name", // support standard
+        "Nome": "full_name",
+        "Email": "email",
+        "email": "email",
+        "Celulares": "phone",
+        "Telefones": "phone_alt",
+        "phone": "phone",
+        "Data Nascimento": "birth_date",
+        "birth_date": "birth_date",
+        "CPF": "cpf",
+        "cpf": "cpf",
+        "Sexo": "gender",
+        "gender": "gender",
+        "Endereço": "address",
+        "address": "address"
+      };
+
+      // Identify indexes
+      const indexes: Record<string, number> = {};
+      rawHeaders.forEach((h, i) => {
+        const key = columnMap[h] || columnMap[h.replace('.', '')]; // Handle potential "N." vs "N"
+        if (key) indexes[key] = i;
+      });
+
+      // Specific fallbacks for phone priority
+      const cellPhoneIdx = rawHeaders.findIndex(h => h === "Celulares");
+      const landlineIdx = rawHeaders.findIndex(h => h === "Telefones");
+
       for (let i = 0; i < total; i++) {
         try {
-          // Simple CSV parser (doesn't handle commas inside quotes perfectly but good enough for simple case)
-          const cols = dataRows[i].split(",");
-          // Map to object based on headers
-          const patientData = {};
-          headers.forEach((h, index) => {
-            if (cols[index]) patientData[h] = cols[index].replace(/"/g, '').trim();
-          });
+          // Robust line parsing handling quotes with delimiters inside
+          // This regex splits by delimiter but ignores delimiters inside quotes
+          const rowStr = dataRows[i];
+          const cols: string[] = [];
 
-          if (!patientData.full_name) throw new Error("Nome obrigatório");
+          // Simple split if no quotes expected, but use split for safety on simple CSVs
+          // The robust regex approach is complex to inline perfectly without a library,
+          // let's stick to split for now but handle basic quotes manually if needed or assume standard CSV
+          // Since the file has "1ª Paralela ...", it uses quotes. standard split will break.
+          // Let's use a simpler "split by delimiter if not in quotes" logic or just basic split if simple.
+          // Given the complexity, we'll try a smart split that respects quotes.
 
-          // Basic validation/formatting
-          if (patientData.birth_date && !patientData.birth_date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            // Try to parse if DD/MM/YYYY
-            const parts = patientData.birth_date.split('/');
-            if (parts.length === 3) patientData.birth_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-            else delete patientData.birth_date; // Invalid format
+          let inQuote = false;
+          let currentVal = "";
+          for (const char of rowStr) {
+            if (char === '"') {
+              inQuote = !inQuote;
+            } else if (char === delimiter && !inQuote) {
+              cols.push(currentVal);
+              currentVal = "";
+            } else {
+              currentVal += char;
+            }
+          }
+          cols.push(currentVal); // Push last col
+
+          const patientData: PatientData = {
+            status: "ativo"
+          };
+
+          // Helper to get val
+          const getVal = (idx: number | undefined): string | null => {
+            if (idx === undefined || idx >= cols.length) return null;
+            let val = cols[idx].trim();
+            // Remove wrapping quotes if present
+            if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+            return val;
+          };
+
+          // Extract Data
+          if (indexes.full_name !== undefined) patientData.full_name = getVal(indexes.full_name);
+          if (indexes.email !== undefined) patientData.email = getVal(indexes.email);
+          if (indexes.cpf !== undefined) patientData.cpf = getVal(indexes.cpf);
+          if (indexes.address !== undefined) patientData.address = getVal(indexes.address);
+          if (indexes.gender !== undefined) {
+            const g = getVal(indexes.gender);
+            patientData.gender = g === 'M' ? 'masculino' : g === 'F' ? 'feminino' : g;
           }
 
-          patientData.status = "ativo";
+          // Phone Logic: Prefer Cell, else Landline
+          const cell = getVal(cellPhoneIdx);
+          const land = getVal(landlineIdx);
+          patientData.phone = cell || land;
+
+          // Date Logic
+          const dateStr = indexes.birth_date !== undefined ? getVal(indexes.birth_date) : null;
+          if (dateStr) {
+            // Formats: DD/MM/YYYY or DD/MM/YYYY HH:mm:ss
+            // We want YYYY-MM-DD
+            const cleanDate = dateStr.split(" ")[0]; // remove time
+            const parts = cleanDate.split("/");
+            if (parts.length === 3) {
+              patientData.birth_date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+          }
+
+          if (!patientData.full_name) throw new Error("Nome obrigatório");
 
           await base44.entities.Patient.create(patientData);
           imported++;
@@ -106,7 +211,7 @@ export default function ImportPatients() {
       toast.success("Processamento concluído!");
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao importar pacientes. Verifique o formato do arquivo.");
+      toast.error("Erro ao importar pacientes. " + error.message);
     } finally {
       setIsUploading(false);
       setIsProcessing(false);

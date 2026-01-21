@@ -17,7 +17,8 @@ const PROCEDURE_CATEGORIES = {
   "Toxina": ["Toxina Botulínica"],
   "Preenchimentos": ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"],
   "Fios": ["Fio PDO Liso", "Fio PDO Tração"],
-  "Bioestimuladores": ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro"],
+  "Bioestimuladores": ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"],
+  "Corporal": ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"],
   "Tratamentos": ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"],
   "Transplante": ["TP1", "TP2", "TP3"],
   "Cirurgias": ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"]
@@ -43,7 +44,12 @@ export default function NewMedicalRecord() {
     photos_before: [],
     photos_after: [],
     // Selected Procedures
-    selected_procedures: [] as string[]
+    selected_procedures: [] as string[],
+    // Cost Details
+    toxin_units: "",
+    fillers_syringes: "",
+    threads_count: "",
+    materials_used: ""
   });
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -80,7 +86,12 @@ export default function NewMedicalRecord() {
         expectations: data.expectations,
         selected_procedures: data.selected_procedures,
         photos_before: data.photos_before,
-        photos_after: data.photos_after
+        photos_after: data.photos_after,
+        // Cost/Details
+        toxin_units: data.toxin_units,
+        fillers_syringes: data.fillers_syringes,
+        threads_count: data.threads_count,
+        materials_used: data.materials_used
       }, null, 2);
 
       const payload = {
@@ -373,6 +384,48 @@ export default function NewMedicalRecord() {
                 </div>
               </div>
             )}
+          </Card>
+
+          {/* 5. Procedure Details (Quantities/Costs) */}
+          <Card className="p-6 space-y-6">
+            <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Detalhes do Procedimento (Custos)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label>Toxina Aplicada (Unidades)</Label>
+                <Input
+                  type="number"
+                  placeholder="Ex: 50"
+                  value={formData.toxin_units}
+                  onChange={(e) => setFormData(p => ({ ...p, toxin_units: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Seringas Utilizadas</Label>
+                <Input
+                  type="number"
+                  placeholder="Ex: 2"
+                  value={formData.fillers_syringes}
+                  onChange={(e) => setFormData(p => ({ ...p, fillers_syringes: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Quantidade de Fios</Label>
+                <Input
+                  type="number"
+                  placeholder="Ex: 8"
+                  value={formData.threads_count}
+                  onChange={(e) => setFormData(p => ({ ...p, threads_count: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-3">
+                <Label>Material / Produtos Utilizados</Label>
+                <Textarea
+                  placeholder="Descreva marcas, lotes e materiais específicos utilizados..."
+                  value={formData.materials_used}
+                  onChange={(e) => setFormData(p => ({ ...p, materials_used: e.target.value }))}
+                />
+              </div>
+            </div>
           </Card>
 
           {/* Footer */}

@@ -16,6 +16,8 @@ export default function AdminOrganizations() {
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
+    const [editingOrg, setEditingOrg] = useState(null);
+    const [invitingOrg, setInvitingOrg] = useState(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -98,9 +100,8 @@ export default function AdminOrganizations() {
         }
     };
 
-    const handleInvite = (orgId) => {
-        // Placeholder for future invite logic
-        toast.info("Funcionalidade de convite rápido em desenvolvimento");
+    const handleInvite = (org) => {
+        setInvitingOrg(org);
     };
 
     return (
@@ -114,7 +115,7 @@ export default function AdminOrganizations() {
                     scrollbar-width: none;
                 }
             `}</style>
-            
+
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
@@ -248,16 +249,16 @@ export default function AdminOrganizations() {
                                 <Button
                                     variant="outline"
                                     className="px-3"
-                                    title="Convidar Gestor (Em breve)"
-                                    onClick={() => handleInvite(org.id)}
+                                    title="Convidar Membro"
+                                    onClick={() => handleInvite(org)}
                                 >
                                     <Users className="w-4 h-4 text-slate-600" />
                                 </Button>
                                 <Button
                                     variant="ghost"
                                     className="px-3 hover:bg-slate-100"
-                                    title="Configurações (Em breve)"
-                                    onClick={() => toast.info("Configurações da organização em breve")}
+                                    title="Configurações"
+                                    onClick={() => setEditingOrg(org)}
                                 >
                                     <Settings className="w-4 h-4 text-slate-400" />
                                 </Button>
@@ -266,7 +267,160 @@ export default function AdminOrganizations() {
                     ))
                 )}
             </div>
+
+            {/* Dialogs */}
+            <Dialog open={!!editingOrg} onOpenChange={(open) => !open && setEditingOrg(null)}>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>Configurações da Clínica</DialogTitle>
+                        <CardDescription>Gerencie os dados de {editingOrg?.name}</CardDescription>
+                    </DialogHeader>
+                    {editingOrg && (
+                        <OrganizationSettingsForm
+                            org={editingOrg}
+                            onClose={() => {
+                                setEditingOrg(null);
+                                fetchOrganizations();
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!invitingOrg} onOpenChange={(open) => !open && setInvitingOrg(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Convidar Membro</DialogTitle>
+                        <CardDescription>Envie um convite para {invitingOrg?.name}</CardDescription>
+                    </DialogHeader>
+                    {invitingOrg && (
+                        <InviteManagerForm
+                            org={invitingOrg}
+                            onClose={() => setInvitingOrg(null)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
+    );
+}
+
+function OrganizationSettingsForm({ org, onClose }) {
+    const { register, handleSubmit } = useForm({
+        defaultValues: { name: org.name, slug: org.slug }
+    });
+
+    const onSubmit = async (data) => {
+        try {
+            const { authClient } = await import("@/lib/auth-client");
+            await authClient.organization.update({
+                organizationId: org.id,
+                data: { name: data.name, slug: data.slug }
+            });
+            toast.success("Atualizado com sucesso!");
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao atualizar.");
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+            <div className="space-y-2">
+                <Label>Nome da Empresa</Label>
+                <Input {...register("name", { required: true })} />
+            </div>
+            <div className="space-y-2">
+                <Label>Slug (URL)</Label>
+                <Input {...register("slug", { required: true })} />
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+                <Button type="submit">Salvar</Button>
+            </div>
+        </form>
+    );
+}
+
+function InviteManagerForm({ org, onClose }) {
+    const { register, handleSubmit, watch } = useForm();
+    const [loading, setLoading] = useState(false);
+    const phoneValue = watch("phone");
+
+    const onInvite = async (data) => {
+        try {
+            setLoading(true);
+            const { authClient } = await import("@/lib/auth-client");
+            // Set active org usually required
+            await authClient.organization.setActive({ organizationId: org.id });
+
+            const { error } = await authClient.organization.inviteMember({
+                email: data.email,
+                role: data.role || "admin",
+            });
+
+            if (error) throw error;
+
+            toast.success("Convite enviado!");
+
+            // WhatsApp Logic
+            if (data.phone) {
+                const baseUrl = window.location.origin;
+                const inviteLink = `${baseUrl}/login?email=${encodeURIComponent(data.email)}&slug=${org.slug}`;
+                const message = `Olá! Você foi convidado para gerenciar a clínica *${org.name}* no ClinicOS.\n\nAcesse o link abaixo para criar sua senha e entrar:\n${inviteLink}`;
+                const whatsappUrl = `https://wa.me/55${data.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            }
+
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao enviar convite: " + (error.message || "Erro desconhecido"));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onInvite)} className="space-y-4 pt-4">
+            <div className="space-y-2">
+                <Label>E-mail do Convidador</Label>
+                <Input type="email" placeholder="email@exemplo.com" {...register("email", { required: true })} />
+            </div>
+
+            <div className="space-y-2">
+                <Label>WhatsApp (Opcional)</Label>
+                <div className="flex gap-2">
+                    <span className="flex items-center justify-center w-12 bg-slate-100 border border-slate-300 rounded-md text-slate-500 font-medium">
+                        +55
+                    </span>
+                    <Input
+                        placeholder="11999999999"
+                        type="tel"
+                        {...register("phone")}
+                    />
+                </div>
+                <p className="text-xs text-slate-500">Se preenchido, abrirá o WhatsApp com o link do convite.</p>
+            </div>
+            <div className="space-y-2">
+                <Label>Nível de Acesso</Label>
+                <select {...register("role")} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <option value="admin">Administrador</option>
+                    <option value="member">Membro</option>
+                </select>
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+                <Button
+                    type="submit"
+                    disabled={loading}
+                    className={`text-white ${phoneValue ? 'bg-green-600 hover:bg-green-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                >
+                    {loading ? "Enviando..." : (phoneValue ? "Enviar e Abrir WhatsApp" : "Enviar Convite")}
+                </Button>
+            </div>
+        </form>
     );
 }
 
