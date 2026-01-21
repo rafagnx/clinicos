@@ -28,10 +28,11 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/lib/utils";
+import { Link, useOutletContext } from "react-router-dom";
+import { createPageUrl, cn } from "@/lib/utils";
 
 export default function Leads() {
+  const { isDark } = useOutletContext<{ isDark: boolean }>();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -89,22 +90,22 @@ export default function Leads() {
   });
 
   const statusConfig = {
-    novo: { label: "Novo", color: "bg-blue-100 text-blue-700", icon: Clock },
-    contatado: { label: "Contatado", color: "bg-yellow-100 text-yellow-700", icon: Phone },
-    qualificado: { label: "Qualificado", color: "bg-purple-100 text-purple-700", icon: TrendingUp },
-    convertido: { label: "Convertido", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-    perdido: { label: "Perdido", color: "bg-red-100 text-red-700", icon: XCircle }
+    novo: { label: "Novo", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300", icon: Clock },
+    contatado: { label: "Contatado", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300", icon: Phone },
+    qualificado: { label: "Qualificado", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300", icon: TrendingUp },
+    convertido: { label: "Convertido", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300", icon: CheckCircle2 },
+    perdido: { label: "Perdido", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300", icon: XCircle }
   };
 
   const sourceConfig = {
-    meta_ads: { label: "Meta Ads", color: "bg-indigo-100 text-indigo-700" },
-    instagram: { label: "Instagram", color: "bg-pink-100 text-pink-700" },
-    facebook: { label: "Facebook", color: "bg-blue-100 text-blue-700" },
-    google: { label: "Google", color: "bg-red-100 text-red-700" },
-    site: { label: "Site", color: "bg-slate-100 text-slate-700" },
-    indicacao: { label: "Indicação", color: "bg-green-100 text-green-700" },
-    whatsapp: { label: "WhatsApp", color: "bg-emerald-100 text-emerald-700" },
-    outro: { label: "Outro", color: "bg-gray-100 text-gray-700" }
+    meta_ads: { label: "Meta Ads", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300" },
+    instagram: { label: "Instagram", color: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300" },
+    facebook: { label: "Facebook", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
+    google: { label: "Google", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" },
+    site: { label: "Site", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
+    indicacao: { label: "Indicação", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
+    whatsapp: { label: "WhatsApp", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" },
+    outro: { label: "Outro", color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300" }
   };
 
   const filteredLeads = leads.filter(lead => {
@@ -124,19 +125,19 @@ export default function Leads() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className={cn("min-h-screen p-6 transition-colors duration-300", isDark ? "bg-slate-950" : "bg-gradient-to-br from-slate-50 to-slate-100")}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Target className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-slate-800">Gestão de Leads</h1>
-            <p className="text-slate-500">Gerencie e converta seus leads em pacientes</p>
+            <h1 className={cn("text-3xl font-bold font-display", isDark ? "text-white" : "text-slate-800")}>Gestão de Leads</h1>
+            <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie e converta seus leads em pacientes</p>
           </div>
           <Link to={createPageUrl("ClinicSettings")}>
-            <Button variant="outline">
+            <Button variant="outline" className={cn(isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white" : "")}>
               Configurar Integrações
             </Button>
           </Link>
@@ -144,76 +145,76 @@ export default function Leads() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card className={cn(isDark ? "bg-slate-900/50 border-slate-800 backdrop-blur-sm" : "bg-white border-slate-200")}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">Total de Leads</p>
-                  <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
+                  <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>Total de Leads</p>
+                  <p className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-800")}>{stats.total}</p>
                 </div>
-                <Users className="w-8 h-8 text-slate-400" />
+                <Users className={cn("w-8 h-8", isDark ? "text-slate-600" : "text-slate-400")} />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(isDark ? "bg-slate-900/50 border-slate-800 backdrop-blur-sm" : "bg-white border-slate-200")}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">Novos</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.novos}</p>
+                  <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>Novos</p>
+                  <p className={cn("text-2xl font-bold", isDark ? "text-blue-400" : "text-blue-600")}>{stats.novos}</p>
                 </div>
-                <Clock className="w-8 h-8 text-blue-400" />
+                <Clock className={cn("w-8 h-8", isDark ? "text-blue-500/50" : "text-blue-400")} />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(isDark ? "bg-slate-900/50 border-slate-800 backdrop-blur-sm" : "bg-white border-slate-200")}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">Convertidos</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.convertidos}</p>
+                  <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>Convertidos</p>
+                  <p className={cn("text-2xl font-bold", isDark ? "text-green-400" : "text-green-600")}>{stats.convertidos}</p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 text-green-400" />
+                <CheckCircle2 className={cn("w-8 h-8", isDark ? "text-green-500/50" : "text-green-400")} />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={cn(isDark ? "bg-slate-900/50 border-slate-800 backdrop-blur-sm" : "bg-white border-slate-200")}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">Taxa Conversão</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-500")}>Taxa Conversão</p>
+                  <p className={cn("text-2xl font-bold", isDark ? "text-purple-400" : "text-purple-600")}>
                     {stats.total > 0 ? Math.round((stats.convertidos / stats.total) * 100) : 0}%
                   </p>
                 </div>
-                <TrendingUp className="w-8 h-8 text-purple-400" />
+                <TrendingUp className={cn("w-8 h-8", isDark ? "text-purple-500/50" : "text-purple-400")} />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
+        <Card className={cn("mb-6 transition-all duration-300", isDark ? "bg-slate-900/50 border-slate-800" : "bg-white border-slate-200")}>
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className={cn("absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4", isDark ? "text-slate-500" : "text-slate-400")} />
                 <Input
                   placeholder="Buscar por nome, telefone ou email..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
+                  className={cn("pl-10", isDark ? "bg-slate-950/50 border-slate-800 text-white placeholder:text-slate-600 focus:bg-slate-900" : "bg-white")}
                 />
               </div>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className={cn("w-full md:w-48", isDark ? "bg-slate-950/50 border-slate-800 text-slate-200" : "")}>
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={cn(isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "")}>
                   <SelectItem value="all">Todos os Status</SelectItem>
                   <SelectItem value="novo">Novo</SelectItem>
                   <SelectItem value="contatado">Contatado</SelectItem>
@@ -224,10 +225,10 @@ export default function Leads() {
               </Select>
 
               <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className={cn("w-full md:w-48", isDark ? "bg-slate-950/50 border-slate-800 text-slate-200" : "")}>
                   <SelectValue placeholder="Origem" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={cn(isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "")}>
                   <SelectItem value="all">Todas as Origens</SelectItem>
                   <SelectItem value="meta_ads">Meta Ads</SelectItem>
                   <SelectItem value="instagram">Instagram</SelectItem>
@@ -246,29 +247,29 @@ export default function Leads() {
         <div className="grid gap-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <Loader2 className={cn("w-8 h-8 animate-spin", isDark ? "text-indigo-400" : "text-blue-600")} />
             </div>
           ) : filteredLeads.length === 0 ? (
-            <Card>
+            <Card className={cn(isDark ? "bg-slate-900/50 border-slate-800" : "bg-white")}>
               <CardContent className="p-12 text-center">
-                <Target className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500">Nenhum lead encontrado</p>
+                <Target className={cn("w-12 h-12 mx-auto mb-3", isDark ? "text-slate-700" : "text-slate-300")} />
+                <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Nenhum lead encontrado</p>
               </CardContent>
             </Card>
           ) : (
             filteredLeads.map(lead => {
               const StatusIcon = statusConfig[lead.status]?.icon || Clock;
               return (
-                <Card key={lead.id} className="hover:shadow-lg transition-shadow">
+                <Card key={lead.id} className={cn("hover:shadow-lg transition-all border", isDark ? "bg-slate-900/40 border-slate-800 hover:bg-slate-800/60" : "bg-white border-slate-200")}>
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row gap-4">
                       <div className="flex-1">
                         <div className="flex items-start gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold", isDark ? "bg-slate-800 text-indigo-400 border border-slate-700" : "bg-gradient-to-br from-indigo-500 to-purple-600")}>
                             {lead.full_name?.charAt(0) || "?"}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-slate-800">{lead.full_name}</h3>
+                            <h3 className={cn("font-semibold", isDark ? "text-slate-200" : "text-slate-800")}>{lead.full_name}</h3>
                             <div className="flex flex-wrap gap-2 mt-1">
                               <Badge className={statusConfig[lead.status]?.color}>
                                 <StatusIcon className="w-3 h-3 mr-1" />
@@ -278,7 +279,7 @@ export default function Leads() {
                                 {sourceConfig[lead.source]?.label}
                               </Badge>
                               {lead.campaign_name && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className={cn("text-xs", isDark ? "border-slate-700 text-slate-400" : "")}>
                                   {lead.campaign_name}
                                 </Badge>
                               )}
@@ -286,33 +287,33 @@ export default function Leads() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-slate-600 ml-13">
+                        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-2 text-sm ml-13", isDark ? "text-slate-400" : "text-slate-600")}>
                           {lead.phone && (
                             <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-slate-400" />
+                              <Phone className="w-4 h-4 opacity-70" />
                               {lead.phone}
                             </div>
                           )}
                           {lead.email && (
                             <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-slate-400" />
+                              <Mail className="w-4 h-4 opacity-70" />
                               {lead.email}
                             </div>
                           )}
                           <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-slate-400" />
+                            <Calendar className="w-4 h-4 opacity-70" />
                             {format(new Date(lead.created_date), "dd/MM/yyyy", { locale: ptBR })}
                           </div>
                         </div>
 
                         {lead.interest && (
-                          <p className="text-sm text-slate-600 mt-2 ml-13">
-                            <strong>Interesse:</strong> {lead.interest}
+                          <p className={cn("text-sm mt-2 ml-13", isDark ? "text-slate-400" : "text-slate-600")}>
+                            <strong className={isDark ? "text-slate-300" : "text-slate-700"}>Interesse:</strong> {lead.interest}
                           </p>
                         )}
 
                         {lead.notes && (
-                          <p className="text-sm text-slate-500 mt-2 ml-13 line-clamp-2">{lead.notes}</p>
+                          <p className={cn("text-sm mt-2 ml-13 line-clamp-2", isDark ? "text-slate-500" : "text-slate-500")}>{lead.notes}</p>
                         )}
                       </div>
 
@@ -323,10 +324,10 @@ export default function Leads() {
                             updateLeadMutation.mutate({ id: lead.id, data: { status: newStatus } })
                           }
                         >
-                          <SelectTrigger className="w-full md:w-40">
+                          <SelectTrigger className={cn("w-full md:w-40", isDark ? "bg-slate-950/50 border-slate-700 text-slate-300" : "")}>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className={cn(isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "")}>
                             <SelectItem value="novo">Novo</SelectItem>
                             <SelectItem value="contatado">Contatado</SelectItem>
                             <SelectItem value="qualificado">Qualificado</SelectItem>
@@ -359,33 +360,33 @@ export default function Leads() {
 
       {/* Convert Dialog */}
       <Dialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
-        <DialogContent>
+        <DialogContent className={cn(isDark ? "bg-slate-900 border-slate-800 text-white" : "")}>
           <DialogHeader>
-            <DialogTitle>Converter Lead em Paciente</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className={cn(isDark ? "text-white" : "")}>Converter Lead em Paciente</DialogTitle>
+            <DialogDescription className={cn(isDark ? "text-slate-400" : "")}>
               Tem certeza que deseja converter {selectedLead?.full_name} em paciente?
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <p className="text-sm text-slate-600 mb-2">
-                <strong>Nome:</strong> {selectedLead?.full_name}
+            <div className={cn("p-4 rounded-lg", isDark ? "bg-slate-950 border border-slate-800" : "bg-slate-50")}>
+              <p className={cn("text-sm mb-2", isDark ? "text-slate-300" : "text-slate-600")}>
+                <strong className={isDark ? "text-white" : ""}>Nome:</strong> {selectedLead?.full_name}
               </p>
               {selectedLead?.phone && (
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>Telefone:</strong> {selectedLead?.phone}
+                <p className={cn("text-sm mb-2", isDark ? "text-slate-300" : "text-slate-600")}>
+                  <strong className={isDark ? "text-white" : ""}>Telefone:</strong> {selectedLead?.phone}
                 </p>
               )}
               {selectedLead?.email && (
-                <p className="text-sm text-slate-600">
-                  <strong>Email:</strong> {selectedLead?.email}
+                <p className={cn("text-sm", isDark ? "text-slate-300" : "text-slate-600")}>
+                  <strong className={isDark ? "text-white" : ""}>Email:</strong> {selectedLead?.email}
                 </p>
               )}
             </div>
 
             <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setConvertDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setConvertDialogOpen(false)} className={cn(isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "")}>
                 Cancelar
               </Button>
               <Button
