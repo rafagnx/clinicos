@@ -69,10 +69,10 @@ export default function AdminLayout() {
                             "h-16 flex items-center px-6 border-b",
                             isDark ? "border-slate-800" : "border-slate-200"
                         )}>
-                            <ShieldCheck className="w-8 h-8 text-indigo-500 mr-3 flex-shrink-0" />
+                            <img src="/clinicos-logo.png" alt="ClinicOS Logo" className="w-8 h-8 object-contain mr-3 flex-shrink-0" />
                             {sidebarOpen && (
                                 <div className="flex flex-col animate-in fade-in duration-300">
-                                    <span className="text-lg font-bold tracking-tight">Nexus</span>
+                                    <span className="text-lg font-bold tracking-tight">ClinicOS</span>
                                     <span className="text-[10px] uppercase tracking-wider opacity-50">Admin Panel</span>
                                 </div>
                             )}
