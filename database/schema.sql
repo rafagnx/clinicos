@@ -272,3 +272,22 @@ CREATE TABLE IF NOT EXISTS "financial_transactions" (
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );
+
+-- Promotions
+CREATE TABLE IF NOT EXISTS "promotions" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL,
+  "title" TEXT NOT NULL,
+  "procedure_name" TEXT,
+  "description" TEXT,
+  "status" TEXT DEFAULT 'ativa',
+  "type" TEXT DEFAULT 'desconto',
+  "discount_value" DECIMAL(10, 2),
+  "original_price" DECIMAL(10, 2),
+  "promotional_price" DECIMAL(10, 2),
+  "end_date" TIMESTAMP,
+  "image_url" TEXT,
+  "interest_count" INT DEFAULT 0,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
