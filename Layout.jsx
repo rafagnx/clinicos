@@ -17,11 +17,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
   Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Moon, Sun, Search,
-  ChevronLeft, ChevronRight, Activity, DollarSign
+  ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Theme Context
 const ThemeContext = React.createContext({
@@ -35,46 +36,46 @@ const navigation = [
   {
     group: "Principal",
     items: [
-      { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
-      { name: "Agenda", href: "Agenda", icon: Calendar },
+      { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard, gradient: "from-blue-500 to-cyan-500" },
+      { name: "Agenda", href: "Agenda", icon: Calendar, gradient: "from-purple-500 to-pink-500" },
     ]
   },
   {
     group: "Clínica",
     items: [
-      { name: "Pacientes", href: "Patients", icon: Users },
-      { name: "Prontuários", href: "MedicalRecords", icon: FileText },
+      { name: "Pacientes", href: "Patients", icon: Users, gradient: "from-emerald-500 to-teal-500" },
+      { name: "Prontuários", href: "MedicalRecords", icon: FileText, gradient: "from-orange-500 to-red-500" },
     ]
   },
   {
     group: "Comercial",
     items: [
-      { name: "Leads", href: "Leads", icon: Target },
-      { name: "Chat Equipe", href: "Chat", icon: MessageSquare },
-      { name: "Promoções", href: "Promotions", icon: Tag },
-      { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
+      { name: "Leads", href: "Leads", icon: Target, gradient: "from-violet-500 to-purple-500" },
+      { name: "Chat Equipe", href: "Chat", icon: MessageSquare, gradient: "from-blue-500 to-indigo-500" },
+      { name: "Promoções", href: "Promotions", icon: Tag, gradient: "from-pink-500 to-rose-500" },
+      { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare, gradient: "from-green-500 to-emerald-500" },
     ]
   },
   {
     group: "Gestão",
     items: [
-      { name: "Financeiro", href: "Financial", icon: DollarSign },
-      { name: "Equipe", href: "Professionals", icon: Stethoscope },
-      { name: "Relatórios", href: "Reports", icon: BarChart3 },
+      { name: "Financeiro", href: "Financial", icon: DollarSign, gradient: "from-yellow-500 to-orange-500" },
+      { name: "Equipe", href: "Professionals", icon: Stethoscope, gradient: "from-cyan-500 to-blue-500" },
+      { name: "Relatórios", href: "Reports", icon: BarChart3, gradient: "from-indigo-500 to-purple-500" },
     ]
   },
   {
     group: "Sistema",
     items: [
-      { name: "Configurações", href: "ClinicSettings", icon: Settings },
+      { name: "Configurações", href: "ClinicSettings", icon: Settings, gradient: "from-slate-500 to-gray-500" },
     ]
   }
 ];
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile toggle
-  const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse
-  const [isDark, setIsDark] = useState(false); // Default to light for regular users typically, but let's default to false to match expectations or true if they want full modernization. Let's start light but allow toggle.
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -94,7 +95,7 @@ export default function Layout() {
 
   useEffect(() => {
     if (!authLoading && !user && window.location.pathname !== '/login' && window.location.pathname !== '/register' && !window.location.pathname.startsWith('/accept-invitation')) {
-      // Auto-redirect disabled during dev to allow viewing layout, but should be enabled in prod.
+      // Auto-redirect disabled during dev
       // window.location.href = '/login'; 
     }
   }, [user, authLoading]);
@@ -121,20 +122,46 @@ export default function Layout() {
     <Link
       to={createPageUrl(item.href)}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+        "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
         isCollapsed ? "justify-center px-0" : "mx-2",
         isActive
-          ? (isDark ? "bg-indigo-600/10 text-indigo-400" : "bg-indigo-50 text-indigo-600")
-          : (isDark ? "text-slate-400 hover:text-slate-200 hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")
+          ? (isDark
+            ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white shadow-lg shadow-indigo-500/20"
+            : "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-md shadow-indigo-200/50")
+          : (isDark
+            ? "text-slate-400 hover:text-white hover:bg-white/5"
+            : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
       )}
       onClick={() => setSidebarOpen(false)}
     >
-      <item.icon className={cn("w-5 h-5 flex-shrink-0", isCollapsed ? "mx-auto" : "")} />
-      {!isCollapsed && <span>{item.name}</span>}
+      {/* Icon with gradient on hover */}
+      <div className={cn(
+        "relative p-2 rounded-lg transition-all duration-300",
+        isActive && `bg-gradient-to-br ${item.gradient} shadow-lg`
+      )}>
+        <item.icon className={cn(
+          "w-5 h-5 transition-all duration-300",
+          isActive ? "text-white" : (isDark ? "text-slate-400 group-hover:text-white" : "text-slate-600 group-hover:text-slate-900")
+        )} />
 
-      {/* Tooltip for collapsed state is handled by parent, but we can do it here too */}
+        {/* Glow effect on active */}
+        {isActive && (
+          <div className={cn(
+            "absolute inset-0 rounded-lg blur-xl opacity-50 bg-gradient-to-br",
+            item.gradient
+          )} />
+        )}
+      </div>
+
+      {!isCollapsed && <span className="relative z-10">{item.name}</span>}
+
+      {/* Active indicator */}
       {!isCollapsed && isActive && (
-        <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+        <motion.div
+          layoutId="activeNav"
+          className="absolute right-2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+        />
       )}
     </Link>
   );
@@ -143,38 +170,69 @@ export default function Layout() {
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
       <div className={cn(
         "min-h-screen font-sans transition-colors duration-300 flex",
-        isDark ? "bg-[#151A25] text-slate-100" : "bg-slate-50 text-slate-900"
+        isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100" : "bg-gradient-to-br from-slate-50 via-white to-slate-50 text-slate-900"
       )}>
         {/* Mobile Sidebar Backdrop */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Sidebar */}
-        <aside
+        <motion.aside
+          initial={false}
+          animate={{
+            x: sidebarOpen || window.innerWidth >= 768 ? 0 : -280,
+            width: isCollapsed && window.innerWidth >= 768 ? 80 : 280
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
-            "fixed top-0 bottom-0 left-0 z-50 h-[100dvh] transition-all duration-300 ease-in-out border-r flex flex-col",
-            isDark ? "bg-[#0B0E14] border-slate-800" : "bg-white border-slate-200",
-            sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full md:translate-x-0",
-            isCollapsed ? "md:w-20" : "md:w-64"
+            "fixed top-0 bottom-0 left-0 z-50 h-[100dvh] flex flex-col",
+            isDark
+              ? "glass-strong border-r border-slate-800/50 shadow-2xl shadow-black/20"
+              : "glass-strong border-r border-slate-200/50 shadow-2xl shadow-slate-300/20"
           )}
         >
-          {/* Header */}
+          {/* Header with Logo */}
           <div className={cn(
-            "h-16 flex items-center px-6 border-b shrink-0",
-            isDark ? "border-slate-800" : "border-slate-200",
+            "h-16 flex items-center px-6 border-b shrink-0 relative overflow-hidden",
+            isDark ? "border-slate-800/50" : "border-slate-200/50",
             isCollapsed && "justify-center px-0"
           )}>
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5 animate-shimmer" />
+
             {!isCollapsed ? (
-              <div className="flex items-center">
-                <img src="/clinicos-logo.png" alt="ClinicOS" className="w-8 h-8 object-contain mr-3" />
-                <span className={cn("text-lg font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>ClinicOS</span>
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-50" />
+                  <div className="relative w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <span className={cn(
+                    "text-xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
+                  )}>
+                    ClinicOS
+                  </span>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 tracking-wide">PREMIUM EDITION</p>
+                </div>
               </div>
             ) : (
-              <img src="/clinicos-logo.png" alt="ClinicOS" className="w-8 h-8 object-contain" />
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl blur-lg opacity-50" />
+                <div className="relative w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+              </div>
             )}
 
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)} className="md:hidden absolute right-2">
@@ -183,7 +241,7 @@ export default function Layout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 space-y-2 scrollbar-hide px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <nav className="flex-1 overflow-y-auto py-4 space-y-1 scrollbar-thin px-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <style>{`
               .scrollbar-hide::-webkit-scrollbar {
                   display: none;
@@ -191,13 +249,13 @@ export default function Layout() {
             `}</style>
             <TooltipProvider delayDuration={0}>
               {navigation.map((group, idx) => (
-                <div key={idx}>
+                <div key={idx} className="mb-6">
                   {!isCollapsed && group.group && (
-                    <h3 className="px-4 mb-1 text-[10px] font-bold uppercase tracking-wider opacity-50">
+                    <h3 className="px-4 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
                       {group.group}
                     </h3>
                   )}
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     {group.items.map((item) => {
                       const isActive = location.pathname.includes(item.href);
                       if (isCollapsed) {
@@ -206,7 +264,10 @@ export default function Layout() {
                             <TooltipTrigger asChild>
                               <div><NavItem item={item} isActive={isActive} /></div>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-slate-800 text-white ml-2 z-50">
+                            <TooltipContent side="right" className={cn(
+                              "ml-2 z-50 font-medium",
+                              isDark ? "bg-slate-800 text-white border-slate-700" : "bg-white text-slate-900 border-slate-200"
+                            )}>
                               {item.name}
                             </TooltipContent>
                           </Tooltip>
@@ -222,18 +283,22 @@ export default function Layout() {
             {/* Admin Link */}
             {(user?.email === "rafamarketingdb@gmail.com" || user?.role === "admin") && (
               <div className={cn("mt-4 pt-4 border-t mx-2", isDark ? "border-slate-800" : "border-slate-200")}>
-                {!isCollapsed && <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-wider opacity-50">Administração</h3>}
+                {!isCollapsed && <h3 className="px-2 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">Administração</h3>}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
                         to="/admin"
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative bg-gradient-to-r from-rose-500/10 to-purple-500/10 hover:from-rose-500/20 hover:to-purple-500/20 text-rose-500 border border-rose-500/20",
+                          "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group relative",
+                          "bg-gradient-to-r from-rose-500/10 to-purple-500/10 hover:from-rose-500/20 hover:to-purple-500/20",
+                          "text-rose-500 border border-rose-500/20 shadow-lg shadow-rose-500/10",
                           isCollapsed ? "justify-center px-0" : ""
                         )}
                       >
-                        <Target className="w-5 h-5" />
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500 to-purple-600">
+                          <Target className="w-5 h-5 text-white" />
+                        </div>
                         {!isCollapsed && <span>Super Admin</span>}
                       </Link>
                     </TooltipTrigger>
@@ -246,18 +311,27 @@ export default function Layout() {
 
           {/* Footer User Profile */}
           {user && (
-            <div className={cn("p-4 border-t", isDark ? "border-slate-800 bg-[#0B0E14]" : "border-slate-200 bg-white")}>
+            <div className={cn(
+              "p-4 border-t relative overflow-hidden",
+              isDark ? "border-slate-800/50 bg-slate-900/50" : "border-slate-200/50 bg-white/50"
+            )}>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5" />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start p-0 hover:bg-transparent">
+                  <Button variant="ghost" className="w-full justify-start p-0 hover:bg-transparent relative z-10">
                     <div className={cn("flex items-center gap-3 w-full", isCollapsed && "justify-center")}>
-                      <Avatar className="w-9 h-9 border border-indigo-500/30">
-                        <AvatarImage src={user.photo_url} />
-                        <AvatarFallback>U</AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full blur-md opacity-50" />
+                        <Avatar className="w-10 h-10 border-2 border-indigo-500/30 relative">
+                          <AvatarImage src={user.photo_url} />
+                          <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold">
+                            {user.name?.substring(0, 2).toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                       {!isCollapsed && (
-                        <div className="text-left overflow-hidden">
-                          <p className={cn("text-sm font-medium truncate", isDark ? "text-slate-200" : "text-slate-900")}>
+                        <div className="text-left overflow-hidden flex-1">
+                          <p className={cn("text-sm font-semibold truncate", isDark ? "text-slate-200" : "text-slate-900")}>
                             {user.name || user.display_name || "Usuário"}
                           </p>
                           <p className="text-xs text-slate-500 truncate">{user.email}</p>
@@ -267,14 +341,14 @@ export default function Layout() {
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className={cn("w-56", isDark ? "bg-[#1C2333] border-slate-800 text-slate-200" : "")}>
+                <DropdownMenuContent align="end" className={cn("w-56", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
                   <DropdownMenuItem asChild>
                     <Link to="/Profile" className="cursor-pointer">
                       <Settings className="w-4 h-4 mr-2" />
                       Meu Perfil
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                  <DropdownMenuSeparator className={isDark ? "bg-slate-800" : ""} />
                   <DropdownMenuItem
                     className="text-red-500 focus:text-red-500 cursor-pointer"
                     onClick={() => base44.auth.logout()}
@@ -286,24 +360,34 @@ export default function Layout() {
               </DropdownMenu>
             </div>
           )}
-        </aside>
+        </motion.aside>
 
         {/* Main Content */}
         <div className={cn(
           "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out",
-          isCollapsed ? "md:ml-20" : "md:ml-64"
+          isCollapsed ? "md:ml-20" : "md:ml-[280px]"
         )}>
           {/* Top Header */}
           <header className={cn(
-            "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 backdrop-blur-md",
-            isDark ? "bg-[#0B0E14]/80 border-slate-800" : "bg-white/80 border-slate-200"
+            "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 relative overflow-hidden",
+            isDark
+              ? "glass-strong border-slate-800/50 shadow-lg shadow-black/5"
+              : "glass-strong border-slate-200/50 shadow-lg shadow-slate-200/20"
           )}>
-            <div className="flex items-center gap-4">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
+
+            <div className="flex items-center gap-4 relative z-10">
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="md:hidden">
                 <Menu className="w-5 h-5" />
               </Button>
 
-              <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="hidden md:flex">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="hidden md:flex hover:bg-indigo-500/10 transition-colors"
+              >
                 {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
               </Button>
 
@@ -314,28 +398,33 @@ export default function Layout() {
                   placeholder="Buscar..."
                   className={cn(
                     "pl-9 pr-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-64",
-                    isDark ? "bg-[#151A25] text-slate-200 placeholder:text-slate-600" : "bg-slate-100 text-slate-900"
+                    isDark ? "bg-slate-900/50 text-slate-200 placeholder:text-slate-600 border border-slate-800" : "bg-white text-slate-900 border border-slate-200"
                   )}
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+            <div className="flex items-center gap-2 relative z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="rounded-full hover:bg-indigo-500/10 transition-colors"
+              >
                 {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
               </Button>
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative rounded-full">
+                  <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-indigo-500/10 transition-colors">
                     <Bell className="w-5 h-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full border-2 border-background animate-pulse-soft"></span>
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent align="end" className={cn("w-80 p-0", isDark ? "bg-[#1C2333] border-slate-800 text-slate-200" : "")}>
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                <PopoverContent align="end" className={cn("w-80 p-0", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
+                  <div className={cn("p-4 border-b", isDark ? "border-slate-800" : "border-slate-100")}>
                     <h4 className="font-semibold">Notificações</h4>
                   </div>
                   <div className="max-h-[60vh] overflow-y-auto">
