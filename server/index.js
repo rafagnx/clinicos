@@ -10,6 +10,7 @@ import { betterAuth } from "better-auth";
 import { organization } from "better-auth/plugins";
 import { toNodeHandler } from "better-auth/node";
 import { stripeService } from './stripe-service.js';
+import { startCleanupJob } from './jobs/cleanup.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -859,4 +860,5 @@ app.get(/.*/, (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    startCleanupJob(pool);
 });
