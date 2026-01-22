@@ -411,6 +411,16 @@ export default function PlanilhaLP() {
             <Pricing />
             <FinalCTA />
 
+            {/* Mobile Sticky CTA */}
+            <div className="fixed bottom-6 left-6 right-6 z-50 md:hidden scale-in-center">
+                <Link to="/register">
+                    <Button className="w-full h-14 text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl shadow-2xl shadow-blue-900/50 flex items-center justify-center gap-2 border border-white/10">
+                        Começar Agora
+                        <Zap className="w-5 h-5 fill-white" />
+                    </Button>
+                </Link>
+            </div>
+
             <footer className="py-12 bg-slate-950 border-t border-slate-900">
                 <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center gap-2">

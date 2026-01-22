@@ -1,9 +1,5 @@
 import axios from "axios";
-import { authClient } from "@/lib/auth-client"; // Import for types if needed, or we rely on localStorage/hooks
-// Note: Interacting with authClient state from outside React components is tricky. 
-// We will rely on localStorage for active organization or let the interceptor fetch it if possible.
-// Better Auth organizes active org in it's session, which is httpOnly cookie usually for server, but client needs to know.
-// Client state is in useSession. 
+import { supabase } from "@/lib/supabaseClient";
 
 // PRODUCTION BACKEND URL
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
@@ -11,17 +7,13 @@ const BACKEND_URL = `${BASE_URL}/api`;
 
 const api = axios.create({
     baseURL: BACKEND_URL,
-    withCredentials: true, // IMPORTANT: Send cookies (session)
+    withCredentials: true,
     headers: {
         "Content-Type": "application/json"
     }
 });
 
-console.log("ClinicOS Client v1.1 Loaded - Debug Mode"); // Log to verify update
-
-import { supabase } from "@/lib/supabaseClient";
-
-// ...
+console.log("ClinicOS Client v1.2 Loaded - Supabase Mode");
 
 // Interceptor to add Organization ID and Auth Token
 api.interceptors.request.use(async (config) => {
@@ -45,24 +37,102 @@ api.interceptors.request.use(async (config) => {
     return Promise.reject(error);
 });
 
-// ... (Entity Handlers remain same)
-
-auth: {
-    me: async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            // Map Supabase User to our App User Shape
-            return {
-                id: user.id,
-                email: user.email,
-                name: user.user_metadata?.full_name || user.email?.split('@')[0],
-                photo_url: user.user_metadata?.avatar_url || user.user_metadata?.image,
-                role: user.user_metadata?.role || 'user',
-                active_organization_id: localStorage.getItem("active-org-id") // Client-side context
-            };
+// Generic Entity Handler Factory
+const createEntityHandler = (entityName) => ({
+    list: async (params = {}) => {
+        let requestParams = {};
+        if (params && typeof params === 'object') {
+            requestParams = { ...params };
         }
-        throw new Error("Not authenticated");
+        try {
+            const response = await api.get(`/${entityName}`, { params: requestParams });
+            return response.data;
+        } catch (error) {
+            console.error(`Error listing ${entityName}:`, error);
+            // Return empty array on error to prevent crashes
+            return [];
+        }
     },
+    read: async (params = {}) => {
+        try {
+            let queryParams = {};
+            if (params && typeof params === 'object' && params.filter) {
+                Object.assign(queryParams, params.filter);
+            }
+            const response = await api.get(`/${entityName}`, { params: queryParams });
+            return response.data;
+        } catch (error) {
+            console.error(`Error reading ${entityName}:`, error);
+            return [];
+        }
+    },
+    filter: async (query) => {
+        return createEntityHandler(entityName).read({ filter: query });
+    },
+    create: async (data) => {
+        try {
+            const response = await api.post(`/${entityName}`, data);
+            return response.data;
+        } catch (error) {
+            console.error(`Error creating ${entityName}:`, error);
+            throw error;
+        }
+    },
+    update: async (id, data) => {
+        try {
+            const response = await api.put(`/${entityName}/${id}`, data);
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating ${entityName}:`, error);
+            throw error;
+        }
+    },
+    delete: async (id) => {
+        try {
+            const response = await api.delete(`/${entityName}/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Error deleting ${entityName}:`, error);
+            throw error;
+        }
+    },
+});
+
+export const base44 = {
+    // Entities
+    entities: {
+        Professional: createEntityHandler("Professional"),
+        Patient: createEntityHandler("Patient"),
+        Appointment: createEntityHandler("Appointment"),
+        MedicalRecord: createEntityHandler("MedicalRecord"),
+        Notification: createEntityHandler("Notification"),
+        Promotion: createEntityHandler("Promotion"),
+        Lead: createEntityHandler("Lead"),
+        Message: createEntityHandler("Message"),
+        Conversation: createEntityHandler("Conversation"),
+        ClinicSettings: createEntityHandler("ClinicSettings"),
+        NotificationPreference: createEntityHandler("NotificationPreference"),
+        ProcedureType: createEntityHandler("ProcedureType"),
+        FinancialTransaction: createEntityHandler("FinancialTransaction"),
+        Organization: createEntityHandler("Organization"),
+    },
+
+    // Auth (Supabase Integration)
+    auth: {
+        me: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                return {
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.email?.split('@')[0],
+                    photo_url: user.user_metadata?.avatar_url || user.user_metadata?.image,
+                    role: user.user_metadata?.role || 'user',
+                    active_organization_id: localStorage.getItem("active-org-id")
+                };
+            }
+            return null; // Will trigger re-login in Layout
+        },
         updateMe: async (data) => {
             const { data: updatedUser, error } = await supabase.auth.updateUser({
                 data: {
@@ -77,32 +147,38 @@ auth: {
             return {
                 ...updatedUser.user,
                 name: updatedUser.user.user_metadata.full_name
-            }; // Return mapped
+            };
         },
-            logout: async () => {
-                await supabase.auth.signOut();
-                localStorage.removeItem("clinicos-token");
-                localStorage.removeItem("active-org-id");
-                window.location.href = "/login";
-            }
-},
-admin: {
-    listOrganizations: async () => {
-        const response = await api.get("/admin/organizations");
-        return response.data;
+        logout: async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem("clinicos-token");
+            localStorage.removeItem("active-org-id");
+            window.location.href = "/login";
+        }
+    },
+
+    // Admin Helper
+    admin: {
+        listOrganizations: async () => {
+            const response = await api.get("/admin/organizations");
+            return response.data;
+        }
+    },
+
+    // Mock Storage
+    storage: {
+        upload: async (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        }
+    },
+
+    // Mock Cloud Functions
+    functions: {
+        invoke: async () => ({ success: true })
     }
-},
-storage: {
-    upload: async (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    }
-},
-functions: {
-    invoke: async () => ({ success: true })
-}
 };
