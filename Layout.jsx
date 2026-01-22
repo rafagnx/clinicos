@@ -111,10 +111,10 @@ export default function Layout() {
 
   useEffect(() => {
     if (!authLoading && !user && window.location.pathname !== '/login' && window.location.pathname !== '/register' && !window.location.pathname.startsWith('/accept-invitation')) {
-      // Auto-redirect disabled during dev
-      // window.location.href = '/login'; 
+      // Redirect to login if not authenticated
+      navigate('/login');
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, navigate]);
 
   const { data: clinicSettings } = useQuery({
     queryKey: ["clinic-settings"],
