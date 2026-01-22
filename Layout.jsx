@@ -200,8 +200,39 @@ export default function Layout() {
     </Link>
   );
 
+  // Subscription Lock Logic
+  const SubscriptionLock = () => (
+    <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5" />
+        <div className="relative z-10">
+          <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">Sua assinatura expirou</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
+            O período de teste ou sua assinatura chegou ao fim. Para continuar gerenciando sua clínica com excelência, reative seu plano.
+          </p>
+          <Button asChild className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-6 text-lg rounded-xl shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02]">
+            <Link to="/ClinicSettings">
+              Reativar Acesso Agora
+            </Link>
+          </Button>
+          <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
+            Precisa de ajuda? <a href="#" className="underline hover:text-indigo-500">Fale com o suporte</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const isSubscriptionActive = !organization || // Allow if org loading or not found yet (prevent flash) 
+    ['active', 'trialing', 'manual_override'].includes(organization?.subscription_status) ||
+    user?.email === 'rafamarketingdb@gmail.com';
+
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      {!isSubscriptionActive && <SubscriptionLock />}
       <div className={cn(
         "min-h-screen font-sans transition-colors duration-300 flex",
         isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100" : "bg-gradient-to-br from-slate-50 via-white to-slate-50 text-slate-900"
