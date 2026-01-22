@@ -671,6 +671,18 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     const data = req.body;
     delete data.id; // Ensure ID is generated
 
+    // DATA FIX: Map 'full_name' to 'name' for Professionals if needed
+    if (entity === 'Professional' && data.full_name) {
+        console.log('Sanitizing Professional data: mapping full_name to name');
+        data.name = data.full_name;
+        delete data.full_name;
+    }
+
+    // DATA FIX: Ensure 'rating' is a number
+    if (entity === 'Professional' && data.rating) {
+        data.rating = parseFloat(data.rating);
+    }
+
     // Inject Context ID
     if (isUserScoped) {
         data.user_id = user.id;
