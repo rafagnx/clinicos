@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
     ArrowRight, Check, Star, Zap, BarChart3, Users,
-    Calendar, FileText, Smartphone, MessageCircle, ShieldCheck, HeartPulse
+    Calendar, FileText, Smartphone, MessageCircle, ShieldCheck, HeartPulse,
+    Activity, DollarSign
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
