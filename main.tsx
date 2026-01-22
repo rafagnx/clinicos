@@ -13,7 +13,6 @@ import AcceptInvitation from './pages/AcceptInvitation'
 import Organization from './pages/Organization' // New Org Page
 import Financial from './pages/Financial' // New Financial Page
 import PlanilhaLP from './pages/PlanilhaLP'
-import LandingPageDark from './pages/LandingPageDark'
 
 import Dashboard from './pages/Dashboard'
 import Agenda from './pages/Agenda'
@@ -53,9 +52,7 @@ const App = () => {
                 <Route path="/register" element={<Auth />} />
                 <Route path="/accept-invitation" element={<AcceptInvitation />} />
                 <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
-                <Route path="/" element={<LandingPageDark />} />
-                <Route path="/lp" element={<PlanilhaLP />} />
-                <Route path="/lp-premium" element={<LandingPageDark />} />
+                <Route path="/" element={<PlanilhaLP />} />
 
                 {/* Organization Setup */}
                 <Route path="/organization/new" element={<Organization />} />
