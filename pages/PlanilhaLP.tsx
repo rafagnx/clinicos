@@ -240,7 +240,7 @@ const MockupSection = () => {
                                 initial={{ x: -30, opacity: 0 }}
                                 whileInView={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.3, duration: 0.6 }}
-                                className="absolute top-8 -left-12 md:-left-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-4 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/20 max-w-[200px]"
+                                className="absolute top-8 -left-6 md:-left-16 bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-3 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/20 max-w-[180px]"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -257,7 +257,7 @@ const MockupSection = () => {
                                 initial={{ x: -30, opacity: 0 }}
                                 whileInView={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.5, duration: 0.6 }}
-                                className="absolute top-32 -left-8 md:-left-16 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-4 rounded-2xl border border-blue-500/20 shadow-2xl shadow-blue-500/20 max-w-[180px]"
+                                className="absolute top-32 -left-4 md:-left-12 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-3 rounded-2xl border border-blue-500/20 shadow-2xl shadow-blue-500/20 max-w-[170px]"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
@@ -274,7 +274,7 @@ const MockupSection = () => {
                                 initial={{ x: 30, opacity: 0 }}
                                 whileInView={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.7, duration: 0.6 }}
-                                className="absolute bottom-24 -right-8 md:-right-16 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-4 rounded-2xl border border-purple-500/20 shadow-2xl shadow-purple-500/20 max-w-[180px]"
+                                className="absolute bottom-24 -right-4 md:-right-12 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-3 rounded-2xl border border-purple-500/20 shadow-2xl shadow-purple-500/20 max-w-[170px]"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
@@ -291,7 +291,7 @@ const MockupSection = () => {
                                 initial={{ x: 30, opacity: 0 }}
                                 whileInView={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.9, duration: 0.6 }}
-                                className="absolute bottom-8 -right-12 md:-right-20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl p-3 rounded-2xl border border-amber-500/20 shadow-2xl shadow-amber-500/20 max-w-[160px]"
+                                className="absolute bottom-8 -right-6 md:-right-16 bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl p-2.5 rounded-2xl border border-amber-500/20 shadow-2xl shadow-amber-500/20 max-w-[150px]"
                             >
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
