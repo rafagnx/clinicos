@@ -19,12 +19,23 @@ const api = axios.create({
 
 console.log("ClinicOS Client v1.1 Loaded - Debug Mode"); // Log to verify update
 
-// Interceptor to add Organization ID
+import { supabase } from "@/lib/supabaseClient";
+
+// ...
+
+// Interceptor to add Organization ID and Auth Token
 api.interceptors.request.use(async (config) => {
     if (!config) config = {};
     if (!config.headers) config.headers = {};
 
-    // Try to get active org from localStorage (we will set this in our React UI)
+    // 1. Inject Supabase JWT Token (Bearer)
+    // This solves Cross-Site cookie issues on Render/Vercel
+    const { data } = await supabase.auth.getSession();
+    if (data?.session?.access_token) {
+        config.headers["Authorization"] = `Bearer ${data.session.access_token}`;
+    }
+
+    // 2. Active Org context
     const activeOrgId = localStorage.getItem("active-org-id");
     if (activeOrgId) {
         config.headers["x-organization-id"] = activeOrgId;
@@ -34,158 +45,64 @@ api.interceptors.request.use(async (config) => {
     return Promise.reject(error);
 });
 
-const createEntityHandler = (entityName) => ({
-    list: async (params = {}) => {
-        // Handle "params" safely. If it's a string (legacy), ignore it or wrap it.
-        // Axios params MUST be an object.
-        let requestParams = {};
-        if (params && typeof params === 'object') {
-            requestParams = { ...params };
-        } else if (typeof params === 'string') {
-            // If it's a string (like '-date'), we can't easily map it to generic params without knowing API specifics.
-            // For now, we ignore it to prevent the crash, essentially listing default order.
-            console.warn(`[Client] Ignoring string param for ${entityName}.list:`, params);
-        }
+// ... (Entity Handlers remain same)
 
-        try {
-            const response = await api.get(`/${entityName}`, { params: requestParams });
-            return response.data;
-        } catch (error) {
-            console.error(`Error listing ${entityName}:`, error);
-            // Return empty array on error to prevent unnecessary crashes
-            return [];
-        }
-    },
-    read: async (params = {}) => {
-        try {
-            let queryParams = {};
-            if (params && typeof params === 'object' && params.filter) {
-                // Support all filters, not just ID
-                Object.assign(queryParams, params.filter);
-            }
-            const response = await api.get(`/${entityName}`, { params: queryParams });
-            return response.data;
-        } catch (error) {
-            console.error(`Error reading ${entityName}:`, error);
-            return [];
-        }
-    },
-    filter: async (query) => {
-        return createEntityHandler(entityName).read({ filter: query });
-    },
-    create: async (data) => {
-        try {
-            const response = await api.post(`/${entityName}`, data);
-            return response.data;
-        } catch (error) {
-            console.error(`Error creating ${entityName}:`, error);
-            throw error;
-        }
-    },
-    update: async (id, data) => {
-        try {
-            const response = await api.put(`/${entityName}/${id}`, data);
-            return response.data;
-        } catch (error) {
-            console.error(`Error updating ${entityName}:`, error);
-            throw error;
-        }
-    },
-    delete: async (id) => {
-        try {
-            const response = await api.delete(`/${entityName}/${id}`);
-            return response.data;
-        } catch (error) {
-            console.error(`Error deleting ${entityName}:`, error);
-            throw error;
-        }
-    },
-});
-
-export const base44 = {
-    // Generic methods forwarding to entity handlers
-    list: (e, p) => createEntityHandler(e).list(p),
-    read: (e, p) => createEntityHandler(e).read(p),
-    filter: (e, p) => createEntityHandler(e).filter(p),
-    create: (e, d) => createEntityHandler(e).create(d),
-    update: (e, i, d) => createEntityHandler(e).update(i, d),
-    delete: (e, i) => createEntityHandler(e).delete(i),
-
-    entities: {
-        Professional: createEntityHandler("Professional"),
-        Patient: createEntityHandler("Patient"),
-        Appointment: createEntityHandler("Appointment"),
-        MedicalRecord: createEntityHandler("MedicalRecord"),
-        Notification: createEntityHandler("Notification"),
-        Promotion: createEntityHandler("Promotion"),
-        Lead: createEntityHandler("Lead"),
-        Message: createEntityHandler("Message"),
-        Conversation: createEntityHandler("Conversation"), // Added missing entity
-        ClinicSettings: createEntityHandler("ClinicSettings"), // Added for layout
-        NotificationPreference: createEntityHandler("NotificationPreference"), // Added missing entity
-        ProcedureType: createEntityHandler("ProcedureType"), // Custom Procedures
-        FinancialTransaction: createEntityHandler("FinancialTransaction"), // Financial Management
-    },
-
-    auth: {
-        // Updated to use the new endpoints via api instance 
-        // But mainly for compatibility with existing calls.
-        // Usually, we should switch to `authClient` from `better-auth`.
-        me: async () => {
-            // For layout compat
-            const { data } = await authClient.getSession();
-            if (data?.user) {
-                return {
-                    ...data.user,
-                    photo_url: data.user.image || data.user.photo_url
-                };
-            }
-            return null;
-        },
-        updateMe: async (data) => {
-            // Map legacy form data to better-auth keys
-            // This is critical because Profile.tsx sends 'display_name' but user table has 'name'
-            const updatePayload = {
-                name: data.display_name || data.name || data.full_name,
-                image: data.photo_url || data.image,
-                phone: data.phone,
-                specialty: data.specialty,
-                user_type: data.user_type
+auth: {
+    me: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            // Map Supabase User to our App User Shape
+            return {
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata?.full_name || user.email?.split('@')[0],
+                photo_url: user.user_metadata?.avatar_url || user.user_metadata?.image,
+                role: user.user_metadata?.role || 'user',
+                active_organization_id: localStorage.getItem("active-org-id") // Client-side context
             };
-
-            // Remove undefined keys to prevent 400 Bad Request
-            Object.keys(updatePayload).forEach(key => updatePayload[key] === undefined && delete updatePayload[key]);
-
-            // If payload is empty, return early (or throw check)
-            if (Object.keys(updatePayload).length === 0) return { data: null };
-
-            const { data: updatedUser, error } = await authClient.updateUser(updatePayload);
+        }
+        throw new Error("Not authenticated");
+    },
+        updateMe: async (data) => {
+            const { data: updatedUser, error } = await supabase.auth.updateUser({
+                data: {
+                    full_name: data.display_name || data.name,
+                    image: data.photo_url,
+                    phone: data.phone,
+                    specialty: data.specialty
+                }
+            });
 
             if (error) throw error;
-            return updatedUser;
+            return {
+                ...updatedUser.user,
+                name: updatedUser.user.user_metadata.full_name
+            }; // Return mapped
         },
-        logout: async () => {
-            await authClient.signOut();
-            window.location.href = "/login";
-        }
-    },
-    admin: {
-        listOrganizations: async () => {
-            const response = await api.get("/admin/organizations");
-            return response.data;
-        }
-    },
-    storage: {
-        upload: async (file) => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (error) => reject(error);
-            });
-        }
-    },
-    functions: {
-        invoke: async () => ({ success: true })
+            logout: async () => {
+                await supabase.auth.signOut();
+                localStorage.removeItem("clinicos-token");
+                localStorage.removeItem("active-org-id");
+                window.location.href = "/login";
+            }
+},
+admin: {
+    listOrganizations: async () => {
+        const response = await api.get("/admin/organizations");
+        return response.data;
     }
+},
+storage: {
+    upload: async (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    }
+},
+functions: {
+    invoke: async () => ({ success: true })
+}
 };

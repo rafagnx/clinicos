@@ -19,21 +19,18 @@ export default function Auth() {
     const handleSignIn = async () => {
         setLoading(true);
         try {
-            const { data, error } = await authClient.signIn.email({
+            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signInWithPassword({
                 email,
                 password
-            });
-            if (error) {
-                toast.error(error.message || "Erro ao fazer login");
-            } else {
-                // Fetch user's organizations to set context
-                const orgs = await authClient.organization.list();
-                if (orgs.data && orgs.data.length > 0) {
-                    localStorage.setItem("active-org-id", orgs.data[0].id);
-                }
+            }));
 
+            if (error) {
+                toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
+            } else {
                 toast.success("Login realizado com sucesso!");
-                navigate("/dashboard");
+                localStorage.setItem("clinicos-token", data.session?.access_token || "");
+                // Fetch user org context later or just dashboard
+                window.location.href = "/dashboard";
             }
         } catch (e) {
             console.error("Login error:", e);
@@ -46,25 +43,32 @@ export default function Auth() {
     const handleSignUp = async () => {
         setLoading(true);
         try {
-            const { data, error } = await authClient.signUp.email({
+            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signUp({
                 email,
                 password,
-                name
-            });
+                options: {
+                    data: {
+                        full_name: name,
+                    }
+                }
+            }));
+
             if (error) {
                 toast.error(error.message || "Erro ao criar conta");
             } else {
-                toast.success("Conta criada! Configure sua clínica.");
-                // Usually auto-logs in
-                if (data) {
+                if (data.session) {
+                    toast.success("Conta criada! Redirecionando...");
+                    localStorage.setItem("clinicos-token", data.session.access_token);
+                    // Redirect to Organisation creation since it's a new user
                     navigate("/organization/new");
-                } else {
-                    // Check if sign in needed or verify email
-                    navigate("/login");
+                } else if (data.user) {
+                    toast.success("Conta criada! Verifique seu email para confirmar.");
+                    // Optional: navigate to a "check email" page
                 }
             }
         } catch (e) {
             toast.error("Erro inesperado");
+            console.error(e);
         } finally {
             setLoading(false);
         }

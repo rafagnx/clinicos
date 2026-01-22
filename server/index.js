@@ -6,9 +6,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import { betterAuth } from "better-auth";
-import { organization } from "better-auth/plugins";
-import { toNodeHandler } from "better-auth/node";
+import { createClient } from '@supabase/supabase-js';
 import { stripeService } from './stripe-service.js';
 import { startCleanupJob } from './jobs/cleanup.js';
 
@@ -25,6 +23,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Render Load Balancer) - Required for Secure Cookies
 const PORT = process.env.PORT || 3001;
 
 // Database Connection Config
@@ -43,62 +42,40 @@ const dbConfig = process.env.DATABASE_URL
 
 const pool = new Pool(dbConfig);
 
-// Better Auth Initialization
-const auth = betterAuth({
-    database: pool,
-    secret: process.env.BETTER_AUTH_SECRET || "clinic_os_fallback_secret_secure_enough_for_now_123", // Fallback to unblock deploy
-    baseURL: process.env.VITE_BACKEND_URL || "https://clinicos-it4q.onrender.com",
-    plugins: [
-        organization()
-    ],
-    emailAndPassword: {
-        enabled: true
-    },
-    user: {
-        additionalFields: {
-            phone: {
-                type: "string",
-                required: false,
-            },
-            specialty: {
-                type: "string",
-                required: false
-            },
-            user_type: {
-                type: "string",
-                required: false
+// SUPABASE AUTH SETUP
+// Using hardcoded keys allowed by user for immediate migration fix
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://yhfjhovhemgcamigimaj.supabase.co";
+const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloZmpob3ZoZW1nY2FtaWdpbWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNzE1NzAsImV4cCI6MjA4NDY0NzU3MH0.6a8aSDM12eQwTRZES5r_hqFDGq2akKt9yMOys3QzodQ";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// AUTH MIDDLEWARE (Definition)
+const requireAuth = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    // Allow options/preflight to pass if not caught by cors? cors handles it.
+
+    // If using Bearer Token
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser(token);
+            if (!error && user) {
+                const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
+                req.auth = {
+                    userId: user.id,
+                    organizationId: req.headers['x-organization-id'],
+                    user: { ...user, role: isSystemAdmin ? 'admin' : (user.user_metadata?.role || 'user') },
+                    isSystemAdmin: isSystemAdmin
+                };
+                return next();
             }
+        } catch (err) {
+            console.error("Auth Token Error:", err);
         }
-    },
-    advanced: {
-        cookiePrefix: "clinicos",
-        useSecureCookies: true, // Force secure cookies
-        crossSubdomainCookies: {
-            enabled: true,
-            domain: ".onrender.com" // Help with Render subdomains if needed, though unaux is external
-        },
-        defaultCookieAttributes: {
-            sameSite: "none", // REQUIRED for cross-site (Frontend on unaux, Backend on render)
-            secure: true, // REQUIRED for sameSite: none
-            httpOnly: true
-        }
-    },
-    rateLimit: {
-        window: 10, // 10 seconds (short window)
-        max: 100, // Allow 100 requests per window (very permissive for debugging)
-    },
-    trustedOrigins: [
-        "http://localhost:5173",
-        "http://localhost:3001",
-        "https://clinicos.unaux.com",
-        "https://www.clinicos.unaux.com",
-        "http://clinicos.unaux.com",
-        "https://clinicos-ruby.vercel.app",
-        "https://clinicos-black.vercel.app",
-        "https://clinicos-eta.vercel.app",
-        "https://clinicosapp.vercel.app"
-    ]
-});
+    }
+
+    // If authentication failed
+    return res.status(401).json({ error: "Unauthorized: Invalid Session" });
+};
 
 // Middleware
 app.use(cors({
@@ -147,19 +124,8 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// ------------------------------------------------------------------
-// BETTER AUTH ROUTE HANDLER
-// ------------------------------------------------------------------
-console.log('Auth initialized:', !!auth);
-console.log('toNodeHandler type:', typeof toNodeHandler);
-try {
-    const handler = toNodeHandler(auth);
-    console.log('Handler generated type:', typeof handler);
-    app.all(/\/api\/auth\/.*/, handler);
-    app.all(/\/api\/organization\/.*/, handler);
-} catch (e) {
-    console.error('Failed to generate node handler:', e);
-}
+// Auth routes handled by Supabase direct integration
+// Manual routes for Organization/Admin exist below.
 
 // MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
 app.post("/api/debug/migrate", async (req, res) => {
@@ -363,49 +329,7 @@ pool.connect(async (err, client, release) => {
 // ------------------------------------------------------------------
 // MIDDLEWARE: Require Auth & Organization
 // ------------------------------------------------------------------
-const requireAuth = async (req, res, next) => {
-    try {
-        const session = await auth.api.getSession({
-            headers: req.headers
-        });
-
-        if (!session) {
-            return res.status(401).json({ error: "Unauthorized" });
-        }
-
-        // SYSTEM ADMIN CHECK (Hardcoded for MVP safety)
-        const isSystemAdmin = session.user.email === "rafamarketingdb@gmail.com";
-
-        // If SysAdmin, we might add flag to user object
-        if (isSystemAdmin) {
-            session.user.role = "admin";
-        }
-
-        // Check for active organization
-        let orgId = req.headers['x-organization-id'] || session.session.activeOrganizationId;
-
-        // If System Admin AND no orgId is provided, they might be in "Global View" mode.
-        // But the generic routes demand an orgId usually. 
-        // We will allow continuing without orgId only if it's a specific admin route (handled below)
-        // or if we decide to fallback.
-
-        if (!orgId && !isSystemAdmin) {
-            // Non-admins need context for most things, but we'll let individual routes decide
-        }
-
-        req.auth = {
-            user: session.user,
-            session: session.session,
-            organizationId: orgId,
-            isSystemAdmin: isSystemAdmin
-        };
-
-        next();
-    } catch (error) {
-        console.error("Auth Middleware Error:", error);
-        res.status(500).json({ error: "Auth Check Failed" });
-    }
-};
+// requireAuth is defined above using Supabase logic
 
 // ADMIN ROUTES (System Admin Only)
 app.get('/api/admin/organizations', requireAuth, async (req, res) => {

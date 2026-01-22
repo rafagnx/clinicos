@@ -19,30 +19,26 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const { data, error } = await authClient.signIn.email({
+            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signInWithPassword({
                 email,
                 password,
-            }, {
-                onSuccess: async () => {
-                    // Fetch organizations to set active context
-                    const orgs = await authClient.organization.list();
-                    if (orgs.data && orgs.data.length > 0) {
-                        const firstOrgId = orgs.data[0].id;
-                        localStorage.setItem("active-org-id", firstOrgId);
-                    }
-                    toast.success("Bem-vindo ao ClinicOS!");
-                    // Force hard reload to ensure session cookies are picked up and state is fresh
-                    window.location.href = '/Dashboard';
-                },
-                onError: (ctx) => {
-                    toast.error(ctx.error.message || "Falha no login");
-                    setIsLoading(false);
-                }
-            });
+            }));
 
             if (error) {
-                console.error("Login returned error object:", error);
+                console.error("Supabase Login Error:", error);
+                toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
                 setIsLoading(false);
+                return;
+            }
+
+            if (data.user) {
+                // Login sucessful
+                toast.success("Bem-vindo de volta!");
+                localStorage.setItem("clinicos-token", data.session?.access_token || ""); // Backup token if needed
+
+                // Navigate to dashboard
+                // We use window.location to ensure full state reset
+                window.location.href = '/Dashboard';
             }
         } catch (err) {
             console.error("Unexpected login error:", err);
