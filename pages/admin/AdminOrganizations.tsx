@@ -426,24 +426,33 @@ function InviteManagerForm({ org, onClose, isDark }) {
     const onInvite = async (data) => {
         try {
             setLoading(true);
-            const { authClient } = await import("@/lib/auth-client");
-            // Set active org usually required
-            await authClient.organization.setActive({ organizationId: org.id });
 
-            const { error } = await authClient.organization.inviteMember({
-                email: data.email,
-                role: data.role || "admin",
+            // 1. Save invite to database
+            const { data: { session } } = await supabase.auth.getSession();
+            const saveResponse = await fetch(`${(import.meta as any).env.VITE_API_URL || 'https://clinicos-it4q.onrender.com'}/api/admin/invites`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    organizationId: org.id,
+                    role: data.role || 'admin'
+                })
             });
 
-            if (error) throw error;
+            if (!saveResponse.ok) throw new Error('Falha ao salvar convite');
 
-            toast.success("Convite enviado!");
+            toast.success("Convite registrado!");
 
-            // WhatsApp Logic
+            // 2. Prepare WhatsApp message
+            const baseUrl = window.location.origin;
+            const inviteLink = `${baseUrl}/register`;
+            const message = `Olá! Você foi convidado para gerenciar a clínica *${org.name}* no ClinicOS.\n\nCrie sua conta usando o email:\n${data.email}\n\nAcesse: ${inviteLink}`;
+
+            // 3. Open WhatsApp if phone provided
             if (data.phone) {
-                const baseUrl = window.location.origin;
-                const inviteLink = `${baseUrl}/login?email=${encodeURIComponent(data.email)}&slug=${org.slug}`;
-                const message = `Olá! Você foi convidado para gerenciar a clínica *${org.name}* no ClinicOS.\n\nAcesse o link abaixo para criar sua senha e entrar:\n${inviteLink}`;
                 const whatsappUrl = `https://wa.me/55${data.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
                 window.open(whatsappUrl, '_blank');
             }

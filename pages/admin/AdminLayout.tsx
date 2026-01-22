@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from '@/lib/utils';
-import { authClient } from '@/lib/auth-client';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from 'sonner';
 
 // Theme Context for Admin Panel
@@ -39,7 +39,8 @@ export default function AdminLayout() {
     const toggleTheme = () => setIsDark(!isDark);
 
     const handleSignOut = async () => {
-        await authClient.signOut();
+        await supabase.auth.signOut();
+        localStorage.clear();
         navigate('/login');
     };
 

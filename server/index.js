@@ -490,6 +490,65 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     }
 });
 
+// Pending Invites System (Replaces Better Auth Invites)
+app.post('/api/admin/invites', requireAuth, async (req, res) => {
+    const { email, organizationId, role } = req.body;
+    const { user } = req.auth;
+
+    const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
+    if (!authorizedEmails.includes(user.email)) {
+        return res.status(403).json({ error: "Access Denied" });
+    }
+
+    try {
+        // Create pending_invites table if not exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS "pending_invites" (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                email TEXT NOT NULL,
+                organization_id TEXT NOT NULL,
+                role TEXT DEFAULT 'admin',
+                created_at TIMESTAMP DEFAULT NOW(),
+                created_by TEXT
+            );
+        `);
+
+        // Insert invite
+        const result = await pool.query(`
+            INSERT INTO "pending_invites" (email, organization_id, role, created_by)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [email, organizationId, role || 'admin', user.id]);
+
+        res.json({ success: true, invite: result.rows[0] });
+    } catch (err) {
+        console.error("Invite Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// List pending invites for organization
+app.get('/api/admin/invites/:orgId', requireAuth, async (req, res) => {
+    const { orgId } = req.params;
+    const { user } = req.auth;
+
+    const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
+    if (!authorizedEmails.includes(user.email)) {
+        return res.status(403).json({ error: "Access Denied" });
+    }
+
+    try {
+        const { rows } = await pool.query(`
+            SELECT * FROM "pending_invites" 
+            WHERE organization_id = $1 
+            ORDER BY created_at DESC
+        `, [orgId]);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
