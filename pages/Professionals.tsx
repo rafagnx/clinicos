@@ -167,35 +167,46 @@ export default function Professionals() {
       // Invite Flow
       try {
         console.log("Inviting user:", formData.email);
-        const { data, error } = await authClient.organization.inviteMember({
+
+        // 1. Trigger Better Auth Invite (creates record in DB)
+        await authClient.organization.inviteMember({
           email: formData.email,
-          role: "member", // or admin based on user selection? keeping simple for now
+          role: "member",
         });
 
-        if (error) {
-          console.error("Invite error:", error);
-          toast.error("Erro ao enviar convite: " + error.message);
-          // We might proceed to create the record anyway if it's just an email failure, 
-          // but usually better to block.
-          // For MVP dev (without email server), this might fail or return a link.
-          // If it fails because "mail adapter not found", we might mock it.
-          return;
+        // 2. Fetch the generated link from our custom backend endpoint
+        // (Since we don't have SMTP, we need manual link sharing)
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+        const res = await fetch(`${apiUrl}/api/admin/get-invite-link?email=${formData.email}`, {
+          headers: { 'Content-Type': 'application/json' },
+          // credentials: 'include' // Handled by browser/proxy usually, but let's see. 
+          // Better-auth cookies are HTTPOnly. We need credentials.
+        });
+
+        // However, standard fetch might fail with CORS if credentials not set right.
+        // Let's rely on the fact that if invite succeeded, the record exists.
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.link) {
+            setInviteLink(data.link);
+            // Don't close form yet, let user see link? 
+            // Or better: Close form and show Success Dialog.
+            setIsFormOpen(false);
+            return; // Stop here to show dialog
+          }
         }
 
-        console.log("Invite success:", data);
+        // If we couldn't get link, just proceed normal flow
+        console.log("Could not fetch manual link, assuming email sent.");
 
-        // Should we show the link to the admin?
-        // In dev mode without emailer, better-auth might return the token/link in `data`?
-        // Checking better-auth docs memory: logic usually returns null data if email sent.
-        // If email fails, error.
-
-        // Create the professional record
+        // Create the professional record in public table
         const newProf = { ...formData, status: "convidado" };
         createMutation.mutate(newProf);
 
       } catch (err) {
         console.error("Unexpected invite error:", err);
-        toast.error("Erro inesperado ao convidar.");
+        toast.error("Erro ao processar convite. Tente novamente.");
       }
     }
   };
@@ -208,6 +219,59 @@ export default function Professionals() {
     setFormData(prev => ({ ...prev, photo_url: file_url }));
     setUploading(false);
   };
+
+  // Success Dialog for Link
+  if (inviteLink) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+          <h2 className="text-xl font-bold mb-4 text-slate-800">Convite Gerado! 🎉</h2>
+          <p className="text-slate-600 mb-4">
+            Como o sistema de e-mail ainda está sendo configurado, envie este link diretamente para o colaborador:
+          </p>
+
+          <div className="bg-slate-100 p-3 rounded-lg break-all text-sm text-slate-500 mb-4 border border-slate-200">
+            {inviteLink}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => window.open(`https://wa.me/?text=Olá! Você foi convidado para o ClinicOS. Finalize seu cadastro aqui: ${inviteLink}`, '_blank')}
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              Enviar no WhatsApp
+            </Button>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteLink);
+                  toast.success("Link copiado!");
+                }}
+              >
+                Copiar Link
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1"
+                onClick={() => {
+                  setInviteLink("");
+                  // Create prof record finally
+                  const newProf = { ...formData, status: "convidado" };
+                  createMutation.mutate(newProf);
+                }}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50">

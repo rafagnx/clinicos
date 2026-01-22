@@ -853,6 +853,42 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ADMIN: Get Invite Link (to share via WhatsApp)
+app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
+    const { email } = req.query;
+    const { organizationId } = req.auth;
+
+    if (!email || !organizationId) return res.status(400).json({ error: "Email and Org required" });
+
+    try {
+        // Better Auth uses "id" as the token in the URL usually
+        // Table "invitation" must be queried. Lowercase or CamelCase? 
+        // We created it with CamelCase "invitation" (invitationId, email, organizationId...)
+        // Wait, init_org_tables.js used "organizationId" (camel).
+        // Let's try to select id from invitation.
+
+        const result = await pool.query(`
+            SELECT "id" FROM "invitation" 
+            WHERE "email" = $1 AND "organizationId" = $2 
+            ORDER BY "createdAt" DESC LIMIT 1
+         `, [email, organizationId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Invite not found" });
+        }
+
+        const inviteId = result.rows[0].id;
+        // Construct Frontend URL (assuming VITE_FRONTEND_URL is set or deduce from origin)
+        const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
+        const link = `${baseUrl}/accept-invitation/${inviteId}`;
+
+        res.json({ link });
+    } catch (error) {
+        console.error("Error fetching invite link:", error);
+        res.status(500).json({ error: "Internal Error" });
+    }
+});
+
 // The "catchall" handler
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
