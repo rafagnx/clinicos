@@ -168,11 +168,11 @@ const Hero = () => {
 const Features = () => {
     const features = [
         { icon: Calendar, title: "Agenda Inteligente", desc: "Confirmação automática via WhatsApp, lista de espera e prevenção de faltas." },
-        { icon: FileText, title: "Prontuário Personalizável", desc: "Anamnese facial, corporal e capilar. Armazene fotos de antes e depois com segurança." },
+        { icon: FileText, title: "Prontuário Personalizável", desc: "Anamnese facial, corporal e capilar. Mantenha o histórico clínico organizado." },
         { icon: BarChart3, title: "Gestão Financeira", desc: "Fluxo de caixa, DRE automática, comissões complexas e controle de estoque." },
         { icon: Users, title: "CRM de Vendas", desc: "Funil de vendas integrado para converter leads em pacientes e recuperar inativos." },
         { icon: Zap, title: "Automações de Marketing", desc: "Campanhas de aniversário, retorno e pós-venda automáticas." },
-        { icon: Smartphone, title: "App para Pacientes", desc: "Agendamento online e portal do paciente para fidelização máxima." }
+        { icon: ShieldCheck, title: "Segurança Total", desc: "Backups automáticos e acesso níveis para proteger os dados da sua clínica." }
     ];
 
     return (
@@ -382,7 +382,7 @@ const MockupSection = () => {
                             </motion.div>
                         </div>
 
-                        {/* Social Proof Counter */}
+                        {/* Social Proof - Support */}
                         <motion.div
                             initial={{ y: 20, opacity: 0 }}
                             whileInView={{ y: 0, opacity: 1 }}
@@ -391,13 +391,13 @@ const MockupSection = () => {
                         >
                             <div className="flex items-center gap-3">
                                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-white" />
+                                    <MessageCircle className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <div className="text-3xl font-bold text-white">
-                                        <CountUp end={247} duration={2.5} />+
+                                    <div className="text-lg font-bold text-white">
+                                        Suporte Humanizado
                                     </div>
-                                    <div className="text-xs text-slate-400">Clínicas Ativas</div>
+                                    <div className="text-xs text-slate-400">Atendimento Especializado</div>
                                 </div>
                             </div>
                         </motion.div>
