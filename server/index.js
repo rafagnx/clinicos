@@ -654,6 +654,9 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
     }
 });
 
+// Helper to prevent SQL Injection in column names
+const isValidColumn = (key) => /^[a-zA-Z0-9_]+$/.test(key);
+
 // GENERIC CREATE
 app.post('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
@@ -686,7 +689,6 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
     // DATA FIX: Map 'full_name' to 'name' for Professionals if needed
     if (entity === 'Professional' && data.full_name) {
-        console.log('Sanitizing Professional data: mapping full_name to name');
         data.name = data.full_name;
         delete data.full_name;
     }
@@ -704,8 +706,18 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     }
 
     try {
-        const keys = Object.keys(data);
-        const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
+        // SECURITY FIX: Filter invalid columns
+        const keys = Object.keys(data).filter(key => isValidColumn(key));
+
+        if (keys.length === 0) {
+            return res.status(400).json({ error: "No valid data provided" });
+        }
+
+        const values = keys.map(key => {
+            const v = data[key];
+            return (typeof v === 'object' ? JSON.stringify(v) : v);
+        });
+
         const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
         const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
@@ -715,7 +727,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         res.json(rows[0]);
     } catch (error) {
         console.error(`Error creating ${entity}: `, error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
     }
 });
 
@@ -749,8 +761,17 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
     const data = req.body;
     try {
-        const keys = Object.keys(data);
-        const values = Object.values(data).map(v => (typeof v === 'object' ? JSON.stringify(v) : v));
+        // SECURITY FIX: Filter invalid columns
+        const keys = Object.keys(data).filter(key => isValidColumn(key));
+
+        if (keys.length === 0) {
+            return res.status(400).json({ error: "No valid data to update" });
+        }
+
+        const values = keys.map(key => {
+            const v = data[key];
+            return (typeof v === 'object' ? JSON.stringify(v) : v);
+        });
 
         const setClause = keys.map((k, i) => `${k} = $${i + 1} `).join(', ');
 
@@ -776,7 +797,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         res.json(rows[0]);
     } catch (error) {
         console.error(`Error updating ${entity}: `, error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
     }
 });
 
