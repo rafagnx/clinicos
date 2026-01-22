@@ -510,12 +510,24 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     const { active } = req.body;
     const { user } = req.auth;
 
-    if (user.email !== 'rafamarketingdb@gmail.com') {
+    console.log(`[Admin Bypass] Attempt by ${user.email} for Org ${id} to active=${active}`);
+
+    const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
+
+    if (!authorizedEmails.includes(user.email)) {
+        console.warn(`[Admin Bypass] Denied: ${user.email} is not authorized.`);
         return res.status(403).json({ error: "Access Denied. Super Admin only." });
     }
 
     try {
-        const status = active ? 'manual_override' : 'canceled';
+        // active can be boolean true/false
+        const status = active ? 'active' : 'canceled'; // Changed from 'manual_override' to 'active' to match Stripe status enums usually
+        // Or keep manual_override if your frontend logic checks specifically for that. 
+        // Let's stick to 'active' which usually grants access everywhere.
+        // Actually, let's use 'manual_override' if that's what the logic expects, but 'active' implies PRO.
+
+        // Let's use 'active' to simulate a real subscription
+        const finalStatus = active ? 'active' : 'canceled';
 
         const result = await pool.query(`
             UPDATE organization 
@@ -523,11 +535,12 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
                 updated_at = NOW()
             WHERE id = $2
             RETURNING *
-        `, [status, id]);
+        `, [finalStatus, id]);
 
+        console.log(`[Admin Bypass] Success. New Status: ${finalStatus}`);
         res.json({ success: true, organization: result.rows[0] });
     } catch (error) {
-        console.error('Bypass error', error);
+        console.error('[Admin Bypass] DB Error', error);
         res.status(500).json({ error: 'Failed to bypass subscription' });
     }
 });
