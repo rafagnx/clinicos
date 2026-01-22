@@ -455,9 +455,9 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
         const finalStatus = active ? 'active' : 'canceled';
 
         const result = await pool.query(`
-            UPDATE organization 
-            SET subscription_status = $1, 
-                updated_at = NOW()
+            UPDATE "organization" 
+            SET "subscription_status" = $1, 
+                "updatedAt" = NOW()
             WHERE id = $2
             RETURNING *
         `, [finalStatus, id]);
