@@ -53,6 +53,7 @@ const App = () => {
                 <Route path="/register" element={<Auth />} />
                 <Route path="/accept-invitation" element={<AcceptInvitation />} />
                 <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
+                <Route path="/" element={<LandingPageDark />} />
                 <Route path="/lp" element={<PlanilhaLP />} />
                 <Route path="/lp-premium" element={<LandingPageDark />} />
 
@@ -71,8 +72,6 @@ const App = () => {
 
                 {/* Authenticated Routes */}
                 <Route element={<Layout />}>
-                    <Route path="/" element={<Navigate to="/Dashboard" replace />} />
-
                     <Route path="/Dashboard" element={<Dashboard />} />
                     <Route path="/Financial" element={<Financial />} />
                     <Route path="/Agenda" element={<Agenda />} />
