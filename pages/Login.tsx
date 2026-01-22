@@ -14,8 +14,8 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleLogin = async (e?: React.FormEvent, isRetry = false) => {
+        if (e) e.preventDefault();
         setIsLoading(true);
 
         try {
@@ -25,6 +25,13 @@ export default function Login() {
             });
 
             if (error) {
+                // Auto-retry on storage error signal
+                if (!isRetry && (error.message?.includes('quota') || error.message?.includes('storage'))) {
+                    console.warn("Retrying login after storage error...");
+                    localStorage.clear();
+                    return handleLogin(undefined, true);
+                }
+
                 console.error("Supabase Login Error:", error);
                 toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
                 setIsLoading(false);
@@ -32,29 +39,30 @@ export default function Login() {
             }
 
             if (data.user) {
-                // Login sucessful
                 toast.success("Bem-vindo de volta!");
-                localStorage.setItem("clinicos-token", data.session?.access_token || ""); // Backup token if needed
-
-                // Navigate to dashboard
-                // We use window.location to ensure full state reset
+                try {
+                    localStorage.setItem("clinicos-token", data.session?.access_token || "");
+                } catch (e) { }
                 window.location.href = '/Dashboard';
             }
         } catch (err: any) {
             console.error("Unexpected login error:", err);
 
-            // Handle LocalStorage Quota Exceeded
             if (err?.name === 'QuotaExceededError' ||
                 err?.message?.includes('exceeded the quota') ||
                 err?.toString().includes('QuotaExceededError')) {
 
-                toast.warning("Memória local cheia. Limpando cache...");
-                try {
-                    localStorage.clear();
-                    // Keep essential flags if needed, but for now clear all
-                    toast.success("Cache limpo! Tente entrar novamente.");
-                } catch (e) {
-                    toast.error("Não foi possível limpar o cache automaticamente.");
+                if (!isRetry) {
+                    toast.info("Otimizando memória do navegador...");
+                    try {
+                        localStorage.clear();
+                        setTimeout(() => handleLogin(undefined, true), 200);
+                        return;
+                    } catch (e) {
+                        toast.error("Falha ao limpar memória.");
+                    }
+                } else {
+                    toast.error("Erro crítico: Memória cheia. Limpe seus dados de navegação manualmente.");
                 }
             } else {
                 toast.error("Erro inesperado ao tentar logar.");
