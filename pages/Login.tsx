@@ -40,9 +40,25 @@ export default function Login() {
                 // We use window.location to ensure full state reset
                 window.location.href = '/Dashboard';
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Unexpected login error:", err);
-            toast.error("Erro inesperado ao tentar logar.");
+
+            // Handle LocalStorage Quota Exceeded
+            if (err?.name === 'QuotaExceededError' ||
+                err?.message?.includes('exceeded the quota') ||
+                err?.toString().includes('QuotaExceededError')) {
+
+                toast.warning("Memória local cheia. Limpando cache...");
+                try {
+                    localStorage.clear();
+                    // Keep essential flags if needed, but for now clear all
+                    toast.success("Cache limpo! Tente entrar novamente.");
+                } catch (e) {
+                    toast.error("Não foi possível limpar o cache automaticamente.");
+                }
+            } else {
+                toast.error("Erro inesperado ao tentar logar.");
+            }
             setIsLoading(false);
         }
     };
