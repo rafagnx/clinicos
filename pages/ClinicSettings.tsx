@@ -13,24 +13,56 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
+import { supabase } from "@/lib/supabaseClient";
+
 export default function ClinicSettings() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    base44.auth.me().then(currentUser => {
-      setUser(currentUser);
-      // Allow if role is admin OR specific system admin email. 
-      // Note: 'admin' role check is prioritized.
-      if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com") {
-        setIsUnauthorized(false);
-      } else {
+    async function checkPermission() {
+      try {
+        setCheckingAuth(true);
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+
+        // 1. Global Super Admin
+        if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com") {
+          setIsUnauthorized(false);
+          return;
+        }
+
+        // 2. Organization Admin (Check Member Role)
+        if (currentUser.active_organization_id) {
+          const { data: member, error } = await supabase
+            .from('member')
+            .select('role')
+            .eq('organizationId', currentUser.active_organization_id)
+            .eq('userId', currentUser.id)
+            .single();
+
+          if (!error && member && (member.role === 'admin' || member.role === 'owner')) {
+            setIsUnauthorized(false);
+            return;
+          }
+        }
+
+        // If none matched -> Unauthorized
         setIsUnauthorized(true);
+
+      } catch (err) {
+        console.error("Auth check failed", err);
+        setIsUnauthorized(true);
+      } finally {
+        setCheckingAuth(false);
       }
-    }).catch(() => setIsUnauthorized(true));
+    }
+
+    checkPermission();
   }, []);
 
   const [settings, setSettings] = useState({
@@ -79,7 +111,7 @@ export default function ClinicSettings() {
       return base44.entities.ClinicSettings.create(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["clinic-settings"]);
+      queryClient.invalidateQueries({ queryKey: ["clinic-settings"] });
       toast.success("Configurações salvas com sucesso!");
     },
     onError: () => {
