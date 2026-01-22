@@ -11,6 +11,35 @@ import { Link } from 'react-router-dom';
 
 // --- Components ---
 
+const CountUp = ({ end, duration = 2 }: { end: number; duration?: number }) => {
+    const [count, setCount] = useState(0);
+    const [hasAnimated, setHasAnimated] = useState(false);
+
+    useEffect(() => {
+        if (hasAnimated) return;
+        setHasAnimated(true);
+
+        let start = 0;
+        const increment = end / (duration * 60);
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= end) {
+                setCount(end);
+                clearInterval(timer);
+            } else {
+                setCount(Math.floor(start));
+            }
+        }, 1000 / 60);
+        return () => clearInterval(timer);
+    }, [end, duration, hasAnimated]);
+
+    return <span>{count}</span>;
+};
+
+
+
+
+
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
 
@@ -195,7 +224,7 @@ const MockupSection = () => {
                                 initial={{ y: 0 }}
                                 animate={{ y: [0, -15, 0] }}
                                 transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                                className="relative z-10 mx-auto w-72"
+                                className="relative z-10 mx-auto w-64"
                             >
                                 {/* Phone Frame */}
                                 <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] border-8 border-slate-900 shadow-2xl shadow-purple-900/50 overflow-hidden">
@@ -315,7 +344,7 @@ const MockupSection = () => {
                             Liberdade geográfica real. Acompanhe o desempenho da sua equipe, financeiro e agenda através do nosso aplicativo mobile otimizado (PWA).
                         </p>
 
-                        <ul className="space-y-4 mb-10">
+                        <ul className="space-y-4 mb-8">
                             {[
                                 "Acesso 100% Mobile e Tablet",
                                 "Modo Offline Inteligente",
@@ -329,6 +358,78 @@ const MockupSection = () => {
                                 </li>
                             ))}
                         </ul>
+
+                        {/* Trust Badges */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.2, type: "spring" }}
+                                className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg shadow-green-500/30 flex items-center gap-2"
+                            >
+                                <ShieldCheck className="w-4 h-4" />
+                                Sem Cartão de Crédito
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                whileInView={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.3, type: "spring" }}
+                                className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg shadow-blue-500/30 flex items-center gap-2"
+                            >
+                                <Zap className="w-4 h-4" />
+                                Garantia 7 Dias
+                            </motion.div>
+                        </div>
+
+                        {/* Social Proof Counter */}
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            whileInView={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 inline-block mb-6"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-cyan-500 flex items-center justify-center">
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <div className="text-3xl font-bold text-white">
+                                        <CountUp end={247} duration={2.5} />+
+                                    </div>
+                                    <div className="text-xs text-slate-400">Clínicas Ativas</div>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Testimonial */}
+                        <motion.div
+                            initial={{ x: -20, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 max-w-md mb-8"
+                        >
+                            <div className="flex items-start gap-3">
+                                <img
+                                    src="https://i.pravatar.cc/150?img=12"
+                                    alt="Dr. Carlos"
+                                    className="w-12 h-12 rounded-full border-2 border-purple-500"
+                                />
+                                <div>
+                                    <p className="text-sm text-slate-300 italic mb-2">
+                                        "Economizei 15h/semana. Sem mais planilhas!"
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-xs text-white font-semibold">Dr. Carlos Mendes</div>
+                                        <div className="flex gap-0.5">
+                                            {[1, 2, 3, 4, 5].map(i => (
+                                                <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
 
                         <Button className="h-12 px-8 bg-slate-800 hover:bg-slate-700 text-white rounded-full">
                             Conhecer o App
