@@ -139,7 +139,9 @@ export const base44 = {
                     full_name: data.display_name || data.name,
                     image: data.photo_url,
                     phone: data.phone,
-                    specialty: data.specialty
+                    specialty: data.specialty,
+                    user_type: data.user_type,
+                    role: data.role
                 }
             });
 

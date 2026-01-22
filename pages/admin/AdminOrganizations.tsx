@@ -133,30 +133,7 @@ export default function AdminOrganizations() {
         setInvitingOrg(org);
     };
 
-    const handleProToggle = async (orgId: string, currentStatus: string) => {
-        try {
-            const newStatus = (currentStatus === 'active' || currentStatus === 'manual_override')
-                ? 'canceled'
-                : 'manual_override';
 
-            const { error } = await supabase
-                .from('organization')
-                .update({ subscription_status: newStatus })
-                .eq('id', orgId);
-
-            if (error) throw error;
-
-            toast.success(`Plano atualizado para ${newStatus === 'manual_override' ? 'PRO' : 'FREE'}`);
-
-            // Update local state
-            setOrganizations(prev => prev.map(org =>
-                org.id === orgId ? { ...org, subscription_status: newStatus } : org
-            ));
-        } catch (error) {
-            console.error("Error toggling pro status:", error);
-            toast.error("Erro ao atualizar status.");
-        }
-    };
 
     return (
         <div className="space-y-6">
