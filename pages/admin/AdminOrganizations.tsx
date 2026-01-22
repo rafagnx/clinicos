@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabaseClient";
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useForm } from "react-hook-form";
@@ -30,10 +31,13 @@ export default function AdminOrganizations() {
         const newActive = !isCurrentlyPro;
 
         try {
+            const { data: { session } } = await supabase.auth.getSession();
             const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'https://clinicos-it4q.onrender.com'}/api/admin/organizations/${orgId}/bypass`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
                 body: JSON.stringify({ active: newActive })
             });
 
