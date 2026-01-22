@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authClient } from "@/lib/auth-client";
+import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +19,10 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
-            }));
+            });
 
             if (error) {
                 console.error("Supabase Login Error:", error);

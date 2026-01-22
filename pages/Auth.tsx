@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { authClient } from "@/lib/auth-client";
+import { supabase } from "@/lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +19,10 @@ export default function Auth() {
     const handleSignIn = async () => {
         setLoading(true);
         try {
-            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password
-            }));
+            });
 
             if (error) {
                 toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
@@ -43,7 +43,7 @@ export default function Auth() {
     const handleSignUp = async () => {
         setLoading(true);
         try {
-            const { data, error } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
@@ -51,7 +51,7 @@ export default function Auth() {
                         full_name: name,
                     }
                 }
-            }));
+            });
 
             if (error) {
                 toast.error(error.message || "Erro ao criar conta");
