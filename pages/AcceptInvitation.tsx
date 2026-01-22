@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,11 +8,13 @@ import { toast } from "sonner";
 
 export default function AcceptInvitation() {
     const [searchParams] = useSearchParams();
+    const { token: paramToken } = useParams();
     const navigate = useNavigate();
     const [status, setStatus] = useState("verifying"); // verifying, success, error
     const [errorMsg, setErrorMsg] = useState("");
 
-    const token = searchParams.get("token");
+    // Support both /accept-invitation/:token AND /accept-invitation?token=...
+    const token = paramToken || searchParams.get("token");
 
     useEffect(() => {
         if (!token) {
