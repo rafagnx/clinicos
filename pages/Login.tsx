@@ -31,7 +31,8 @@ export default function Login() {
                         localStorage.setItem("active-org-id", firstOrgId);
                     }
                     toast.success("Bem-vindo ao ClinicOS!");
-                    navigate('/dashboard');
+                    // Force hard reload to ensure session cookies are picked up and state is fresh
+                    window.location.href = '/Dashboard';
                 },
                 onError: (ctx) => {
                     toast.error(ctx.error.message || "Falha no login");
