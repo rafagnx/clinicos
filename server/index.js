@@ -19,9 +19,9 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 // FIX FOR RENDER SSL ISSUES with internal libraries like better-auth
 // This allows connections to Postgres with self-signed certs (common in Render internal network)
-if (process.env.NODE_ENV === 'production') {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+// FIX FOR SSL ISSUES (Local Supabase Pooler & Render)
+// This allows connections to Postgres with self-signed certs
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -154,8 +154,8 @@ console.log('toNodeHandler type:', typeof toNodeHandler);
 try {
     const handler = toNodeHandler(auth);
     console.log('Handler generated type:', typeof handler);
-    app.all("/api/auth/*", handler);
-    app.all("/api/organization/*", handler);
+    app.all(/\/api\/auth\/.*/, handler);
+    app.all(/\/api\/organization\/.*/, handler);
 } catch (e) {
     console.error('Failed to generate node handler:', e);
 }
