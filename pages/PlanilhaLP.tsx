@@ -189,49 +189,118 @@ const MockupSection = () => {
                 <div className="flex flex-col lg:flex-row items-center gap-20">
                     <div className="lg:w-1/2 order-2 lg:order-1">
                         <div className="relative">
-                            {/* Floating Elements Animation */}
+                            {/* Phone Mockup */}
                             <motion.div
                                 initial={{ y: 0 }}
-                                animate={{ y: [0, -20, 0] }}
-                                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-                                className="relative z-10"
+                                animate={{ y: [0, -15, 0] }}
+                                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                                className="relative z-10 mx-auto w-72"
                             >
-                                <img
-                                    src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop"
-                                    alt="App Mobile"
-                                    className="w-72 mx-auto rounded-[3rem] border-8 border-slate-900 shadow-2xl shadow-purple-900/50"
-                                />
+                                {/* Phone Frame */}
+                                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] border-8 border-slate-900 shadow-2xl shadow-purple-900/50 overflow-hidden">
+                                    {/* Screen */}
+                                    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950 p-6 aspect-[9/19.5] flex flex-col">
+                                        {/* Status Bar */}
+                                        <div className="flex justify-between items-center mb-8 text-white/60 text-xs">
+                                            <span>9:41</span>
+                                            <div className="flex gap-1">
+                                                <div className="w-4 h-4 rounded-full bg-white/20"></div>
+                                                <div className="w-4 h-4 rounded-full bg-white/20"></div>
+                                                <div className="w-4 h-4 rounded-full bg-white/40"></div>
+                                            </div>
+                                        </div>
 
-                                {/* Floating Cards */}
-                                <motion.div
-                                    initial={{ x: -20, opacity: 0 }}
-                                    whileInView={{ x: 0, opacity: 1 }}
-                                    transition={{ delay: 0.5 }}
-                                    className="absolute top-10 -left-10 md:-left-20 bg-slate-800/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3"
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                                        <MessageCircle className="w-5 h-5" />
+                                        {/* ClinicOS Logo & Title */}
+                                        <div className="text-center mb-6">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-cyan-500 rounded-2xl mx-auto mb-3 flex items-center justify-center shadow-lg">
+                                                <Activity className="w-8 h-8 text-white" strokeWidth={2.5} />
+                                            </div>
+                                            <h3 className="text-white font-bold text-lg">ClinicOS</h3>
+                                            <p className="text-slate-400 text-xs">Painel de Controle</p>
+                                        </div>
+
+                                        {/* Mini Stats */}
+                                        <div className="grid grid-cols-2 gap-2 mt-auto">
+                                            <div className="bg-slate-800/50 backdrop-blur rounded-xl p-3">
+                                                <div className="text-xs text-slate-400">Hoje</div>
+                                                <div className="text-white font-bold">12 Consultas</div>
+                                            </div>
+                                            <div className="bg-slate-800/50 backdrop-blur rounded-xl p-3">
+                                                <div className="text-xs text-slate-400">Agenda</div>
+                                                <div className="text-white font-bold">100% Livre</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Cascading Notification Cards */}
+                            <motion.div
+                                initial={{ x: -30, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.3, duration: 0.6 }}
+                                className="absolute top-8 -left-12 md:-left-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-4 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/20 max-w-[200px]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                                        <Check className="w-6 h-6 text-green-400" strokeWidth={3} />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Notificação</div>
-                                        <div className="text-sm font-bold text-white">Consulta Confirmada</div>
+                                        <div className="text-xs text-green-400 font-semibold">Confirmado</div>
+                                        <div className="text-sm font-bold text-white">Consulta 14:30</div>
                                     </div>
-                                </motion.div>
+                                </div>
+                            </motion.div>
 
-                                <motion.div
-                                    initial={{ x: 20, opacity: 0 }}
-                                    whileInView={{ x: 0, opacity: 1 }}
-                                    transition={{ delay: 0.7 }}
-                                    className="absolute bottom-20 -right-10 md:-right-20 bg-slate-800/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-xl flex items-center gap-3"
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500">
-                                        <HeartPulse className="w-5 h-5" />
+                            <motion.div
+                                initial={{ x: -30, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.5, duration: 0.6 }}
+                                className="absolute top-32 -left-8 md:-left-16 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-4 rounded-2xl border border-blue-500/20 shadow-2xl shadow-blue-500/20 max-w-[180px]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                        <HeartPulse className="w-5 h-5 text-blue-400" />
                                     </div>
                                     <div>
-                                        <div className="text-xs text-slate-400">Prontuário</div>
-                                        <div className="text-sm font-bold text-white">Anamnese Atualizada</div>
+                                        <div className="text-xs text-blue-400 font-semibold">Prontuário</div>
+                                        <div className="text-sm font-bold text-white">Atualizado</div>
                                     </div>
-                                </motion.div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ x: 30, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.7, duration: 0.6 }}
+                                className="absolute bottom-24 -right-8 md:-right-16 bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-4 rounded-2xl border border-purple-500/20 shadow-2xl shadow-purple-500/20 max-w-[180px]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                        <MessageCircle className="w-5 h-5 text-purple-400" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-purple-400 font-semibold">WhatsApp</div>
+                                        <div className="text-sm font-bold text-white">Nova Mensagem</div>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ x: 30, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.9, duration: 0.6 }}
+                                className="absolute bottom-8 -right-12 md:-right-20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 backdrop-blur-xl p-3 rounded-2xl border border-amber-500/20 shadow-2xl shadow-amber-500/20 max-w-[160px]"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                        <DollarSign className="w-4 h-4 text-amber-400" />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-amber-400 font-semibold">Pagamento</div>
+                                        <div className="text-xs font-bold text-white">R$ 350,00</div>
+                                    </div>
+                                </div>
                             </motion.div>
                         </div>
                     </div>
