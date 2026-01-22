@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Plus, Users, Globe, Settings, ExternalLink, Crown } from "lucide-react";
+import { Building2, Plus, Users, Globe, Settings, ExternalLink, Crown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useAdminTheme } from "./AdminLayout";
@@ -23,6 +23,7 @@ export default function AdminOrganizations() {
     const [isOpen, setIsOpen] = useState(false);
     const [editingOrg, setEditingOrg] = useState(null);
     const [invitingOrg, setInvitingOrg] = useState(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -48,6 +49,28 @@ export default function AdminOrganizations() {
         } catch (error) {
             console.error('Toggle error:', error);
             toast.error('Erro ao alterar status PRO');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deletingId) return;
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`${(import.meta as any).env.VITE_API_URL || 'https://clinicos-it4q.onrender.com'}/api/admin/organizations/${deletingId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to delete');
+
+            toast.success('Empresa excluída com sucesso');
+            setDeletingId(null);
+            fetchOrganizations();
+        } catch (error) {
+            console.error(error);
+            toast.error('Erro ao excluir empresa (Pode ter dados vinculados)');
         }
     };
 
@@ -288,6 +311,14 @@ export default function AdminOrganizations() {
                                 >
                                     <Settings className="w-4 h-4" />
                                 </Button>
+                                <Button
+                                    variant="ghost"
+                                    className={cn("px-3 text-red-500", isDark ? "hover:bg-red-900/20 hover:text-red-400" : "hover:bg-red-50 hover:text-red-600")}
+                                    title="Excluir"
+                                    onClick={() => setDeletingId(org.id)}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
                             </div>
                         </Card>
                     ))
@@ -311,6 +342,22 @@ export default function AdminOrganizations() {
                             }}
                         />
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+                <DialogContent className={cn("sm:max-w-md", isDark ? "bg-[#1C2333] border-slate-800 text-slate-200" : "")}>
+                    <DialogHeader>
+                        <DialogTitle className={isDark ? "text-white" : ""}>Excluir Empresa</DialogTitle>
+                        <CardDescription className="text-red-400">Esta ação é irreversível.</CardDescription>
+                    </DialogHeader>
+                    <div className="py-4 text-sm text-slate-500">
+                        Tem certeza que deseja apagar esta organização e todos os dados vinculados?
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setDeletingId(null)} className={isDark ? "text-slate-300 hover:bg-slate-800" : ""}>Cancelar</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Confirmar</Button>
+                    </div>
                 </DialogContent>
             </Dialog>
 

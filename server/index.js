@@ -470,6 +470,26 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     }
 });
 
+// Admin Delete Organization
+app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { user } = req.auth;
+    const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
+
+    if (!authorizedEmails.includes(user.email)) {
+        return res.status(403).json({ error: "Access Denied" });
+    }
+
+    try {
+        await pool.query('DELETE FROM "organization" WHERE id = $1', [id]);
+        res.json({ success: true, message: "Deleted" });
+    } catch (err) {
+        console.error("Delete Org Error:", err);
+        if (err.code === '23503') return res.status(400).json({ error: "Cannot delete org with active data" });
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GENERIC READ (List/Filter)
 app.get('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
