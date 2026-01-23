@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 const COLORS = [
   { value: "#3B82F6", label: "Azul" },
@@ -58,10 +59,7 @@ export default function Professionals() {
     }
   });
 
-  const { data: users = [] } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => base44.entities.User.list()
-  });
+
 
   React.useEffect(() => {
     if (!user || isLoading || !professionals) return;

@@ -237,16 +237,59 @@ app.post("/api/debug/migrate", async (req, res) => {
                 }
             }
 
-            // 4. Ensure 'professionals' table has 'status' column
-            const profStatusExists = await client.query(`
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = 'professionals' AND column_name = 'status';
-`);
+            // 4. Ensure 'professionals' table has ALL needed columns
+            const profCols = [
+                { name: 'status', type: 'VARCHAR(50) DEFAULT \'ativo\'' },
+                { name: 'role_type', type: 'VARCHAR(50) DEFAULT \'profissional\'' },
+                { name: 'council_number', type: 'VARCHAR(50)' },
+                { name: 'council_state', type: 'VARCHAR(10)' },
+                { name: 'phone', type: 'VARCHAR(20)' },
+                { name: 'color', type: 'VARCHAR(100) DEFAULT \'#3B82F6\'' },
+                { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' }
+            ];
 
-            if (profStatusExists.rows.length === 0) {
-                console.log("Adding status column to professionals table");
-                await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo'; `);
+            for (const col of profCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    console.log(`Adding ${col.name} to professionals table`);
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 5. Ensure 'patients' table has ALL needed columns
+            const patientCols = [
+                { name: 'photo_url', type: 'TEXT' },
+                { name: 'whatsapp', type: 'VARCHAR(20)' },
+                { name: 'gender', type: 'VARCHAR(50)' },
+                { name: 'address', type: 'TEXT' },
+                { name: 'city', type: 'VARCHAR(255)' },
+                { name: 'marketing_source', type: 'VARCHAR(100)' },
+                { name: 'notes', type: 'TEXT' }
+            ];
+
+            for (const col of patientCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    console.log(`Adding ${col.name} to patients table`);
+                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 6. Ensure 'appointments' table has ALL needed columns
+            const aptCols = [
+                { name: 'procedure_name', type: 'VARCHAR(255)' },
+                { name: 'duration', type: 'INTEGER DEFAULT 60' },
+                { name: 'scheduled_by', type: 'VARCHAR(255)' },
+                { name: 'promotion_id', type: 'UUID' },
+                { name: 'date', type: 'DATE' }
+            ];
+
+            for (const col of aptCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    console.log(`Adding ${col.name} to appointments table`);
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
             }
 
             // 3. Ensure 'organization' table has correct columns (Better Auth)

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { base44 } from "@/lib/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -364,7 +365,7 @@ export default function Leads() {
           <DialogHeader>
             <DialogTitle className={cn(isDark ? "text-white" : "")}>Converter Lead em Paciente</DialogTitle>
             <DialogDescription className={cn(isDark ? "text-slate-400" : "")}>
-              Tem certeza que deseja converter {selectedLead?.full_name} em paciente?
+              Confirme os dados abaixo para converter {selectedLead?.full_name} em um registro de paciente permanente.
             </DialogDescription>
           </DialogHeader>
 

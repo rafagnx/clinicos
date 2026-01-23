@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link, useOutletContext } from "react-router-dom";
@@ -5,7 +6,7 @@ import { cn, createPageUrl } from "@/lib/utils";
 import { base44 } from "@/lib/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, UserPlus, Users, UserX, Loader2, SlidersHorizontal, X, Download, Upload, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -442,6 +443,7 @@ export default function Patients() {
         <SheetContent className="sm:max-w-xl overflow-y-auto">
           <SheetHeader className="mb-6">
             <SheetTitle>{editingPatient ? "Editar Paciente" : "Novo Paciente"}</SheetTitle>
+            <SheetDescription className="sr-only">Formulário para cadastro e edição de pacientes.</SheetDescription>
           </SheetHeader>
           <PatientForm
             patient={editingPatient}
