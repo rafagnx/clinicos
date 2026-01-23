@@ -49,7 +49,7 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
     // 2. Fetch Messages
     const { data: messages = [] } = useQuery({
         queryKey: ["messages", conversation?.id],
-        queryFn: () => base44.read("Message", { filter: { conversation_id: conversation.id } }),
+        queryFn: () => base44.list("Message", { filter: { conversation_id: conversation.id } }),
         enabled: !!conversation,
         refetchInterval: 3000
     });

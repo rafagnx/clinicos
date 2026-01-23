@@ -280,7 +280,7 @@ export default function AppointmentForm({
                 filters.full_name = { _ilike: `%${searchTerm}%` };
             }
 
-            return base44.read("Patient", {
+            return base44.list("Patient", {
                 filter: filters,
                 sort: [{ field: "full_name", direction: "asc" }],
                 limit: 10

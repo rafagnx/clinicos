@@ -61,21 +61,39 @@ const requireAuth = async (req, res, next) => {
             if (!error && user) {
                 // AUTO-SYNC: Ensure Supabase user exists in DB table
                 try {
-                    await pool.query(`
-                        INSERT INTO "user" (id, name, email, "emailVerified", image, "createdAt", "updatedAt")
-                        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-                        ON CONFLICT (id) DO UPDATE SET
-                            name = EXCLUDED.name,
-                            email = EXCLUDED.email,
-                            image = EXCLUDED.image,
-                            "updatedAt" = NOW()
-                    `, [
-                        user.id,
-                        user.user_metadata?.full_name || user.email.split('@')[0],
-                        user.email,
-                        user.email_confirmed_at ? true : false,
-                        user.user_metadata?.avatar_url || null
-                    ]);
+                    // Optimized sync: Try to update by ID first, if not exists, try to update by EMAIL, if still not exists, INSERT.
+                    // This handles cases where Supabase ID might have changed for the same email (e.g. account recreation)
+                    const existingByEmail = await pool.query('SELECT id FROM "user" WHERE email = $1', [user.email]);
+
+                    if (existingByEmail.rows.length > 0 && existingByEmail.rows[0].id !== user.id) {
+                        // User exists with same email but DIFFERENT ID - update the old record with new ID
+                        console.log(`[Auth] Updating User ID for ${user.email} from ${existingByEmail.rows[0].id} to ${user.id}`);
+                        await pool.query(`
+                            UPDATE "user" SET 
+                                id = $1, 
+                                name = $2, 
+                                image = $3, 
+                                "updatedAt" = NOW() 
+                            WHERE email = $4
+                        `, [user.id, user.user_metadata?.full_name || user.email.split('@')[0], user.user_metadata?.avatar_url || null, user.email]);
+                    } else {
+                        // Standard Upsert by ID
+                        await pool.query(`
+                            INSERT INTO "user" (id, name, email, "emailVerified", image, "createdAt", "updatedAt")
+                            VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+                            ON CONFLICT (id) DO UPDATE SET
+                                name = EXCLUDED.name,
+                                email = EXCLUDED.email,
+                                image = EXCLUDED.image,
+                                "updatedAt" = NOW()
+                        `, [
+                            user.id,
+                            user.user_metadata?.full_name || user.email.split('@')[0],
+                            user.email,
+                            user.email_confirmed_at ? true : false,
+                            user.user_metadata?.avatar_url || null
+                        ]);
+                    }
                 } catch (syncError) {
                     console.warn("[Auth] User sync warning:", syncError.message);
                     // Continue even if sync fails - not critical for auth
@@ -281,7 +299,8 @@ app.post("/api/debug/migrate", async (req, res) => {
                 { name: 'duration', type: 'INTEGER DEFAULT 60' },
                 { name: 'scheduled_by', type: 'VARCHAR(255)' },
                 { name: 'promotion_id', type: 'UUID' },
-                { name: 'date', type: 'DATE' }
+                { name: 'date', type: 'DATE' },
+                { name: 'time', type: 'VARCHAR(20)' }
             ];
 
             for (const col of aptCols) {

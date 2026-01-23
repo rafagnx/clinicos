@@ -48,10 +48,10 @@ export default function Professionals() {
   }, []);
 
   const { data: professionals = [], isLoading } = useQuery({
-    queryKey: ["professionals-list"],
+    queryKey: ["professionals"],
     queryFn: async () => {
       console.log("Fetching professionals for Equipe page...");
-      const data = await base44.read("Professional", {
+      const data = await base44.list("Professional", {
         sort: [{ field: "full_name", direction: "asc" }]
       });
       console.log("Professionals fetched:", data);

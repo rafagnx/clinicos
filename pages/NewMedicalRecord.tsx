@@ -60,12 +60,12 @@ export default function NewMedicalRecord() {
 
   const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
     queryKey: ["patients"],
-    queryFn: () => base44.read("Patient", { sort: [{ field: "full_name", direction: "asc" }] })
+    queryFn: () => base44.list("Patient", { sort: [{ field: "full_name", direction: "asc" }] })
   });
 
   const { data: professionals = [] } = useQuery({
-    queryKey: ["professionals-list"],
-    queryFn: () => base44.read("Professional")
+    queryKey: ["professionals"],
+    queryFn: () => base44.list("Professional")
   });
 
   const { data: customProcedures = [] } = useQuery({

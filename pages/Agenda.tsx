@@ -103,8 +103,7 @@ export default function Agenda() {
   // Queries
   const { data: rawProfessionals = [], isLoading: isLoadingProfs } = useQuery({
     queryKey: ["professionals"],
-    queryFn: () => base44.read("Professional", {
-      filter: { is_active: true },
+    queryFn: () => base44.list("Professional", {
       sort: [{ field: "full_name", direction: "asc" }]
     }),
   });
@@ -131,7 +130,7 @@ export default function Agenda() {
         queryFilter.status = filters.status;
       }
 
-      const data = await base44.read("Appointment", {
+      const data = await base44.list("Appointment", {
         filter: queryFilter,
         include: ["patient", "professional"],
         sort: [{ field: "start_time", direction: "asc" }]
