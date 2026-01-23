@@ -35,9 +35,20 @@ async function adminTools() {
             });
         }
 
+        // CHECK: Verificar se coluna role existe
+        try {
+            await pool.query('SELECT role FROM "user" LIMIT 1');
+        } catch (e) {
+            console.log('⚠️ Coluna role não encontrada. Criando...');
+            await pool.query('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS role TEXT DEFAULT \'user\'');
+            console.log('✅ Coluna role criada.');
+        }
+
         // 2. Listar todos os usuários
         console.log('👥 Usuários cadastrados:');
         const users = await pool.query('SELECT id, name, email, role FROM "user" ORDER BY "createdAt" DESC');
+
+        let targetUser = null;
 
         if (users.rows.length === 0) {
             console.log('   Nenhum usuário encontrado.\n');
@@ -46,7 +57,39 @@ async function adminTools() {
                 console.log(`   ${i + 1}. ${user.name} (${user.email})`);
                 console.log(`      ID: ${user.id}`);
                 console.log(`      Role: ${user.role || 'user'}\n`);
+                if (user.email === 'rafamarketingdb@gmail.com') targetUser = user;
             });
+        }
+
+        // AUTO-FIX: Promover Rafa a Admin
+        if (targetUser && targetUser.role !== 'admin') {
+            console.log('🔄 Promovendo Rafa a ADMIN...');
+            await pool.query('UPDATE "user" SET role = $1 WHERE email = $2', ['admin', 'rafamarketingdb@gmail.com']);
+            console.log('✅ SUCESSO! Rafa agora é ADMIN.\n');
+        } else if (targetUser) {
+            console.log('✅ Rafa já é ADMIN.\n');
+
+            // CHECK: Verificar se Rafa tem organização
+            const memberCheck = await pool.query('SELECT * FROM "member" WHERE "userId" = $1', [targetUser.id]);
+            if (memberCheck.rows.length === 0) {
+                console.log('⚠️ Rafa não tem organização. Criando uma padrão...');
+
+                // Criar Org
+                const newOrgRes = await pool.query(`
+                    INSERT INTO "organization" (id, name, slug, subscription_status, "createdAt", "updatedAt")
+                    VALUES (gen_random_uuid(), 'Minha Clínica', 'minha-clinica-admin', 'active', NOW(), NOW())
+                    RETURNING id
+                `);
+                const newOrgId = newOrgRes.rows[0].id;
+
+                // Vincular Rafa
+                await pool.query(`
+                    INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+                    VALUES (gen_random_uuid(), $1, $2, 'owner', NOW(), NOW())
+                `, [newOrgId, targetUser.id]);
+
+                console.log('✅ Organização criada e vinculada com sucesso!');
+            }
         }
 
         // 3. Comandos úteis
