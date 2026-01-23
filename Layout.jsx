@@ -130,15 +130,21 @@ export default function Layout() {
     queryKey: ["active-org", user?.active_organization_id],
     queryFn: async () => {
       if (!user?.active_organization_id) return null;
-      // Fetch organization details including subscription status
-      // Using direct fetch if entity not exposed, or create a simple getter
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/api/organization/${user.active_organization_id}`);
-        if (res.ok) return await res.json();
 
-        // Fallback: use generic filtering if specific endpoint doesn't exist
-        const list = await base44.entities.Organization.filter({ id: user.active_organization_id });
-        return list[0];
+      // Use the proper authenticated client instead of manual fetch
+      try {
+        const orgs = await base44.auth.getUserOrganizations();
+        // Find the active organization in the list
+        const activeOrg = orgs.find(o => o.organizationId === user.active_organization_id || o.id === user.active_organization_id);
+
+        if (activeOrg) {
+          // Map fields if necessary to match expected structure
+          return {
+            ...activeOrg,
+            id: activeOrg.organizationId || activeOrg.id
+          };
+        }
+        return null;
       } catch (e) { return null; }
     },
     enabled: !!user?.active_organization_id
