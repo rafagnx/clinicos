@@ -39,11 +39,44 @@ export default function Login() {
             }
 
             if (data.user) {
-                toast.success("Bem-vindo de volta!");
                 try {
                     localStorage.setItem("clinicos-token", data.session?.access_token || "");
                 } catch (e) { }
-                window.location.href = '/Dashboard';
+
+                // CRITICAL FIX: Fetch user's organizations to set active-org-id
+                try {
+                    const orgRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/user/organizations`, {
+                        headers: {
+                            'Authorization': `Bearer ${data.session?.access_token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (orgRes.ok) {
+                        const orgs = await orgRes.json();
+
+                        if (orgs.length > 0) {
+                            // Set the first (or most recent) organization as active
+                            localStorage.setItem("active-org-id", orgs[0].organizationId);
+                            toast.success("Bem-vindo de volta!");
+                            window.location.href = '/Dashboard';
+                        } else {
+                            // No organization found - redirect to create one
+                            toast.info("Configure sua clínica para começar");
+                            navigate('/organization/new');
+                        }
+                    } else {
+                        // Fallback if org fetch fails - still allow login but warn
+                        console.error("Failed to fetch organizations:", await orgRes.text());
+                        toast.warning("Login realizado. Configure sua organização.");
+                        navigate('/organization/new');
+                    }
+                } catch (orgError) {
+                    console.error("Organization fetch error:", orgError);
+                    toast.error("Erro ao carregar contexto. Tente novamente.");
+                    setIsLoading(false);
+                    return;
+                }
             }
         } catch (err: any) {
             console.error("Unexpected login error:", err);

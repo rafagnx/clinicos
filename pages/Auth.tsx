@@ -57,10 +57,37 @@ export default function Auth() {
                 toast.error(error.message || "Erro ao criar conta");
             } else {
                 if (data.session) {
-                    toast.success("Conta criada! Redirecionando...");
                     localStorage.setItem("clinicos-token", data.session.access_token);
-                    // Redirect to Organisation creation since it's a new user
-                    navigate("/organization/new");
+
+                    // CRITICAL FIX: Fetch organizations after signup
+                    try {
+                        const orgRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/user/organizations`, {
+                            headers: {
+                                'Authorization': `Bearer ${data.session.access_token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (orgRes.ok) {
+                            const orgs = await orgRes.json();
+
+                            if (orgs.length > 0) {
+                                localStorage.setItem("active-org-id", orgs[0].organizationId);
+                                toast.success("Conta criada! Bem-vindo!");
+                                navigate("/Dashboard");
+                            } else {
+                                toast.success("Conta criada! Configure sua clínica");
+                                navigate("/organization/new");
+                            }
+                        } else {
+                            toast.success("Conta criada! Configure sua clínica");
+                            navigate("/organization/new");
+                        }
+                    } catch (orgError) {
+                        console.error("Org fetch error:", orgError);
+                        toast.success("Conta criada! Configure sua clínica");
+                        navigate("/organization/new");
+                    }
                 } else if (data.user) {
                     toast.success("Conta criada! Verifique seu email para confirmar.");
                     // Optional: navigate to a "check email" page

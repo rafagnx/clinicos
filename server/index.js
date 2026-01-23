@@ -59,6 +59,28 @@ const requireAuth = async (req, res, next) => {
         try {
             const { data: { user }, error } = await supabase.auth.getUser(token);
             if (!error && user) {
+                // AUTO-SYNC: Ensure Supabase user exists in DB table
+                try {
+                    await pool.query(`
+                        INSERT INTO "user" (id, name, email, "emailVerified", image, "createdAt", "updatedAt")
+                        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+                        ON CONFLICT (id) DO UPDATE SET
+                            name = EXCLUDED.name,
+                            email = EXCLUDED.email,
+                            image = EXCLUDED.image,
+                            "updatedAt" = NOW()
+                    `, [
+                        user.id,
+                        user.user_metadata?.full_name || user.email.split('@')[0],
+                        user.email,
+                        user.email_confirmed_at ? true : false,
+                        user.user_metadata?.avatar_url || null
+                    ]);
+                } catch (syncError) {
+                    console.warn("[Auth] User sync warning:", syncError.message);
+                    // Continue even if sync fails - not critical for auth
+                }
+
                 const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
                 req.auth = {
                     userId: user.id,
@@ -85,6 +107,7 @@ app.use(cors({
 
         const allowedOrigins = [
             "http://localhost:5173",
+            "http://localhost:5176",
             "http://localhost:3001",
             "https://clinicos.unaux.com",
             "https://www.clinicos.unaux.com",
@@ -470,7 +493,80 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     }
 });
 
-// Admin Delete Organization
+// GET User's Organizations (Critical for Login Context)
+app.get('/api/user/organizations', requireAuth, async (req, res) => {
+    const { user } = req.auth;
+
+    try {
+        const { rows } = await pool.query(`
+            SELECT 
+                m.id as "membershipId",
+                m.role,
+                m."organizationId",
+                o.name as "organizationName",
+                o.slug,
+                o.logo,
+                o.subscription_status,
+                o."createdAt"
+            FROM "member" m
+            INNER JOIN "organization" o ON o.id = m."organizationId"
+            WHERE m."userId" = $1
+            ORDER BY m."createdAt" DESC
+        `, [user.id]);
+
+        // AUTO-CREATE ORG FOR MASTER ADMIN if doesn't have one
+        if (user.email === 'rafamarketingdb@gmail.com' && rows.length === 0) {
+            console.log("[Auto-Org] Creating default organization for Master Admin");
+            const orgId = uuidv4();
+            const now = new Date();
+
+            // Check if org already exists first
+            const existingOrg = await pool.query('SELECT id FROM "organization" WHERE slug = $1', ['master-admin']);
+
+            const finalOrgId = existingOrg.rows.length > 0 ? existingOrg.rows[0].id : orgId;
+
+            if (existingOrg.rows.length === 0) {
+                await pool.query(`
+                    INSERT INTO "organization" (id, name, slug, subscription_status, "createdAt", "updatedAt")
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                `, [orgId, 'ClinicOS Master', 'master-admin', 'active', now, now]);
+            }
+
+            // Create membership
+            const memberId = uuidv4();
+            await pool.query(`
+                INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT DO NOTHING
+            `, [memberId, finalOrgId, user.id, 'owner', now, now]);
+
+            // Re-fetch organizations
+            const refetch = await pool.query(`
+                SELECT 
+                    m.id as "membershipId",
+                    m.role,
+                    m."organizationId",
+                    o.name as "organizationName",
+                    o.slug,
+                    o.logo,
+                    o.subscription_status,
+                    o."createdAt"
+                FROM "member" m
+                INNER JOIN "organization" o ON o.id = m."organizationId"
+                WHERE m."userId" = $1
+                ORDER BY m."createdAt" DESC
+            `, [user.id]);
+
+            return res.json(refetch.rows);
+        }
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Error fetching user orgs:", error);
+        res.status(500).json({ error: "Failed to fetch organizations" });
+    }
+});
+
 app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
     const { user } = req.auth;
@@ -691,8 +787,8 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     const data = req.body;
     delete data.id; // Ensure ID is generated
 
-    // DATA FIX: Map 'full_name' to 'name' for Professionals if needed
-    if (entity === 'Professional' && data.full_name) {
+    // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
+    if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
         data.name = data.full_name;
         delete data.full_name;
     }
@@ -764,6 +860,13 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 
     const data = req.body;
+
+    // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
+    if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
+        data.name = data.full_name;
+        delete data.full_name;
+    }
+
     try {
         // SECURITY FIX: Filter invalid columns
         const keys = Object.keys(data).filter(key => isValidColumn(key));
