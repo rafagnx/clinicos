@@ -1,0 +1,199 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// BETTER AUTH MODELS
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified Boolean?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  sessions      Session[]
+  accounts      Account[]
+  members       Member[]
+  invitations   Invitation[]
+  
+  // Custom Relations
+  ownedProjects Project[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String?  @unique
+  logo      String?
+  createdAt DateTime @default(now())
+  metadata  String?  
+  
+  members       Member[]
+  invitations   Invitation[]
+  
+  // Business Relations
+  projects      Project[]
+  professionals Professional[]
+  patients      Patient[]
+  appointments  Appointment[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String
+  createdAt      DateTime     @default(now())
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id @default(cuid())
+  organizationId String
+  email          String
+  role           String?
+  status         String
+  expiresAt      DateTime
+  inviterId      String
+  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}
+
+// BUSINESS MODELS
+
+model Project {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  organizationId String
+  ownerId        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner          User         @relation(fields: [ownerId], references: [id]) 
+}
+
+model Professional {
+  id                  String       @id @default(uuid())
+  organizationId      String
+  name                String
+  email               String?
+  phone               String?
+  specialty           String?
+  roleType            String       @default("profissional") @map("role_type")
+  councilNumber       String?      @map("council_number")
+  councilState        String?      @map("council_state")
+  color               String?      @default("#3B82F6")
+  appointmentDuration Int          @default(30) @map("appointment_duration")
+  photoUrl            String?      @map("photo_url")
+  status              String       @default("ativo")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @default(now()) @updatedAt @map("updated_at")
+
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments        Appointment[]
+
+  @@map("professionals")
+}
+
+model Patient {
+  id              String       @id @default(uuid())
+  organizationId  String
+  name            String
+  email           String?
+  phone           String?
+  whatsapp        String?
+  cpf             String?
+  birthDate       DateTime?    @map("birth_date")
+  gender          String?
+  address         String?
+  city            String?
+  marketingSource String?      @map("marketing_source")
+  notes           String?
+  photoUrl        String?      @map("photo_url")
+  status          String       @default("ativo")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @default(now()) @updatedAt @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+
+  @@map("patients")
+}
+
+model Appointment {
+  id             String       @id @default(uuid())
+  organizationId String
+  patientId      String?      @map("patient_id")
+  professionalId String?      @map("professional_id")
+  date           DateTime     
+  startTime      DateTime     @map("start_time")
+  endTime        DateTime     @map("end_time")
+  status         String       @default("scheduled")
+  notes          String?
+  procedureName  String?      @map("procedure_name")
+  duration       Int?
+  scheduledBy    String?      @map("scheduled_by")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient        Patient?     @relation(fields: [patientId], references: [id])
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+
+  @@map("appointments")
+}
+

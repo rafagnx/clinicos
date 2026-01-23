@@ -70,6 +70,7 @@ export default function Professionals() {
     const activeOrg = localStorage.getItem("active-org-id");
     if (!activeOrg) return; // Do not auto-create if no org context
 
+    /*
     const existingProf = professionals.find(p => p.email === user.email);
     if (!existingProf) {
       // Auto-create Professional record for current user
@@ -96,6 +97,7 @@ export default function Professionals() {
         queryClient.invalidateQueries({ queryKey: ["professionals"] });
       }).catch(() => { });
     }
+    */
   }, [user, professionals, isLoading]);
 
   const createMutation = useMutation({
@@ -176,7 +178,7 @@ export default function Professionals() {
 
         // 2. Fetch the generated link from our custom backend endpoint
         // (Since we don't have SMTP, we need manual link sharing)
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3333";
         const res = await fetch(`${apiUrl}/api/admin/get-invite-link?email=${formData.email}`, {
           headers: { 'Content-Type': 'application/json' },
           // credentials: 'include' // Handled by browser/proxy usually, but let's see. 

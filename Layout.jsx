@@ -133,7 +133,7 @@ export default function Layout() {
       // Fetch organization details including subscription status
       // Using direct fetch if entity not exposed, or create a simple getter
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/organization/${user.active_organization_id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/api/organization/${user.active_organization_id}`);
         if (res.ok) return await res.json();
 
         // Fallback: use generic filtering if specific endpoint doesn't exist

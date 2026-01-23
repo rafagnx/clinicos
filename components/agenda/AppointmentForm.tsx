@@ -326,8 +326,8 @@ export default function AppointmentForm({
 
             const payload = {
                 ...data,
-                start_time: format(startDateTime, "HH:mm"),
-                end_time: format(endDateTime, "HH:mm"),
+                start_time: startDateTime.toISOString(),
+                end_time: endDateTime.toISOString(),
                 date: format(startDateTime, "yyyy-MM-dd"),
                 promotion_id: data.promotion_id === "none" ? null : data.promotion_id
             };

@@ -807,9 +807,13 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         data.organization_id = organizationId;
     }
 
+    console.log(`[DEBUG] Creating ${entity} in ${tableName}`);
+    console.log(`[DEBUG] Raw Data:`, JSON.stringify(data));
+
     try {
         // SECURITY FIX: Filter invalid columns
         const keys = Object.keys(data).filter(key => isValidColumn(key));
+        console.log(`[DEBUG] Filtered Keys:`, keys);
 
         if (keys.length === 0) {
             return res.status(400).json({ error: "No valid data provided" });
@@ -823,13 +827,29 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
         const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
+        console.log(`[DEBUG] Query:`, query);
+        console.log(`[DEBUG] Values:`, values);
 
         const { rows } = await pool.query(query, values);
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error creating ${entity}: `, error);
-        res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
+        const errorLog = `[${new Date().toISOString()}] Error creating ${entity}: ${error.message} \nDetail: ${error.detail} \nCode: ${error.code} \nData: ${JSON.stringify(data)}\n\n`;
+        console.error(errorLog);
+
+        try {
+            const fs = await import('fs');
+            const path = await import('path');
+            fs.appendFileSync(path.join(__dirname, 'server_error.log'), errorLog);
+        } catch (e) { console.error("Could not write to log file", e); }
+
+        // DEBUG MODE: Return actual error
+        res.status(500).json({
+            error: "DEBUG_ERROR: " + error.message,
+            detail: error.detail,
+            code: error.code,
+            pg_query: "See Server Logs"
+        });
     }
 });
 

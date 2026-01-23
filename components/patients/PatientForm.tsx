@@ -13,7 +13,7 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         photo_url: "",
-        full_name: "",
+        name: "",
         email: "",
         phone: "",
         whatsapp: "",
@@ -31,7 +31,7 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
         if (patient) {
             setFormData({
                 photo_url: patient.photo_url || "",
-                full_name: patient.full_name || "",
+                name: patient.name || patient.full_name || "",
                 email: patient.email || "",
                 phone: patient.phone || "",
                 whatsapp: patient.whatsapp || "",
@@ -48,7 +48,7 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
     }, [patient]);
 
     const mutation = useMutation({
-        mutationFn: (data) => {
+        mutationFn: (data: any) => {
             if (patient) {
                 return base44.entities.Patient.update(patient.id, data);
             } else {
@@ -117,11 +117,11 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
             </div>
 
             <div>
-                <Label htmlFor="full_name">Nome Completo *</Label>
+                <Label htmlFor="name">Nome Completo *</Label>
                 <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Nome do paciente"
                     required
                 />
