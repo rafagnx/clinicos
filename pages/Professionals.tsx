@@ -161,54 +161,70 @@ export default function Professionals() {
     setIsFormOpen(true);
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: formData });
     } else {
-      // Invite Flow
       try {
+        setLoading(true);
         console.log("Inviting user:", formData.email);
 
-        // 1. Trigger Better Auth Invite (creates record in DB)
-        await authClient.organization.inviteMember({
-          email: formData.email,
-          role: "member",
+        const { data: { session } } = await supabase.auth.getSession();
+        // Use the centralized API client configuration
+        const apiUrl = import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : "/api";
+
+        // 1. Create the invitation in the database
+        const invResponse = await fetch(`${apiUrl}/admin/invites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+            'x-organization-id': localStorage.getItem('active-org-id') || ''
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            role: 'member',
+            organizationId: localStorage.getItem('active-org-id')
+          })
         });
 
-        // 2. Fetch the generated link from our custom backend endpoint
-        // (Since we don't have SMTP, we need manual link sharing)
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3333";
-        const res = await fetch(`${apiUrl}/api/admin/get-invite-link?email=${formData.email}`, {
-          headers: { 'Content-Type': 'application/json' },
-          // credentials: 'include' // Handled by browser/proxy usually, but let's see. 
-          // Better-auth cookies are HTTPOnly. We need credentials.
-        });
-
-        // However, standard fetch might fail with CORS if credentials not set right.
-        // Let's rely on the fact that if invite succeeded, the record exists.
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.link) {
-            setInviteLink(data.link);
-            // Don't close form yet, let user see link? 
-            // Or better: Close form and show Success Dialog.
-            setIsFormOpen(false);
-            return; // Stop here to show dialog
-          }
+        if (!invResponse.ok) {
+          throw new Error("Falha ao registrar convite no servidor");
         }
 
-        // If we couldn't get link, just proceed normal flow
-        console.log("Could not fetch manual link, assuming email sent.");
+        // 2. Try to get the manual link (since we don't have SMTP configured yet)
+        try {
+          const res = await fetch(`${apiUrl}/admin/get-invite-link?email=${formData.email}`, {
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`,
+              'x-organization-id': localStorage.getItem('active-org-id') || ''
+            }
+          });
 
-        // Create the professional record in public table
+          if (res.ok) {
+            const data = await res.json();
+            if (data.link) {
+              setInviteLink(data.link);
+              setIsFormOpen(false);
+              return; // Stop here to show the success dialog with the link
+            }
+          }
+        } catch (linkErr) {
+          console.warn("Could not fetch manual link, proceeding with standard flow", linkErr);
+        }
+
+        // 3. Create the professional record in the public table
         const newProf = { ...formData, status: "convidado" };
         createMutation.mutate(newProf);
 
       } catch (err) {
-        console.error("Unexpected invite error:", err);
-        toast.error("Erro ao processar convite. Tente novamente.");
+        console.error("Invite error:", err);
+        toast.error("Erro ao processar convite. Verifique os dados e tente novamente.");
+      } finally {
+        setLoading(false);
       }
     }
   };
