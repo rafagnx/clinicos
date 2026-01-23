@@ -173,163 +173,9 @@ app.use(express.static(path.join(__dirname, '../dist')));
 // MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
 app.post("/api/debug/migrate", async (req, res) => {
     try {
-        console.log("Starting manual migration...");
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-
-            // 1. Create Notifications Table (missing in logs)
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS "notifications" (
-                    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-                    "title" TEXT,
-                    "message" TEXT,
-                    "user_id" TEXT NOT NULL REFERENCES "user"("id"),
-                    "read" BOOLEAN DEFAULT FALSE,
-                    "action_url" TEXT,
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW(),
-                    "updated_at" TIMESTAMP DEFAULT NOW()
-                );
-            `);
-            console.log("Checked/Created notifications table");
-
-            // STRIPE MIGRATION
-            // Add Stripe Columns to organization table
-            console.log("Checking Stripe columns in organization table...");
-            const orgTableExists = await client.query(`SELECT to_regclass('public.organization'); `);
-            if (orgTableExists.rows[0].to_regclass) {
-                const stripeCols = [
-                    { name: 'stripe_customer_id', type: 'TEXT' },
-                    { name: 'stripe_subscription_id', type: 'TEXT' },
-                    { name: 'subscription_status', type: 'TEXT' },
-                    { name: 'trial_ends_at', type: 'TIMESTAMP' }
-                ];
-
-                for (const col of stripeCols) {
-                    const colCheck = await client.query(`
-                       SELECT column_name FROM information_schema.columns 
-                       WHERE table_name = 'organization' AND column_name = $1;
-`, [col.name]);
-
-                    if (colCheck.rows.length === 0) {
-                        console.log(`Adding ${col.name} to organization table`);
-                        await client.query(`ALTER TABLE "organization" ADD COLUMN "${col.name}" ${col.type}; `);
-                    }
-                }
-            }
-
-            // 2. Add organization_id to key tables if missing
-            const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
-
-            for (const table of tablesToCheck) {
-                // Check if table exists first
-                const tableExists = await client.query(`
-                    SELECT EXISTS(
-    SELECT FROM information_schema.tables 
-                        WHERE table_schema = 'public' 
-                        AND table_name = $1
-);
-`, [table]);
-
-                if (tableExists.rows[0].exists) {
-                    // Check if column exists
-                    const colExists = await client.query(`
-                        SELECT column_name 
-                        FROM information_schema.columns 
-                        WHERE table_name = $1 AND column_name = 'organization_id';
-`, [table]);
-
-                    if (colExists.rows.length === 0) {
-                        console.log(`Adding organization_id to ${table} `);
-                        // Determine type. Usually TEXT for our new schema, might be INT for legacy.
-                        // Let's use TEXT to be compatible with Better Auth organization IDs.
-                        // We set it nullable first to avoid errors on existing data, then you can backfill.
-                        await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT; `);
-                        await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}"("organization_id"); `);
-                    } else {
-                        console.log(`organization_id already exists in ${table} `);
-                    }
-                } else {
-                    console.log(`Table ${table} does not exist yet.`);
-                }
-            }
-
-            // 4. Ensure 'professionals' table has ALL needed columns
-            const profCols = [
-                { name: 'status', type: 'VARCHAR(50) DEFAULT \'ativo\'' },
-                { name: 'role_type', type: 'VARCHAR(50) DEFAULT \'profissional\'' },
-                { name: 'council_number', type: 'VARCHAR(50)' },
-                { name: 'council_state', type: 'VARCHAR(10)' },
-                { name: 'phone', type: 'VARCHAR(20)' },
-                { name: 'color', type: 'VARCHAR(100) DEFAULT \'#3B82F6\'' },
-                { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' }
-            ];
-
-            for (const col of profCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1;`, [col.name]);
-                if (colCheck.rows.length === 0) {
-                    console.log(`Adding ${col.name} to professionals table`);
-                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${col.type}; `);
-                }
-            }
-
-            // 5. Ensure 'patients' table has ALL needed columns
-            const patientCols = [
-                { name: 'photo_url', type: 'TEXT' },
-                { name: 'whatsapp', type: 'VARCHAR(20)' },
-                { name: 'gender', type: 'VARCHAR(50)' },
-                { name: 'address', type: 'TEXT' },
-                { name: 'city', type: 'VARCHAR(255)' },
-                { name: 'marketing_source', type: 'VARCHAR(100)' },
-                { name: 'notes', type: 'TEXT' }
-            ];
-
-            for (const col of patientCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1;`, [col.name]);
-                if (colCheck.rows.length === 0) {
-                    console.log(`Adding ${col.name} to patients table`);
-                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${col.type}; `);
-                }
-            }
-
-            // 6. Ensure 'appointments' table has ALL needed columns
-            const aptCols = [
-                { name: 'procedure_name', type: 'VARCHAR(255)' },
-                { name: 'duration', type: 'INTEGER DEFAULT 60' },
-                { name: 'scheduled_by', type: 'VARCHAR(255)' },
-                { name: 'promotion_id', type: 'UUID' },
-                { name: 'date', type: 'DATE' },
-                { name: 'time', type: 'VARCHAR(20)' }
-            ];
-
-            for (const col of aptCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
-                if (colCheck.rows.length === 0) {
-                    console.log(`Adding ${col.name} to appointments table`);
-                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
-                }
-            }
-
-            // 3. Ensure 'organization' table has correct columns (Better Auth)
-            const orgColExists = await client.query(`
-                SELECT column_name 
-                FROM information_schema.columns 
-                WHERE table_name = 'organization' AND column_name = 'createdAt';
-`);
-            if (orgColExists.rows.length === 0) {
-                await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW(); `);
-                await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW(); `);
-            }
-
-            await client.query('COMMIT');
-            res.json({ success: true, message: "Migration completed successfully" });
-        } catch (e) {
-            await client.query('ROLLBACK');
-            throw e;
-        } finally {
-            client.release();
-        }
+        console.log("Starting manual migration via initSchema...");
+        await initSchema();
+        res.json({ success: true, message: "Migration completed successfully via initSchema" });
     } catch (error) {
         console.error("Migration failed:", error);
         res.status(500).json({ success: false, error: error.message });
@@ -339,61 +185,156 @@ app.post("/api/debug/migrate", async (req, res) => {
 // Initial Schema Setup (Auto-Migration)
 const initSchema = async () => {
     try {
-        const schemaPath = path.join(__dirname, '../database/schema.sql');
-        const fs = await import('fs');
-        if (fs.existsSync(schemaPath)) {
-            const sql = fs.readFileSync(schemaPath, 'utf8');
-            console.log('Running Schema check...');
-            // We verify if tables exist first to avoid errors re-running schema
-            // For now, let's rely on IF NOT EXISTS in SQL or just try/catch
-            try {
-                // This might fail if tables exist and syntax isn't idempotent, but we'll try
-                // Actually, the improved schema.sql uses IF NOT EXISTS, so should be safe-ish.
-                // But better to do targeted migrations below.
-            } catch (e) { }
-        }
-
-        // AUTO-MIGRATION: Ensure critical columns exist
         const client = await pool.connect();
         try {
-            console.log("Checking DB structure...");
+            await client.query('BEGIN');
 
-            // 1. Ensure 'professionals' table has 'status' column
-            // Only run if table exists
-            const tableExists = await client.query(`SELECT 1 FROM information_schema.tables WHERE table_name = 'professionals'`);
-            if (tableExists.rows.length > 0) {
-                const profStatusExists = await client.query(`
-                    SELECT column_name 
-                    FROM information_schema.columns 
-                    WHERE table_name = 'professionals' AND column_name = 'status';
-`);
+            // Extensions
+            await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+            await client.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
 
-                if (profStatusExists.rows.length === 0) {
-                    console.log("Auto-Migration: Adding status column to professionals table");
-                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "status" VARCHAR(50) DEFAULT 'ativo'; `);
+            // 1. Ensure CORE tables exist
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "user" (
+                    id TEXT PRIMARY KEY,
+                    name TEXT,
+                    email TEXT UNIQUE,
+                    image TEXT,
+                    "emailVerified" BOOLEAN,
+                    "createdAt" TIMESTAMP DEFAULT NOW(),
+                    "updatedAt" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "organization" (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    slug TEXT UNIQUE,
+                    logo TEXT,
+                    "createdAt" TIMESTAMP DEFAULT NOW(),
+                    "updatedAt" TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "patients" (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    email TEXT,
+                    phone TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "professionals" (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    email TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "appointments" (
+                    id SERIAL PRIMARY KEY,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "notifications" (
+                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                    "title" TEXT,
+                    "message" TEXT,
+                    "user_id" TEXT NOT NULL,
+                    "read" BOOLEAN DEFAULT FALSE,
+                    "action_url" TEXT,
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW(),
+                    "updated_at" TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            // 2. Add organization_id to key tables if missing
+            const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
+            for (const table of tablesToCheck) {
+                const tableExists = await client.query(`SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = $1);`, [table]);
+                if (tableExists.rows[0].exists) {
+                    const colExists = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND column_name = 'organization_id';`, [table]);
+                    if (colExists.rows.length === 0) {
+                        await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT; `);
+                        await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}"("organization_id"); `);
+                    }
                 }
             }
 
-            // 2. Ensure 'organization' has createdAt (fix for Better Auth)
-            const orgTableExists = await client.query(`SELECT 1 FROM information_schema.tables WHERE table_name = 'organization'`);
-            if (orgTableExists.rows.length > 0) {
-                const orgColExists = await client.query(`
-                    SELECT column_name 
-                    FROM information_schema.columns 
-                    WHERE table_name = 'organization' AND column_name = 'createdAt';
-`);
-                if (orgColExists.rows.length === 0) {
-                    console.log("Auto-Migration: Adding timestamps to organization table");
-                    await client.query(`ALTER TABLE "organization" ADD COLUMN "createdAt" TIMESTAMP DEFAULT NOW(); `);
-                    await client.query(`ALTER TABLE "organization" ADD COLUMN "updatedAt" TIMESTAMP DEFAULT NOW(); `);
+            // 3. Update Professionals Columns
+            const profCols = [
+                { name: 'status', type: 'VARCHAR(50) DEFAULT \'ativo\'' },
+                { name: 'role_type', type: 'VARCHAR(50) DEFAULT \'profissional\'' },
+                { name: 'council_number', type: 'VARCHAR(50)' },
+                { name: 'council_state', type: 'VARCHAR(10)' },
+                { name: 'phone', type: 'VARCHAR(20)' },
+                { name: 'color', type: 'VARCHAR(100) DEFAULT \'#3B82F6\'' },
+                { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' }
+            ];
+            for (const col of profCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
-            console.log('Database structure verified.');
+            // 4. Update Patients Columns
+            const patientCols = [
+                { name: 'name', type: 'TEXT' },
+                { name: 'email', type: 'VARCHAR(255)' },
+                { name: 'phone', type: 'VARCHAR(50)' },
+                { name: 'cpf', type: 'VARCHAR(50)' },
+                { name: 'birth_date', type: 'DATE' },
+                { name: 'photo_url', type: 'TEXT' },
+                { name: 'whatsapp', type: 'VARCHAR(20)' },
+                { name: 'gender', type: 'VARCHAR(50)' },
+                { name: 'address', type: 'TEXT' },
+                { name: 'city', type: 'VARCHAR(255)' },
+                { name: 'marketing_source', type: 'VARCHAR(100)' },
+                { name: 'notes', type: 'TEXT' },
+                { name: 'status', type: 'VARCHAR(50) DEFAULT \'ativo\'' }
+            ];
+            for (const col of patientCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 5. Update Appointments Columns
+            const aptCols = [
+                { name: 'patient_id', type: 'INTEGER' },
+                { name: 'professional_id', type: 'INTEGER' },
+                { name: 'procedure_name', type: 'VARCHAR(255)' },
+                { name: 'duration', type: 'INTEGER DEFAULT 60' },
+                { name: 'scheduled_by', type: 'VARCHAR(255)' },
+                { name: 'promotion_id', type: 'UUID' },
+                { name: 'date', type: 'DATE' },
+                { name: 'time', type: 'VARCHAR(20)' }
+            ];
+            for (const col of aptCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            await client.query('COMMIT');
+            console.log('Database schema verified and migrated.');
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
         } finally {
             client.release();
         }
-
     } catch (err) {
         console.error('Schema/Auto Migration Failed:', err);
     }

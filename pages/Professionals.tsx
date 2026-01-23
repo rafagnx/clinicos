@@ -134,7 +134,7 @@ export default function Professionals() {
     setEditing(null);
   };
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role?.toLowerCase()?.includes("admin") || user?.role?.toLowerCase()?.includes("gerente");
 
   const getRoleLabel = (roleType) => {
     const labels = {
@@ -338,97 +338,100 @@ export default function Professionals() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {professionals.map((prof) => (
-              <Card key={prof.id} className="p-5 bg-white border-0 shadow-sm hover:shadow-md transition-all group">
+              <Card key={prof.id} className="p-5 bg-white border-0 shadow-sm hover:shadow-lg transition-all group relative">
                 <div className="flex items-start gap-4">
                   <div className="relative">
-                    <Avatar className="h-14 w-14 ring-4" style={{ ringColor: prof.color || "#3B82F6" }}>
-                      <AvatarImage src={prof.photo_url} />
-                      <AvatarFallback className="text-white font-semibold" style={{ backgroundColor: prof.color || "#3B82F6" }}>
-                        {prof.full_name?.split(" ").map(n => n[0]).slice(0, 2).join("")}
-                      </AvatarFallback>
-                    </Avatar>
                     <div
-                      className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white"
-                      style={{ backgroundColor: prof.color || "#3B82F6" }}
+                      className="p-1 rounded-full transition-transform group-hover:scale-105"
+                      style={{ background: `linear-gradient(135deg, ${prof.color || "#3B82F6"} 0%, ${prof.color}88 100%)` }}
+                    >
+                      <Avatar className="h-16 w-16 border-2 border-white">
+                        <AvatarImage src={prof.photo_url} />
+                        <AvatarFallback className="text-white font-bold text-lg" style={{ backgroundColor: prof.color || "#3B82F6" }}>
+                          {prof.full_name?.split(" ").map(n => n[0]).slice(0, 2).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    {/* Status Dot */}
+                    <div
+                      className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                      style={{ backgroundColor: prof.status === 'ativo' ? '#10B981' : (prof.status === 'convidado' ? '#F59E0B' : '#94A3B8') }}
                     />
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold text-slate-800">{prof.full_name}</h3>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge variant="outline" className="text-xs">
+                      <div className="space-y-1">
+                        <h3 className="font-bold text-lg text-slate-900 leading-tight">
+                          {prof.full_name}
+                        </h3>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold h-5 px-2 bg-slate-50 border-slate-200 text-slate-600">
                             {getRoleLabel(prof.role_type)}
                           </Badge>
+
                           {prof.is_admin && (
-                            <motion.div
-                              animate={{
-                                boxShadow: [
-                                  "0 0 10px rgba(251, 191, 36, 0.5)",
-                                  "0 0 20px rgba(251, 191, 36, 0.8)",
-                                  "0 0 10px rgba(251, 191, 36, 0.5)"
-                                ]
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                              }}
-                              className="inline-block"
-                            >
-                              <Badge className="text-xs bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 text-amber-950 font-bold border-0 shadow-lg">
-                                ⭐ Admin
+                            <div className="relative">
+                              <div className="absolute inset-0 bg-amber-400 blur-md opacity-40 animate-pulse rounded-full"></div>
+                              <Badge className="relative text-[10px] bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 text-amber-950 font-black border-0 shadow-sm px-2 h-5">
+                                ⭐ ADMIN
                               </Badge>
-                            </motion.div>
+                            </div>
                           )}
                         </div>
+
                         {prof.specialty && (
-                          <p className="text-sm text-slate-500 mt-1">{prof.specialty}</p>
-                        )}
-                        {prof.council_number && (
-                          <p className="text-xs text-slate-400 mt-1">
-                            {prof.council_number} - {prof.council_state}
+                          <p className="text-sm font-medium text-slate-500">
+                            {prof.specialty}
                           </p>
                         )}
+
+                        {prof.council_number && (
+                          <p className="text-xs text-slate-400 font-medium">
+                            {prof.council_number} {prof.council_state ? `- ${prof.council_state}` : ''}
+                          </p>
+                        )}
+
+                        <div className="pt-1">
+                          <Badge
+                            className={`text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter ${prof.status === "ativo"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              : prof.status === 'convidado'
+                                ? "bg-amber-50 text-amber-600 border-amber-100"
+                                : "bg-slate-100 text-slate-500 border-slate-200"
+                              }`}
+                            variant="outline"
+                          >
+                            {prof.status === "ativo" ? "Ativo" : prof.status === 'convidado' ? "Convidado" : "Inativo"}
+                          </Badge>
+                        </div>
                       </div>
+
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 transition-colors">
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-32">
                           {(isAdmin || prof.email === user?.email) && (
-                            <DropdownMenuItem onClick={() => handleEdit(prof)} className="gap-2">
-                              <Edit2 className="w-4 h-4" />
+                            <DropdownMenuItem onClick={() => handleEdit(prof)} className="gap-2 text-slate-600">
+                              <Edit2 className="w-3.5 h-3.5" />
                               Editar
                             </DropdownMenuItem>
                           )}
                           {isAdmin && (
                             <DropdownMenuItem
                               onClick={() => confirm(`Excluir ${prof.full_name}?`) && deleteMutation.mutate(prof.id)}
-                              className="gap-2 text-rose-600"
+                              className="gap-2 text-rose-600 focus:text-rose-600 focus:bg-rose-50"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                               Excluir
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {prof.phone && (
-                        <Badge variant="secondary" className="text-xs bg-slate-100">
-                          <Phone className="w-3 h-3 mr-1" />
-                          {prof.phone}
-                        </Badge>
-                      )}
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs ${prof.status === "ativo" ? "bg-emerald-50 text-emerald-700 font-medium" : "bg-slate-100 text-slate-500"}`}
-                      >
-                        {prof.status === "ativo" ? "Ativo" : prof.status === 'convidado' ? "Convidado" : "Inativo"}
-                      </Badge>
                     </div>
                   </div>
                 </div>
