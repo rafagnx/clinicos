@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { createPageUrl, cn } from "@/lib/utils";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -565,3 +565,4 @@ export default function Layout() {
     </ThemeContext.Provider>
   );
 }
+

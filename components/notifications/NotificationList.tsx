@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Bell, Check, Trash2, X, Calendar, DollarSign, AlertCircle, Info, CheckCircle } from "lucide-react";
@@ -172,3 +172,4 @@ export default function NotificationList({ notifications, onMarkAsRead, onDelete
         </div>
     );
 }
+

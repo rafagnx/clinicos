@@ -45,7 +45,7 @@ export default function Login() {
 
                 // CRITICAL FIX: Fetch user's organizations to set active-org-id
                 try {
-                    const orgRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/user/organizations`, {
+                    const orgRes = await fetch(`/api/user/organizations`, {
                         headers: {
                             'Authorization': `Bearer ${data.session?.access_token}`,
                             'Content-Type': 'application/json'

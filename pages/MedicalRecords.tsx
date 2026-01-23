@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Link, useOutletContext } from "react-router-dom";
 import { createPageUrl, cn } from "@/lib/utils";
@@ -184,3 +184,4 @@ export default function MedicalRecords() {
     </div>
   );
 }
+

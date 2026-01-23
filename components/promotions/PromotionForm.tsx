@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Loader2, Check, Upload, X } from "lucide-react";
 
@@ -213,3 +213,4 @@ export default function PromotionForm({ promotion, onSuccess, onCancel }: Promot
         </form>
     );
 }
+

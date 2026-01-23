@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/lib/utils";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -375,3 +375,4 @@ export default function ImportPatients() {
     </div>
   );
 }
+

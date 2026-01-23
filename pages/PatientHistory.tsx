@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -250,3 +250,4 @@ export default function PatientHistory() {
     </div>
   );
 }
+

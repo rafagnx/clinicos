@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -510,5 +510,6 @@ function InviteManagerForm({ org, onClose, isDark }) {
         </form>
     );
 }
+
 
 

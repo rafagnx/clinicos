@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { X, Send, Minus, Maximize2, Minimize2, Paperclip, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -212,3 +212,4 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         </AnimatePresence>
     );
 }
+

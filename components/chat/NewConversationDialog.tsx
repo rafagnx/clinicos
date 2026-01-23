@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Search, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -189,3 +189,4 @@ export default function NewConversationDialog({ open, onOpenChange, currentUser,
         </Dialog>
     );
 }
+

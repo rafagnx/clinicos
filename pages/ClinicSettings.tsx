@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useOutletContext } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -404,3 +404,4 @@ export default function ClinicSettings() {
     </div >
   );
 }
+

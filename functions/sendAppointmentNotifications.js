@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 
 /**
  * Envia notificações push sobre novos agendamentos
@@ -82,3 +82,4 @@ async function sendPushNotification({ tokenRecord, messageData }) {
   console.log(`Enviando push para ${tokenRecord}: ${messageData.title}`);
   return true;
 }
+

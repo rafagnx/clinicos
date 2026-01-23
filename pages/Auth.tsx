@@ -61,7 +61,7 @@ export default function Auth() {
 
                     // CRITICAL FIX: Fetch organizations after signup
                     try {
-                        const orgRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api/user/organizations`, {
+                        const orgRes = await fetch(`/api/user/organizations`, {
                             headers: {
                                 'Authorization': `Bearer ${data.session.access_token}`,
                                 'Content-Type': 'application/json'

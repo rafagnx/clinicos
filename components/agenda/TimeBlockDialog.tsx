@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -95,3 +95,4 @@ export default function TimeBlockDialog({ open, onOpenChange, onSuccess, profess
         </Dialog>
     );
 }
+

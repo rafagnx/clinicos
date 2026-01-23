@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/lib/base44Client";
 
 export type NotificationType = 'appointment' | 'payment' | 'alert' | 'success' | 'info';
 
@@ -95,3 +95,4 @@ export function requestNotificationPermission() {
         }
     }
 }
+
