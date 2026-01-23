@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/api/:path*",
+            "destination": "https://clinicos-it4q.onrender.com/api/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

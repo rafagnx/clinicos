@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/lib/supabaseClient";
+import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,32 +44,17 @@ export default function Login() {
                     localStorage.setItem("clinicos-token", data.session?.access_token || "");
                 } catch (e) { }
 
-                // CRITICAL FIX: Fetch user's organizations to set active-org-id
                 try {
-                    const orgRes = await fetch(`/api/user/organizations`, {
-                        headers: {
-                            'Authorization': `Bearer ${data.session?.access_token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                    const orgs = await base44.auth.getUserOrganizations();
 
-                    if (orgRes.ok) {
-                        const orgs = await orgRes.json();
-
-                        if (orgs.length > 0) {
-                            // Set the first (or most recent) organization as active
-                            localStorage.setItem("active-org-id", orgs[0].organizationId);
-                            toast.success("Bem-vindo de volta!");
-                            window.location.href = '/Dashboard';
-                        } else {
-                            // No organization found - redirect to create one
-                            toast.info("Configure sua clínica para começar");
-                            navigate('/organization/new');
-                        }
+                    if (orgs && orgs.length > 0) {
+                        // Set the first (or most recent) organization as active
+                        localStorage.setItem("active-org-id", orgs[0].organizationId || orgs[0].id);
+                        toast.success("Bem-vindo de volta!");
+                        window.location.href = '/Dashboard';
                     } else {
-                        // Fallback if org fetch fails - still allow login but warn
-                        console.error("Failed to fetch organizations:", await orgRes.text());
-                        toast.warning("Login realizado. Configure sua organização.");
+                        // No organization found - redirect to create one
+                        toast.info("Configure sua clínica para começar");
                         navigate('/organization/new');
                     }
                 } catch (orgError) {

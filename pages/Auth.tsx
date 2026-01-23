@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { base44 } from "@/lib/base44Client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,24 +62,12 @@ export default function Auth() {
 
                     // CRITICAL FIX: Fetch organizations after signup
                     try {
-                        const orgRes = await fetch(`/api/user/organizations`, {
-                            headers: {
-                                'Authorization': `Bearer ${data.session.access_token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                        const orgs = await base44.auth.getUserOrganizations();
 
-                        if (orgRes.ok) {
-                            const orgs = await orgRes.json();
-
-                            if (orgs.length > 0) {
-                                localStorage.setItem("active-org-id", orgs[0].organizationId);
-                                toast.success("Conta criada! Bem-vindo!");
-                                navigate("/Dashboard");
-                            } else {
-                                toast.success("Conta criada! Configure sua clínica");
-                                navigate("/organization/new");
-                            }
+                        if (orgs && orgs.length > 0) {
+                            localStorage.setItem("active-org-id", orgs[0].organizationId || orgs[0].id);
+                            toast.success("Conta criada! Bem-vindo!");
+                            navigate("/Dashboard");
                         } else {
                             toast.success("Conta criada! Configure sua clínica");
                             navigate("/organization/new");

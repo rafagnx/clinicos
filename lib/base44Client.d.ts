@@ -20,6 +20,7 @@ export interface Base44Client {
         me: () => Promise<any>;
         updateMe: (data: any) => Promise<any>;
         logout: () => Promise<void>;
+        getUserOrganizations: () => Promise<any[]>;
     };
 
     admin: {
