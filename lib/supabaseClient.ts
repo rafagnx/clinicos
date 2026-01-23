@@ -9,4 +9,35 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.error("Supabase URL or Anon Key missing! Check .env");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Custom Storage Adapter that falls back to memory if LocalStorage is full
+const safeStorage = {
+    getItem: (key: string) => {
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            return null;
+        }
+    },
+    setItem: (key: string, value: string) => {
+        try {
+            localStorage.setItem(key, value);
+        } catch (e) {
+            console.warn("LocalStorage quota exceeded, session will be non-persistent");
+            // Could implement in-memory backup here if needed for SPA session
+        }
+    },
+    removeItem: (key: string) => {
+        try {
+            localStorage.removeItem(key);
+        } catch (e) { }
+    }
+};
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        storage: safeStorage,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
+});
