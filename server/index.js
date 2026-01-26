@@ -752,7 +752,14 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         const { rows } = await pool.query(query, params);
-        res.json(rows);
+
+        // DATA FIX: Map 'name' back to 'full_name' for frontend compatibility
+        const mappedRows = rows.map(row => ({
+            ...row,
+            full_name: row.full_name || row.name || ""
+        }));
+
+        res.json(mappedRows);
     } catch (error) {
         console.error(`Error fetching ${entity}: `, error);
         res.status(500).json({ error: error.message });
@@ -785,7 +792,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
     const isUserScoped = userScopedEntities.includes(entity);
 
-    if (!organizationId && !isUserScoped) {
+    if (!organizationId && !isUserScoped && !req.auth.isSystemAdmin && req.auth.user?.role?.toLowerCase() !== 'admin') {
         return res.status(400).json({ error: "Organization Context Required" });
     }
 

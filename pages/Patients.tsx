@@ -107,7 +107,8 @@ export default function Patients() {
     if (!Array.isArray(patients)) return [];
 
     return patients.filter(patient => {
-      const matchesSearch = patient.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      const nameForSearch = (patient.full_name || patient.name || "").toLowerCase();
+      const matchesSearch = nameForSearch.includes(search.toLowerCase()) ||
         patient.phone?.includes(search) ||
         patient.email?.toLowerCase().includes(search.toLowerCase());
 
@@ -194,7 +195,7 @@ export default function Patients() {
                   <Download className="w-4 h-4 text-slate-500" />
                   Exportar CSV
                 </DropdownMenuItem>
-                {user?.role === "admin" && (
+                {(user?.role?.toLowerCase()?.includes("admin") || user?.role === "admin") && (
                   <>
                     <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
                     <DropdownMenuItem
@@ -429,7 +430,7 @@ export default function Patients() {
                       deleteMutation.mutate(patient.id);
                     }
                   }}
-                  isAdmin={user?.role === "admin"}
+                  isAdmin={user?.role?.toLowerCase()?.includes("admin") || user?.role === "admin"}
                   isDark={isDark}
                 />
               </div>

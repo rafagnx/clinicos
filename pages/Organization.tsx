@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { supabase } from "@/lib/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,21 +18,32 @@ export default function Organization() {
     const handleCreateOrg = async () => {
         setLoading(true);
         try {
-            const { data, error } = await authClient.organization.create({
-                name,
-                slug,
+            // Use custom backend route instead of better-auth
+            const { data: { session } } = await supabase.auth.getSession();
+            const apiUrl = import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : "/api";
+
+            const res = await fetch(`${apiUrl}/admin/organization/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token || 'dev-token'}`
+                },
+                body: JSON.stringify({ name, slug })
             });
-            if (error) {
-                toast.error(error.message || "Erro ao criar organização");
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data.error || "Erro ao criar organização");
             } else {
                 toast.success("Organização criada!");
-                // data.id is the org ID
                 if (data?.id) {
                     localStorage.setItem("active-org-id", data.id);
                 }
                 navigate("/Dashboard");
             }
         } catch (e) {
+            console.error(e);
             toast.error("Erro inesperado");
         } finally {
             setLoading(false);

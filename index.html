@@ -7,11 +7,79 @@
   <link rel="apple-touch-icon" href="/logo-clinica.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0f172a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="ClinicOS" />
   <title>ClinicOS</title>
 </head>
+<script>
+  (function () {
+    try {
+      // 🧹 SELF HEALING: Aggressive Token Cleanup 2.0 🧹
+      // Risks: User avatar might disappear from UI until re-login, but app will work.
+      // Goal: Prevent 431 Request Header Fields Too Large / ERR_CONNECTION_RESET
+      console.log('🛡️ ClinicOS: Checking auth token size...');
+      var cleaned = false;
+
+      // Helper to clean object
+      function cleanData(data) {
+        var modified = false;
+        if (data && data.user && data.user.user_metadata && data.user.user_metadata.image && data.user.user_metadata.image.length > 1000) {
+          console.warn('⚠️ Found massive image in token. Stripping...');
+          data.user.user_metadata.image = "";
+          data.user.user_metadata.avatar_url = "";
+          modified = true;
+        }
+        return modified ? data : null;
+      }
+
+      for (var key in localStorage) {
+        // Check specific known keys or just any huge key
+        if (key.includes('supabase.auth.token') || key.includes('-auth-token') || key === 'clinicos-token') {
+          var raw = localStorage.getItem(key);
+          if (raw && raw.length > 3000) {
+            console.log('🛡️ Analyzing large token: ' + key + ' (' + raw.length + ' bytes)');
+            try {
+              // Try parsing as JSON first
+              var data = JSON.parse(raw);
+              var newData = cleanData(data);
+              if (newData) {
+                localStorage.setItem(key, JSON.stringify(newData));
+                console.log('✅ Token sanitized: ' + key);
+                cleaned = true;
+              }
+              // Double check: if it's still huge after cleaning (or wasn't dirty in that specific way but is still huge)
+              // If it's a raw JWT string stored as JSON value or something
+              // Backend now supports up to 1MB headers, so we relax this to 950KB
+              if (localStorage.getItem(key).length > 950000) {
+                console.warn('⚠️ Token still too large (' + localStorage.getItem(key).length + '). Deleting to force refresh.');
+                localStorage.removeItem(key);
+                cleaned = true;
+              }
+            } catch (e) {
+              // Not JSON? If it's a raw string and huge, delete it.
+              if (raw.length > 50000) {
+                console.warn('⚠️ Non-JSON large token found (' + key + '). Deleting.');
+                localStorage.removeItem(key);
+                cleaned = true;
+              }
+            }
+          }
+        }
+      }
+
+      if (cleaned) {
+        console.log('🔄 Refreshing page to apply clean tokens...');
+        // Optional: Add a visual indicator or just reload
+        // window.location.reload(); 
+        // Reloading might cause a loop if we are not careful. 
+        // Better to let the app load with clean tokens.
+      }
+    } catch (e) {
+      console.error('Shield check failed', e);
+    }
+  })();
+</script>
 
 <body>
   <div id="root"></div>

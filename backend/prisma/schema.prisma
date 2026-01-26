@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  image         String?
+  phone         String?
+  specialty     String?
+  emailVerified Boolean?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  memberships   Member[]
+  notifications Notification[]
+  
+  // Scoped data
+  notificationPreferences NotificationPreference[]
+
+  @@map("user")
+}
+
+model Organization {
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String   @unique
+  logo               String?
+  subscriptionStatus String?  @map("subscription_status")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  members              Member[]
+  patients             Patient[]
+  professionals        Professional[]
+  appointments         Appointment[]
+  notifications        Notification[]
+  leads                Lead[]
+  financialTransactions FinancialTransaction[]
+  medicalRecords       MedicalRecord[]
+  messages             Message[]
+  conversations        Conversation[]
+  clinicSettings       ClinicSetting[]
+  procedureTypes       ProcedureType[]
+  promotions           Promotion[]
+  pendingInvites       PendingInvite[]
+  notificationPreferences NotificationPreference[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String
+  role           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("member")
+}
+
+model Patient {
+  id              Int      @id @default(autoincrement())
+  organizationId  String?  @map("organization_id")
+  name            String
+  email           String?
+  phone           String?
+  cpf             String?
+  birthDate       DateTime? @map("birth_date") @db.Date
+  photoUrl        String?  @map("photo_url")
+  whatsapp        String?
+  gender          String?
+  address         String?
+  city            String?
+  marketingSource String?  @map("marketing_source")
+  notes           String?
+  status          String?  @default("ativo")
+  deleted         Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+  medicalRecords  MedicalRecord[]
+
+  @@map("patients")
+}
+
+model Professional {
+  id                  Int      @id @default(autoincrement())
+  organizationId      String?  @map("organization_id")
+  name                String
+  email               String?  @unique
+  status              String?  @default("ativo")
+  roleType            String?  @default("profissional") @map("role_type")
+  councilNumber       String?  @map("council_number")
+  councilState        String?  @map("council_state")
+  phone               String?
+  specialty           String?
+  color               String?  @default("#3B82F6")
+  appointmentDuration Int?     @default(30) @map("appointment_duration")
+  photoUrl            String?  @map("photo_url")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  appointments        Appointment[]
+
+  @@map("professionals")
+}
+
+model Appointment {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  patientId      Int?     @map("patient_id")
+  professionalId Int?     @map("professional_id")
+  procedureName  String?  @map("procedure_name")
+  startTime      DateTime @map("start_time")
+  endTime        DateTime @map("end_time")
+  duration       Int?     @default(60)
+  scheduledBy    String?  @map("scheduled_by")
+  promotionId    String?  @map("promotion_id") @db.Uuid
+  date           DateTime? @db.Date // Legacy/Redundant if we have start_time? Keeping for compatibility
+  time           String?
+  status         String?  @default("scheduled")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient        Patient?      @relation(fields: [patientId], references: [id])
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+
+  @@map("appointments")
+}
+
+model Notification {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String?  @map("organization_id")
+  userId         String   @map("user_id")
+  title          String?
+  message        String?
+  read           Boolean? @default(false)
+  actionUrl      String?  @map("action_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @map("updated_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model PendingInvite {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id")
+  email          String
+  role           String?  @default("member")
+  token          String?  @unique
+  accepted       Boolean  @default(false)
+  createdBy      String?  @map("created_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("pending_invites")
+}
+
+// --------------------------------------------------------------------------
+// Placeholder models for entities referenced in server/index.js generic CRUD
+// --------------------------------------------------------------------------
+
+model Lead {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  name           String?
+  status         String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("leads")
+}
+
+model FinancialTransaction {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  amount         Decimal?
+  description    String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("financial_transactions")
+}
+
+model MedicalRecord {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  patientId      Int?     @map("patient_id")
+  content        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient        Patient?      @relation(fields: [patientId], references: [id])
+  @@map("medical_records")
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  content        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("messages")
+}
+
+model Conversation {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  title          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("conversations")
+}
+
+model ClinicSetting {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  key            String?
+  value          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("clinic_settings")
+}
+
+model ProcedureType {
+  id             Int      @id @default(autoincrement())
+  organizationId String?  @map("organization_id")
+  name           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("procedure_types")
+}
+
+model Promotion {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String?  @map("organization_id")
+  name           String?
+  code           String?
+  discount       Decimal?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@map("promotions")
+}
+
+model NotificationPreference {
+  id                    Int      @id @default(autoincrement())
+  organizationId        String?  @map("organization_id")
+  userId                String   @map("user_id")
+  emailEnabled          Boolean? @default(true) @map("email_enabled")
+  pushEnabled           Boolean? @default(true) @map("push_enabled")
+  whatsappEnabled       Boolean? @default(false) @map("whatsapp_enabled")
+  appointmentReminders  Boolean? @default(true) @map("appointment_reminders")
+  marketingUpdates      Boolean? @default(false) @map("marketing_updates")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  organization          Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("notification_preferences")
+}

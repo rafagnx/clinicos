@@ -413,6 +413,7 @@ export default function Agenda() {
               // Calculate position
               // Base time is 7:00 (index 0). Each slot is 30 mins (height 50px).
               // Need to map time to px.
+              if (!apt.start_time) return null;
               const [h, m] = apt.start_time.split(":").map(Number);
               const minutesSince7 = (h - 7) * 60 + m;
               const slots = minutesSince7 / 30;

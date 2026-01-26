@@ -134,11 +134,13 @@ export default function Professionals() {
     setEditing(null);
   };
 
-  const isAdmin = user?.role?.toLowerCase()?.includes("admin") || user?.role?.toLowerCase()?.includes("gerente");
+  const isAdmin = user?.role?.toLowerCase()?.includes("admin") || user?.role?.toLowerCase()?.includes("gerente") || user?.role === "admin";
 
   const getRoleLabel = (roleType) => {
     const labels = {
-      profissional: "HOF ou Biomédico",
+      hof: "HOF",
+      biomedico: "Biomédico",
+      profissional: "Profissional",
       secretaria: "Secretária",
       marketing: "Marketing",
       gerente: "Gerente",
@@ -148,7 +150,7 @@ export default function Professionals() {
   };
 
   const getRoleIcon = (roleType) => {
-    if (roleType === "profissional") return Stethoscope;
+    if (roleType === "profissional" || roleType === "hof" || roleType === "biomedico") return Stethoscope;
     if (roleType === "gerente") return Shield;
     return Users;
   };
@@ -230,10 +232,15 @@ export default function Professionals() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setFormData(prev => ({ ...prev, photo_url: file_url }));
-    setUploading(false);
+    try {
+      setUploading(true);
+      const file_url = await base44.storage.upload(file);
+      setFormData(prev => ({ ...prev, photo_url: file_url }));
+    } catch (err) {
+      toast.error("Erro ao carregar foto");
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Success Dialog for Link
@@ -480,7 +487,9 @@ export default function Professionals() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="profissional">HOF ou Biomédico</SelectItem>
+                  <SelectItem value="hof">HOF</SelectItem>
+                  <SelectItem value="biomedico">Biomédico</SelectItem>
+                  <SelectItem value="profissional">Profissional (Outro)</SelectItem>
                   <SelectItem value="secretaria">Secretária</SelectItem>
                   <SelectItem value="marketing">Marketing</SelectItem>
                   <SelectItem value="gerente">Gerente</SelectItem>

@@ -40,7 +40,7 @@ export default function PatientCard({ patient, lastAppointment, onEdit, onDelete
                                     "font-bold text-lg",
                                     isDark ? "bg-slate-800 text-indigo-400" : "bg-indigo-50 text-indigo-600"
                                 )}>
-                                    {patient.full_name?.substring(0, 2).toUpperCase()}
+                                    {(patient.full_name || patient.name || "??").substring(0, 2).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             <span className={cn(
@@ -55,7 +55,7 @@ export default function PatientCard({ patient, lastAppointment, onEdit, onDelete
                                 "font-bold text-lg leading-tight line-clamp-1",
                                 isDark ? "text-slate-100 group-hover:text-indigo-400" : "text-slate-900 group-hover:text-indigo-700"
                             )}>
-                                {patient.full_name}
+                                {patient.full_name || patient.name}
                             </h3>
                             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                                 <Badge variant="outline" className={cn(

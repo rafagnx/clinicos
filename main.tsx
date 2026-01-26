@@ -43,9 +43,32 @@ import AdminReports from './pages/admin/AdminReports'
 
 const queryClient = new QueryClient()
 
+// --- SELF HEALING: Remove huge images from Supabase tokens ---
+try {
+    for (const key in localStorage) {
+        if (key.includes('-auth-token')) {
+            const raw = localStorage.getItem(key);
+            if (raw && raw.length > 950000) { // Check if huge (near 1MB limit)
+                try {
+                    const data = JSON.parse(raw);
+                    // Check for base64 image in metadata
+                    if (data?.user?.user_metadata?.image?.startsWith('data:image')) {
+                        console.warn('🧹 Detected huge image in auth token. Cleaning up to prevent 431/Net errors...');
+                        delete data.user.user_metadata.image;
+                        localStorage.setItem(key, JSON.stringify(data));
+                        // Force reload if we cleaned it, to ensure clean state? 
+                        // No, let's just clean it. Next request will be fine.
+                    }
+                } catch (e) { /* ignore */ }
+            }
+        }
+    }
+} catch (e) { console.error("Auto-cleanup failed", e); }
+// -------------------------------------------------------------
+
 const App = () => {
     return (
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
                 {/* Public Route */}
                 <Route path="/login" element={<Login />} />
