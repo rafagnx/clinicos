@@ -277,6 +277,59 @@ const initSchema = async () => {
                     "created_at" TIMESTAMP DEFAULT NOW(),
                     "updated_at" TIMESTAMP DEFAULT NOW()
                 );
+                CREATE TABLE IF NOT EXISTS "clinic_settings" (
+                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                    "clinic_name" TEXT,
+                    "logo_url" TEXT,
+                    "phone" TEXT,
+                    "email" TEXT,
+                    "address" TEXT,
+                    "website" TEXT,
+                    "instagram" TEXT,
+                    "meta_integration" JSONB DEFAULT '{}',
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW(),
+                    "updated_at" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "leads" (
+                    "id" SERIAL PRIMARY KEY,
+                    "name" TEXT,
+                    "email" TEXT,
+                    "phone" TEXT,
+                    "status" TEXT DEFAULT 'new',
+                    "source" TEXT,
+                    "notes" TEXT,
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "medical_records" (
+                    "id" SERIAL PRIMARY KEY,
+                    "patient_id" INTEGER,
+                    "professional_id" INTEGER,
+                    "content" TEXT,
+                    "date" TIMESTAMP DEFAULT NOW(),
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "financial_transactions" (
+                    "id" SERIAL PRIMARY KEY,
+                    "description" TEXT,
+                    "amount" NUMERIC(10, 2),
+                    "type" TEXT,
+                    "category" TEXT,
+                    "status" TEXT,
+                    "date" DATE,
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "promotions" (
+                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                    "name" TEXT,
+                    "discount_value" NUMERIC(10, 2),
+                    "active" BOOLEAN DEFAULT TRUE,
+                    "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
             `);
 
             // 2. Add organization_id to key tables if missing
@@ -1110,7 +1163,13 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    try {
+        console.log("Verifying database schema...");
+        await initSchema();
+    } catch (err) {
+        console.error("Schema init failed:", err);
+    }
     startCleanupJob(pool);
 });
