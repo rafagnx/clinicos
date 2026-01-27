@@ -30,28 +30,31 @@ export default function ClinicSettings() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
-        // 1. Global Super Admin
+        // 1. Global Super Admin Bypass
         if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com") {
           setIsUnauthorized(false);
           return;
         }
 
-        // 2. Organization Admin (Check Member Role)
+        // 2. Organization Admin (Check via Backend API)
         if (currentUser.active_organization_id) {
-          const { data: member, error } = await supabase
-            .from('member')
-            .select('role')
-            .eq('organizationId', currentUser.active_organization_id)
-            .eq('userId', currentUser.id)
-            .single();
+          // Fetch fresh membership data from backend
+          const userOrgs = await base44.auth.getUserOrganizations();
 
-          if (!error && member && (member.role === 'admin' || member.role === 'owner')) {
+          // Find current org membership
+          const currentMembership = userOrgs.find((o: any) =>
+            o.organizationId === currentUser.active_organization_id ||
+            o.id === currentUser.active_organization_id // Handle potential ID mismatch in future
+          );
+
+          if (currentMembership && (currentMembership.role === 'admin' || currentMembership.role === 'owner')) {
             setIsUnauthorized(false);
             return;
           }
         }
 
         // If none matched -> Unauthorized
+        console.warn("User unauthorized for settings. Role:", currentUser.role);
         setIsUnauthorized(true);
 
       } catch (err) {
