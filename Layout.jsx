@@ -97,6 +97,7 @@ export default function Layout() {
   const navigate = useNavigate();
 
   // Auto-detect Organization if missing
+  // This effect runs ONCE on mount
   useEffect(() => {
     const init = async () => {
       // 1. Process any pending invites first (fixes google login invite flow)
@@ -119,6 +120,8 @@ export default function Layout() {
     };
     init();
   }, []);
+
+  const activeOrgId = localStorage.getItem("active-org-id");
 
   const toggleTheme = () => setIsDark(!isDark);
 
@@ -148,7 +151,9 @@ export default function Layout() {
         const all = await base44.entities.ClinicSettings.list();
         return all[0] || null;
       } catch (e) { return null; }
-    }
+    },
+    // CRITICAL FIX: Only fetch settings if we have an Organization Context
+    enabled: !!user && !!activeOrgId
   });
 
   const { data: organization } = useQuery({
