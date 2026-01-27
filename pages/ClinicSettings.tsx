@@ -31,7 +31,7 @@ export default function ClinicSettings() {
         setUser(currentUser);
 
         // 1. Global Super Admin Bypass
-        if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com") {
+        if (currentUser.role === 'admin' || currentUser.email === "rafamarketingdb@gmail.com" || currentUser.email === "marketingorofacial@gmail.com") {
           setIsUnauthorized(false);
           return;
         }
@@ -49,7 +49,7 @@ export default function ClinicSettings() {
 
           if (currentMembership) {
             const role = currentMembership.role?.toLowerCase() || '';
-            if (['admin', 'owner', 'administrador'].includes(role)) {
+            if (['admin', 'owner', 'administrador', 'administrator'].includes(role)) {
               setIsUnauthorized(false);
               return;
             }
