@@ -100,9 +100,20 @@ const requireAuth = async (req, res, next) => {
                 }
 
                 const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
+                let orgId = req.headers['x-organization-id'];
+
+                if (!orgId) {
+                    try {
+                        const { rows } = await pool.query('SELECT "organizationId" FROM "member" WHERE "userId" = $1 LIMIT 1', [user.id]);
+                        if (rows.length > 0) orgId = rows[0].organizationId;
+                    } catch (e) {
+                        console.warn("[Auth] Failed to fallback orgId:", e.message);
+                    }
+                }
+
                 req.auth = {
                     userId: user.id,
-                    organizationId: req.headers['x-organization-id'],
+                    organizationId: orgId,
                     user: { ...user, role: isSystemAdmin ? 'admin' : (user.user_metadata?.role || 'user') },
                     isSystemAdmin: isSystemAdmin
                 };
@@ -418,6 +429,24 @@ const initSchema = async () => {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
                 if (colCheck.rows.length === 0) {
                     await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 6. Update Clinic Settings Columns (Fix for missing email/address)
+            const settingsCols = [
+                { name: 'clinic_name', type: 'TEXT' },
+                { name: 'logo_url', type: 'TEXT' },
+                { name: 'phone', type: 'TEXT' },
+                { name: 'email', type: 'TEXT' },
+                { name: 'address', type: 'TEXT' },
+                { name: 'website', type: 'TEXT' },
+                { name: 'instagram', type: 'TEXT' },
+                { name: 'meta_integration', type: 'JSONB DEFAULT \'{}\'' }
+            ];
+            for (const col of settingsCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'clinic_settings' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -951,6 +980,21 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         data.rating = parseFloat(data.rating);
     }
 
+    // DATA FIX: Normalize ClinicSettings fields
+    if (entity === 'ClinicSettings') {
+        const mapping = {
+            'clinicName': 'clinic_name',
+            'logoUrl': 'logo_url',
+            'metaIntegration': 'meta_integration'
+        };
+        Object.keys(mapping).forEach(oldKey => {
+            if (data[oldKey] !== undefined) {
+                data[mapping[oldKey]] = data[oldKey];
+                delete data[oldKey];
+            }
+        });
+    }
+
     // Inject Context ID
     if (isUserScoped) {
         data.user_id = user.id;
@@ -970,6 +1014,26 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
             return res.status(400).json({ error: "No valid data provided" });
         }
 
+        if (entity === 'ClinicSettings') {
+            console.log(`[DEBUG] Handling ClinicSettings upsert for org ${data.organization_id}`);
+            // Check if settings exist for this org
+            const existing = await pool.query('SELECT id FROM clinic_settings WHERE organization_id = $1', [data.organization_id]);
+
+            if (existing.rows.length > 0) {
+                console.log(`[DEBUG] Updating existing settings ${existing.rows[0].id}`);
+                // Redirect to PUT logic effectively
+                const updateKeys = keys.filter(k => k !== 'organization_id'); // Don't update org_id
+                const updateValues = updateKeys.map(k => {
+                    const v = data[k];
+                    return (typeof v === 'object' ? JSON.stringify(v) : v);
+                });
+                const setClause = updateKeys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
+                const query = `UPDATE "${tableName}" SET ${setClause} WHERE "organization_id" = $${updateKeys.length + 1} RETURNING *`;
+                const { rows } = await pool.query(query, [...updateValues, data.organization_id]);
+                return res.json(rows[0]);
+            }
+        }
+
         const values = keys.map(key => {
             const v = data[key];
             return (typeof v === 'object' ? JSON.stringify(v) : v);
@@ -977,7 +1041,8 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
         const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
-        const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
+        console.log("[SQL DEBUG] Query:", `INSERT INTO "${tableName}" (${keys.map(k => `"${k}"`).join(', ')}) VALUES(${placeholders}) RETURNING *`);
+        const query = `INSERT INTO "${tableName}" (${keys.map(k => `"${k}"`).join(', ')}) VALUES(${placeholders}) RETURNING * `;
         console.log(`[DEBUG] Query:`, query);
         console.log(`[DEBUG] Values:`, values);
 
@@ -1033,6 +1098,21 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 
     const data = req.body;
+
+    // DATA FIX: Normalize ClinicSettings fields
+    if (entity === 'ClinicSettings') {
+        const mapping = {
+            'clinicName': 'clinic_name',
+            'logoUrl': 'logo_url',
+            'metaIntegration': 'meta_integration'
+        };
+        Object.keys(mapping).forEach(oldKey => {
+            if (data[oldKey] !== undefined) {
+                data[mapping[oldKey]] = data[oldKey];
+                delete data[oldKey];
+            }
+        });
+    }
 
     // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
     if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
