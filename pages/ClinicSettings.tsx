@@ -109,7 +109,7 @@ export default function ClinicSettings() {
     }
   }, [existingSettings]);
 
-  const saveMutation = useMutation({
+  const saveMutation = useMutation<any, Error, any>({
     mutationFn: async (data) => {
       if (existingSettings?.id) {
         return base44.entities.ClinicSettings.update(existingSettings.id, data);
