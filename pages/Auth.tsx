@@ -90,6 +90,43 @@ export default function Auth() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                    redirectTo: window.location.origin + '/dashboard'
+                }
+            });
+            if (error) throw error;
+        } catch (error: any) {
+            toast.error("Erro no login Google: " + error.message);
+            setLoading(false);
+        }
+    };
+
+    const GoogleButton = ({ text }) => (
+        <>
+            <Button variant="outline" type="button" className="w-full mb-4 bg-white text-slate-900 border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-white dark:border-slate-700 dark:hover:bg-slate-700" onClick={handleGoogleLogin}>
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
+                {text}
+            </Button>
+            <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-slate-700" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-slate-900 px-2 text-slate-400">Ou continue com</span>
+                </div>
+            </div>
+        </>
+    );
+
     return (
         <div className="min-h-screen bg-slate-950 flex relative overflow-hidden">
             {/* Background Ambience */}
@@ -165,6 +202,7 @@ export default function Auth() {
                                 </TabsList>
 
                                 <TabsContent value="signin" className="space-y-4">
+                                    <GoogleButton text="Entrar com Google" />
                                     <div className="space-y-2">
                                         <Label htmlFor="email" className="text-slate-300">Email</Label>
                                         <Input
@@ -197,6 +235,7 @@ export default function Auth() {
                                 </TabsContent>
 
                                 <TabsContent value="signup" className="space-y-4">
+                                    <GoogleButton text="Criar conta com Google" />
                                     <div className="space-y-2">
                                         <Label htmlFor="name" className="text-slate-300">Nome Completo</Label>
                                         <Input
