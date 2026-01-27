@@ -235,6 +235,24 @@ const initSchema = async () => {
                     "created_by" TEXT,
                     "created_at" TIMESTAMP DEFAULT NOW()
                 );
+
+                -- Ensure Unique Constraint on member table for ON CONFLICT support
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM pg_constraint WHERE conname = 'member_org_user_unique'
+                    ) THEN
+                        -- Try adding constraint, if it fails due to duplicates, we might need to clean up first or just rely on index
+                        BEGIN
+                             ALTER TABLE "member" ADD CONSTRAINT "member_org_user_unique" UNIQUE ("organizationId", "userId");
+                        EXCEPTION WHEN OTHERS THEN
+                             RAISE NOTICE 'Could not add unique constraint, checking for index...';
+                        END;
+                    END IF;
+                END $$;
+                
+                -- Fallback: Ensure there is at least a unique index
+                CREATE UNIQUE INDEX IF NOT EXISTS "idx_member_org_user_unique" ON "member" ("organizationId", "userId");
             `);
 
             await client.query(`
