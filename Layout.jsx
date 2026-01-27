@@ -34,10 +34,11 @@ const ThemeContext = React.createContext({
 export const useAppTheme = () => React.useContext(ThemeContext);
 
 const SubscriptionBadge = ({ org, user }) => {
-  if (user?.email === 'rafamarketingdb@gmail.com') {
+  if (user?.email === 'rafamarketingdb@gmail.com' || user?.email === 'marketingorofacial@gmail.com') {
     return <span className="text-[10px] bg-gradient-to-r from-amber-400 to-yellow-600 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-amber-500/30">MASTER</span>;
   }
   // Check for 'active' or our manual override status
+  // Also check if user is root admin to show PRO
   if (org?.subscription_status === 'active' || org?.subscription_status === 'manual_override') {
     return <span className="text-[10px] bg-gradient-to-r from-purple-500 to-pink-500 text-white px-1.5 py-0.5 rounded-md font-black italic tracking-widest ml-2 shadow-lg shadow-purple-500/30">PRO</span>;
   }
