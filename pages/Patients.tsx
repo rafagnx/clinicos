@@ -23,6 +23,7 @@ import { MoreHorizontal, FileSpreadsheet } from "lucide-react";
 
 import PatientForm from "@/components/patients/PatientForm";
 import PatientCard from "@/components/patients/PatientCard";
+import WhatsAppModal from "@/components/patients/WhatsAppModal";
 
 export default function Patients() {
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function Patients() {
   const [selectedPatients, setSelectedPatients] = useState([]);
   const [deleteProgress, setDeleteProgress] = useState({ current: 0, total: 0 });
   const [selectedPatientForActions, setSelectedPatientForActions] = useState(null);
+  const [whatsAppModalOpen, setWhatsAppModalOpen] = useState(false);
 
   React.useEffect(() => {
     base44.auth.me().then(setUser).catch(() => { });
@@ -533,8 +535,7 @@ export default function Patients() {
                   className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400 hover:border-emerald-200 transition-all group"
                   onClick={() => {
                     if (selectedPatientForActions.phone) {
-                      const cleanPhone = selectedPatientForActions.phone.replace(/\D/g, '');
-                      window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+                      setWhatsAppModalOpen(true);
                     } else {
                       toast.error("Telefone não cadastrado");
                     }
@@ -548,8 +549,7 @@ export default function Patients() {
                   variant="outline"
                   className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group"
                   onClick={() => {
-                    // Navigate to history or open history modal
-                    toast.info("Histórico em desenvolvimento");
+                    navigate(`/PatientHistory?id=${selectedPatientForActions.id}`);
                   }}
                 >
                   <FileText className="w-5 h-5 mr-3 text-slate-500 group-hover:text-blue-500 transition-colors" />
@@ -606,6 +606,13 @@ export default function Patients() {
         </SheetContent>
       </Sheet>
 
+      {/* WhatsApp Modal */}
+      <WhatsAppModal
+        patient={selectedPatientForActions}
+        isOpen={whatsAppModalOpen}
+        onClose={() => setWhatsAppModalOpen(false)}
+      />
+
       {/* Patient Form Sheet */}
       <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
         <SheetContent className="sm:max-w-xl overflow-y-auto">
@@ -623,7 +630,7 @@ export default function Patients() {
           />
         </SheetContent>
       </Sheet>
-    </div>
+    </div >
   );
 }
 
