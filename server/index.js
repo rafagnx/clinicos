@@ -597,6 +597,13 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     }
 });
 
+// User Profile Sync (Dummy for now to prevent 404/400)
+app.put('/api/user/profile', requireAuth, async (req, res) => {
+    // Ideally we would sync separate Users table here
+    // For now success to allow frontend flow to complete
+    res.json({ success: true });
+});
+
 // Pending Invites System (Replaces Better Auth Invites)
 app.post('/api/admin/invites', requireAuth, async (req, res) => {
     const { email, organizationId, role } = req.body;
