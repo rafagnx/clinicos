@@ -96,6 +96,27 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Auto-detect Organization if missing
+  useEffect(() => {
+    const init = async () => {
+      const storedOrgId = localStorage.getItem("active-org-id");
+      if (!storedOrgId) {
+        try {
+          const orgs = await base44.auth.getUserOrganizations();
+          if (orgs && orgs.length > 0) {
+            const firstOrg = orgs[0].organizationId || orgs[0].id;
+            localStorage.setItem("active-org-id", firstOrg);
+            // Use window.location.reload() to apply headers
+            setTimeout(() => window.location.reload(), 100);
+          }
+        } catch (e) {
+          console.warn("Could not auto-select organization", e);
+        }
+      }
+    };
+    init();
+  }, []);
+
   const toggleTheme = () => setIsDark(!isDark);
 
   const { data: user, isLoading: authLoading } = useQuery({
