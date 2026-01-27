@@ -122,7 +122,7 @@ export default function ClinicSettings() {
     }
   });
 
-  const handleLogoUpload = async (e) => {
+  const handleLogoUpload = async (e: any) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -184,7 +184,7 @@ export default function ClinicSettings() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || checkingAuth) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
@@ -392,7 +392,7 @@ export default function ClinicSettings() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs >
+      </Tabs>
 
       <div className="flex items-center justify-end gap-4 pt-4 border-t">
         <Button
@@ -404,7 +404,7 @@ export default function ClinicSettings() {
           Salvar Alterações
         </Button>
       </div>
-    </div >
+    </div>
   );
 }
 
