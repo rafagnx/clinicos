@@ -13,7 +13,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": [
-                "./src/*"
+                "./*"
             ]
         },
         /* Bundler mode */
@@ -30,10 +30,10 @@
         "noFallthroughCasesInSwitch": true
     },
     "include": [
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "src/**/*.js",
-        "src/**/*.jsx"
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx"
     ],
     "exclude": [
         "node_modules"
