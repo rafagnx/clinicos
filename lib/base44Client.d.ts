@@ -25,6 +25,7 @@ export interface Base44Client {
 
     admin: {
         listOrganizations: () => Promise<any[]>;
+        acceptInvite: (token: string) => Promise<{ data: any; error: any }>;
     };
 
     storage: {
