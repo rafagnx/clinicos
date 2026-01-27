@@ -770,20 +770,13 @@ app.post('/api/user/invites/process', requireAuth, async (req, res) => {
         const results = [];
 
         for (const invite of invites.rows) {
-            // Check if member already exists
-            const existingMember = await pool.query(
-                'SELECT id FROM "member" WHERE "organizationId" = $1 AND "userId" = $2',
-                [invite.organization_id, user.id]
-            );
-
-            if (existingMember.rows.length === 0) {
-                // Add to member table
-                const memberId = uuidv4();
-                await pool.query(`
-                    INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
-            }
+            // Add to member table
+            const memberId = uuidv4();
+            await pool.query(`
+                INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT ("organizationId", "userId") DO NOTHING
+            `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
 
             results.push(invite);
 
