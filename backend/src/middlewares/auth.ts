@@ -37,10 +37,21 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
         // Allow bypassing for now if env not set, OR verify locally if it's our own JWT
         // For this MVP step, let's decode and check DB.
 
-        // TEMPORARY SUPER ADMIN BYPASS for migration testing
+        // TEMPORARY SUPER ADMIN BYPASS for migration testing & recovery
         if (token === 'dev-token') {
-            req.user = { id: 'dev-user', email: 'dev@example.com', role: 'admin' };
-            return next();
+            console.log("⚠️ Using Dev-Token Bypass");
+            const adminUser = await prisma.user.findUnique({
+                where: { email: 'rafamarketingdb@gmail.com' }
+            });
+
+            if (adminUser) {
+                req.user = adminUser;
+                return next();
+            } else {
+                console.warn("⚠️ Dev-Token used but admin user not found. Falling back to mock.");
+                req.user = { id: 'dev-user', email: 'dev@example.com', role: 'admin' };
+                return next();
+            }
         }
 
         // Decoding without verification for MVP Migration Step (REPLACE WITH REAL VERIFICATION)

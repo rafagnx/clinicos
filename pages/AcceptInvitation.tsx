@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useParams } from "react-router-dom";
-import { authClient } from "@/lib/auth-client";
+import { base44 } from "@/lib/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -10,7 +10,7 @@ export default function AcceptInvitation() {
     const [searchParams] = useSearchParams();
     const { token: paramToken } = useParams();
     const navigate = useNavigate();
-    const [status, setStatus] = useState("verifying"); // verifying, success, error
+    const [status, setStatus] = useState("verifying"); // verifying, success, error, logging_in
     const [errorMsg, setErrorMsg] = useState("");
 
     // Support both /accept-invitation/:token AND /accept-invitation?token=...
@@ -23,34 +23,57 @@ export default function AcceptInvitation() {
             return;
         }
 
-        const accept = async () => {
+        const processInvite = async () => {
             try {
-                const { data, error } = await authClient.organization.acceptInvitation({
-                    invitationId: token // better-auth uses 'invitationId' usually, check docs if it's token
-                });
+                // 1. Check if user is logged in
+                const user = await base44.auth.me();
 
-                // Double check: some versions use strict 'token' vs 'invitationId'. 
-                // Default organization plugin 'acceptInvitation' takes { invitationId }.
+                if (!user) {
+                    // Not logged in -> Redirect to Register (magic!)
+                    console.log("User not logged in, redirecting to register with token:", token);
+                    // We can pass the token as a query param to the auth page
+                    // Ideally, the Auth page should check for this param and store it or use it post-signup
+                    // For now, let's redirect to /login with a special param
+                    toast.info("Faça login ou crie uma conta para aceitar o convite.");
+
+                    // Saving to sessionStorage as backup
+                    sessionStorage.setItem("pending_invite_token", token);
+
+                    setTimeout(() => {
+                        navigate(`/login?invite_token=${token}`);
+                    }, 1000);
+                    return;
+                }
+
+                // 2. User is logged in -> Accept Invite via API
+                setStatus("verifying");
+                const { data, error } = await base44.admin.acceptInvite(token);
 
                 if (error) {
-                    console.error(error);
+                    console.error("Invite Error:", error);
                     setStatus("error");
-                    setErrorMsg(error.message || "Falha ao aceitar convite");
+                    setErrorMsg(typeof error === 'string' ? error : error.message || "Falha ao aceitar convite");
                 } else {
                     setStatus("success");
-                    toast.success("Convite aceito com sucesso!");
+                    toast.success(data.message || "Convite aceito com sucesso!");
+
+                    // Update active org context
+                    if (data.organizationId) {
+                        localStorage.setItem("active-org-id", data.organizationId);
+                    }
+
                     setTimeout(() => {
-                        navigate("/dashboard");
+                        navigate("/Dashboard");
                     }, 2000);
                 }
             } catch (err) {
                 console.error(err);
                 setStatus("error");
-                setErrorMsg("Erro inesperado.");
+                setErrorMsg("Erro inesperado ao processar convite.");
             }
         };
 
-        accept();
+        processInvite();
     }, [token, navigate]);
 
     return (
@@ -64,14 +87,14 @@ export default function AcceptInvitation() {
                     {status === "verifying" && (
                         <>
                             <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-                            <p className="text-slate-500">Validando convite...</p>
+                            <p className="text-slate-500">Validando convite e permissões...</p>
                         </>
                     )}
                     {status === "success" && (
                         <>
                             <CheckCircle className="w-12 h-12 text-green-500" />
                             <p className="text-lg font-medium text-slate-800">Você agora faz parte da equipe!</p>
-                            <p className="text-sm text-slate-500">Redirecionando...</p>
+                            <p className="text-sm text-slate-500">Acessando o painel...</p>
                         </>
                     )}
                     {status === "error" && (
@@ -79,8 +102,8 @@ export default function AcceptInvitation() {
                             <XCircle className="w-12 h-12 text-red-500" />
                             <p className="text-lg font-medium text-slate-800">Erro ao aceitar convite</p>
                             <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-md">{errorMsg}</p>
-                            <Button variant="outline" onClick={() => navigate("/login")} className="mt-4">
-                                Ir para Login
+                            <Button variant="outline" onClick={() => navigate("/Dashboard")} className="mt-4">
+                                Ir para Dashboard
                             </Button>
                         </>
                     )}

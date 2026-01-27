@@ -91,6 +91,57 @@ adminRouter.post('/invites', requireAuth, async (req, res) => {
     }
 });
 
+// Accept Invite
+adminRouter.post('/accept-invite', requireAuth, async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) return res.status(400).json({ error: "Token is required" });
+
+    try {
+        // 1. Find Invite
+        const invite = await (prisma as any).pendingInvite.findUnique({
+            where: { token }
+        });
+
+        if (!invite) {
+            return res.status(404).json({ error: "Convite inválido ou expirado." });
+        }
+
+        // 2. Check if already member
+        const existingMember = await prisma.member.findFirst({
+            where: {
+                organizationId: invite.organizationId,
+                userId: req.user.id
+            }
+        });
+
+        if (existingMember) {
+            // Already a member, just return success
+            return res.json({ success: true, organizationId: invite.organizationId, message: "Você já é membro desta clínica." });
+        }
+
+        // 3. Create Member
+        await prisma.member.create({
+            data: {
+                organizationId: invite.organizationId,
+                userId: req.user.id,
+                role: invite.role || 'member'
+            }
+        });
+
+        // 4. Delete Invite (Access granted)
+        await (prisma as any).pendingInvite.delete({
+            where: { id: invite.id }
+        });
+
+        res.json({ success: true, organizationId: invite.organizationId });
+
+    } catch (error) {
+        console.error("Accept Invite Error:", error);
+        res.status(500).json({ error: "Falha ao processar convite." });
+    }
+});
+
 // Get Invite Link (Dev/Manual)
 adminRouter.get('/get-invite-link', requireAuth, async (req, res) => {
     const { email } = req.query;
