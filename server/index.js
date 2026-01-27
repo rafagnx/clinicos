@@ -641,6 +641,39 @@ app.post('/api/admin/invites', requireAuth, async (req, res) => {
     }
 });
 
+// Process Pending Invites (Auto-Accept by Email)
+app.post('/api/user/invites/process', requireAuth, async (req, res) => {
+    const { user } = req.auth;
+    const now = new Date();
+
+    try {
+        // Find invites for this email
+        const invites = await pool.query('SELECT * FROM "pending_invites" WHERE email = $1', [user.email]);
+
+        const results = [];
+
+        for (const invite of invites.rows) {
+            // Add to member table
+            const memberId = uuidv4();
+            await pool.query(`
+                INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+                VALUES ($1, $2, $3, $4, $5, $6)
+                ON CONFLICT ("organizationId", "userId") DO NOTHING
+            `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
+
+            results.push(invite);
+
+            // Delete invite
+            await pool.query('DELETE FROM "pending_invites" WHERE id = $1', [invite.id]);
+        }
+
+        res.json({ processed: results.length, invites: results });
+    } catch (err) {
+        console.error("Process Invites Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // List pending invites for organization
 app.get('/api/admin/invites/:orgId', requireAuth, async (req, res) => {
     const { orgId } = req.params;
