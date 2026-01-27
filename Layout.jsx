@@ -99,6 +99,9 @@ export default function Layout() {
   // Auto-detect Organization if missing
   useEffect(() => {
     const init = async () => {
+      // 1. Process any pending invites first (fixes google login invite flow)
+      await base44.auth.processPendingInvites();
+
       const storedOrgId = localStorage.getItem("active-org-id");
       if (!storedOrgId) {
         try {
