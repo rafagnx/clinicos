@@ -134,7 +134,15 @@ export default function Professionals() {
     setEditing(null);
   };
 
-  const isAdmin = user?.role?.toLowerCase()?.includes("admin") || user?.role?.toLowerCase()?.includes("gerente") || user?.role === "admin";
+  React.useEffect(() => {
+    console.log("Current User:", user);
+  }, [user]);
+
+  const isAdmin = user?.role?.toLowerCase()?.includes("admin") ||
+    user?.role?.toLowerCase()?.includes("gerente") ||
+    user?.role === "admin" ||
+    user?.email === "rafamarketingdb@gmail.com" || // Hardcoded fallback for owner
+    user?.user_metadata?.role === "admin";
 
   const getRoleLabel = (roleType) => {
     const labels = {
