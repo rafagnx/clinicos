@@ -228,7 +228,7 @@ const initSchema = async () => {
                     UNIQUE("organizationId", "userId")
                 );
                 CREATE TABLE IF NOT EXISTS "pending_invites" (
-                    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
                     "email" TEXT NOT NULL,
                     "organization_id" TEXT NOT NULL,
                     "role" TEXT DEFAULT 'user',
