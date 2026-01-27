@@ -969,6 +969,15 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 
     try {
+        // SPECIAL HANDLING: Professional Deletion (Handle FK Constraint)
+        if (entity === 'Professional') {
+            console.log(`[Delete] Professional ${id}: Nullifying appointments references first.`);
+            await pool.query(
+                `UPDATE appointments SET professional_id = NULL WHERE professional_id = $1`,
+                [id]
+            );
+        }
+
         let query = `DELETE FROM ${tableName} WHERE id = $1`;
         const params = [id];
 
@@ -987,6 +996,12 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         res.json({ success: true });
     } catch (error) {
         console.error(`Error deleting ${entity}: `, error);
+
+        // Handle FK Constraints nicely if still hits
+        if (error.code === '23503') {
+            return res.status(400).json({ error: "Não é possível excluir este item pois ele possui registros vinculados." });
+        }
+
         res.status(500).json({ error: error.message });
     }
 });

@@ -223,32 +223,7 @@ export default function Login() {
                                 Criar conta grátis
                             </a>
                         </p>
-                        <div className="mt-4 pt-4 border-t border-slate-900/50">
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    if (!confirm("⚠️ Ativar Modo de Recuperação (Rescue Login)?\nIsso bypassará a autenticação do Supabase.")) return;
-                                    localStorage.setItem("clinicos-token", "dev-token");
-                                    try {
-                                        const orgs = await base44.auth.getUserOrganizations();
-                                        if (orgs && orgs.length > 0) {
-                                            localStorage.setItem("active-org-id", orgs[0].organizationId || orgs[0].id);
-                                            toast.success("Modo de Recuperação Ativo!");
-                                            window.location.href = '/Dashboard';
-                                        } else {
-                                            toast.warning("Nenhuma organização encontrada. Crie uma nova.");
-                                            window.location.href = '/organization/new';
-                                        }
-                                    } catch (e) {
-                                        console.error("Rescue Login Failed", e);
-                                        toast.error("Falha no login de recuperação");
-                                    }
-                                }}
-                                className="text-xs text-slate-700 hover:text-red-500 transition-colors"
-                            >
-                                (Admin Rescue Login)
-                            </button>
-                        </div>
+
                     </div>
                 </div>
             </div>
