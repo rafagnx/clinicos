@@ -47,9 +47,12 @@ export default function ClinicSettings() {
             o.id === currentUser.active_organization_id // Handle potential ID mismatch in future
           );
 
-          if (currentMembership && (currentMembership.role === 'admin' || currentMembership.role === 'owner')) {
-            setIsUnauthorized(false);
-            return;
+          if (currentMembership) {
+            const role = currentMembership.role?.toLowerCase() || '';
+            if (['admin', 'owner', 'administrador'].includes(role)) {
+              setIsUnauthorized(false);
+              return;
+            }
           }
         }
 
