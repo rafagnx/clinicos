@@ -218,6 +218,23 @@ const initSchema = async () => {
                     "createdAt" TIMESTAMP DEFAULT NOW(),
                     "updatedAt" TIMESTAMP DEFAULT NOW()
                 );
+                CREATE TABLE IF NOT EXISTS "member" (
+                    id TEXT PRIMARY KEY,
+                    "organizationId" TEXT NOT NULL,
+                    "userId" TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    "createdAt" TIMESTAMP DEFAULT NOW(),
+                    "updatedAt" TIMESTAMP DEFAULT NOW(),
+                    UNIQUE("organizationId", "userId")
+                );
+                CREATE TABLE IF NOT EXISTS "pending_invites" (
+                    "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+                    "email" TEXT NOT NULL,
+                    "organization_id" TEXT NOT NULL,
+                    "role" TEXT DEFAULT 'user',
+                    "created_by" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
             `);
 
             await client.query(`
