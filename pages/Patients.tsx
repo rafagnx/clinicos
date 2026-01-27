@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserPlus, Users, UserX, Loader2, SlidersHorizontal, X, Download, Upload, Trash2 } from "lucide-react";
+import { Search, UserPlus, Users, UserX, Loader2, SlidersHorizontal, X, Download, Upload, Trash2, MessageCircle, FileText, Calendar, Edit, Phone, Clock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, FileSpreadsheet } from "lucide-react";
 
@@ -41,6 +42,7 @@ export default function Patients() {
   const [showBulkDelete, setShowBulkDelete] = useState(false);
   const [selectedPatients, setSelectedPatients] = useState([]);
   const [deleteProgress, setDeleteProgress] = useState({ current: 0, total: 0 });
+  const [selectedPatientForActions, setSelectedPatientForActions] = useState(null);
 
   React.useEffect(() => {
     base44.auth.me().then(setUser).catch(() => { });
@@ -372,21 +374,21 @@ export default function Patients() {
         )}
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* List View */}
+      <div className="flex flex-col gap-3">
         {isLoading ? (
-          <div className="col-span-full flex flex-col items-center justify-center py-32 opacity-50">
+          <div className="flex flex-col items-center justify-center py-32 opacity-50">
             <Loader2 className="w-10 h-10 animate-spin mb-4 text-indigo-500" />
             <p className={isDark ? "text-slate-400" : "text-slate-500"}>Carregando pacientes...</p>
           </div>
         ) : isError ? (
-          <div className="col-span-full text-center py-20 text-rose-500">
+          <div className="text-center py-20 text-rose-500">
             <UserX className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>Erro ao carregar dados.</p>
           </div>
         ) : filteredPatients.length === 0 ? (
           <div className={cn(
-            "col-span-full flex flex-col items-center justify-center py-32 rounded-3xl border-2 border-dashed",
+            "flex flex-col items-center justify-center py-32 rounded-3xl border-2 border-dashed",
             isDark ? "border-slate-800 bg-slate-900/50" : "border-slate-200 bg-slate-50/50"
           )}>
             <div className={cn(
@@ -403,41 +405,206 @@ export default function Patients() {
             </p>
           </div>
         ) : (
-          filteredPatients.map(patient => (
-            <div key={patient.id} className="relative group">
-              {showBulkDelete && (
-                <div className="absolute top-4 left-4 z-20">
-                  <Checkbox
-                    checked={selectedPatients.includes(patient.id)}
-                    onCheckedChange={() => toggleSelectPatient(patient.id)}
-                    className={cn(
-                      "w-5 h-5 border-2 transition-all data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600",
-                      isDark ? "bg-slate-900 border-slate-600" : "bg-white border-slate-300"
+          filteredPatients.map(patient => {
+            const lastAppt = appointments.find(a => a.patient_id === patient.id);
+
+            return (
+              <div
+                key={patient.id}
+                className={cn(
+                  "group relative flex items-center gap-4 p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer",
+                  isDark
+                    ? "bg-slate-900/50 border-slate-800 hover:bg-slate-800/50"
+                    : "bg-white border-slate-100 hover:border-slate-200 shadow-sm"
+                )}
+                onClick={() => {
+                  if (!showBulkDelete) {
+                    setSelectedPatientForActions(patient);
+                  }
+                }}
+              >
+                {showBulkDelete && (
+                  <div className="mr-2" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedPatients.includes(patient.id)}
+                      onCheckedChange={() => toggleSelectPatient(patient.id)}
+                      className={cn(
+                        "w-5 h-5 border-2 transition-all data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600",
+                        isDark ? "bg-slate-900 border-slate-600" : "bg-white border-slate-300"
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Avatar */}
+                <Avatar className="h-12 w-12 border-2 border-white shadow-sm ring-2 ring-slate-100 dark:ring-slate-800">
+                  <AvatarImage src={patient.avatar_url} />
+                  <AvatarFallback className={cn("font-bold", isDark ? "bg-indigo-900 text-indigo-200" : "bg-blue-600 text-white")}>
+                    {patient.full_name?.substring(0, 2).toUpperCase() || "PA"}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Info */}
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  <div className="md:col-span-4">
+                    <h3 className={cn("font-bold text-lg leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
+                      {patient.full_name || "Sem Nome"}
+                    </h3>
+                    {patient.cpf && (
+                      <p className="text-xs text-slate-500 font-mono mt-0.5">{patient.cpf}</p>
                     )}
-                  />
+                  </div>
+
+                  <div className="md:col-span-3 flex items-center gap-2 text-sm text-slate-500">
+                    <Phone className="w-4 h-4 opacity-70" />
+                    <span>{patient.phone || "Sem telefone"}</span>
+                  </div>
+
+                  <div className="md:col-span-3 flex items-center gap-2 text-sm text-slate-500">
+                    <Clock className="w-4 h-4 opacity-70" />
+                    <span>
+                      {lastAppt
+                        ? `Última: ${format(parseISO(lastAppt.date), "dd/MM/yyyy")}`
+                        : "Sem consultas"}
+                    </span>
+                  </div>
+
+                  <div className="md:col-span-2 flex justify-end">
+                    <Badge variant="secondary" className={cn(
+                      "capitalize px-3 py-1",
+                      (patient.status === 'ativo' || !patient.status) ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                    )}>
+                      {patient.status || "Ativo"}
+                    </Badge>
+                  </div>
                 </div>
-              )}
-              <div className={cn(
-                "h-full transition-all duration-300",
-                showBulkDelete && !selectedPatients.includes(patient.id) && "opacity-60 scale-[0.98] grayscale-[0.5]"
-              )}>
-                <PatientCard
-                  patient={patient}
-                  lastAppointment={appointments.find(a => a.patient_id === patient.id)}
-                  onEdit={() => handleEdit(patient)}
-                  onDelete={() => {
-                    if (confirm(`Deseja excluir ${patient.full_name} permanentemente?`)) {
-                      deleteMutation.mutate(patient.id);
-                    }
-                  }}
-                  isAdmin={user?.role?.toLowerCase()?.includes("admin") || user?.role === "admin"}
-                  isDark={isDark}
-                />
+
+
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
+
+      {/* Quick Actions Sheet (Side Drawer) */}
+      <Sheet open={!!selectedPatientForActions} onOpenChange={(open) => !open && setSelectedPatientForActions(null)}>
+        <SheetContent className="sm:max-w-md p-0 overflow-hidden border-l border-slate-200 dark:border-slate-800">
+          {selectedPatientForActions && (
+            <div className="h-full flex flex-col bg-white dark:bg-slate-950">
+              {/* Header */}
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="flex items-center gap-4 mb-4">
+                  <Avatar className="h-16 w-16 border-4 border-white dark:border-slate-900 shadow-md">
+                    <AvatarImage src={selectedPatientForActions.avatar_url} />
+                    <AvatarFallback className="text-xl font-bold bg-blue-600 text-white">
+                      {selectedPatientForActions.full_name?.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                      {selectedPatientForActions.full_name}
+                    </h2>
+                    <Badge variant="secondary" className="mt-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                      {selectedPatientForActions.status || "Ativo"}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 text-sm text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4" />
+                    <span>{selectedPatientForActions.phone || "Não informado"}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-4 h-4" />
+                    <span>
+                      {appointments.find(a => a.patient_id === selectedPatientForActions.id)
+                        ? `Última consulta: ${format(parseISO(appointments.find(a => a.patient_id === selectedPatientForActions.id).date), "dd/MM/yyyy", { locale: ptBR })}`
+                        : "Nenhuma consulta registrada"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions List */}
+              <div className="p-4 space-y-3 flex-1 overflow-y-auto">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400 hover:border-emerald-200 transition-all group"
+                  onClick={() => {
+                    if (selectedPatientForActions.phone) {
+                      const cleanPhone = selectedPatientForActions.phone.replace(/\D/g, '');
+                      window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+                    } else {
+                      toast.error("Telefone não cadastrado");
+                    }
+                  }}
+                >
+                  <MessageCircle className="w-5 h-5 mr-3 text-emerald-500 group-hover:scale-110 transition-transform" />
+                  WhatsApp
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group"
+                  onClick={() => {
+                    // Navigate to history or open history modal
+                    toast.info("Histórico em desenvolvimento");
+                  }}
+                >
+                  <FileText className="w-5 h-5 mr-3 text-slate-500 group-hover:text-blue-500 transition-colors" />
+                  Histórico de procedimentos
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group"
+                  onClick={() => {
+                    navigate(`/agenda?newAppointment=true&patientId=${selectedPatientForActions.id}`);
+                  }}
+                >
+                  <Calendar className="w-5 h-5 mr-3 text-slate-500 group-hover:text-blue-500 transition-colors" />
+                  Agendar consulta
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-14 text-base font-medium border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group"
+                  onClick={() => {
+                    setSelectedPatientForActions(null);
+                    handleEdit(selectedPatientForActions);
+                  }}
+                >
+                  <Edit className="w-5 h-5 mr-3 text-slate-500 group-hover:text-blue-500 transition-colors" />
+                  Editar cadastro
+                </Button>
+
+                <div className="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-14 text-base font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/20 dark:text-rose-500 transition-all group"
+                    onClick={() => {
+                      if (confirm(`Deseja excluir ${selectedPatientForActions.full_name} permanentemente?`)) {
+                        deleteMutation.mutate(selectedPatientForActions.id);
+                        setSelectedPatientForActions(null);
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform" />
+                    Excluir paciente
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-6 bg-slate-50 dark:bg-slate-900/50 mt-auto border-t border-slate-100 dark:border-slate-800 text-center">
+                <p className="text-xs text-slate-400">
+                  ID: {selectedPatientForActions.id} • Criado em {format(parseISO(selectedPatientForActions.created_date || new Date().toISOString()), "dd/MMM/yyyy", { locale: ptBR })}
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Patient Form Sheet */}
       <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
