@@ -109,8 +109,14 @@ const requireAuth = async (req, res, next) => {
                 return next();
             }
         } catch (err) {
-            console.error("Auth Token Error:", err);
+            console.error(`[Auth] Token Validation Error for ${authHeader.substring(0, 10)}... :`, err.message);
+            if (err.status === 401 || err.status === 403) {
+                // Supabase rejected the token specifically
+                console.error("[Auth] Supabase rejected token. Reason:", err);
+            }
         }
+    } else {
+        console.warn("[Auth] No Bearer Token provided in header");
     }
 
     // If authentication failed

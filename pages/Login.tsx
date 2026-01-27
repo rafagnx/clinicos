@@ -34,7 +34,19 @@ export default function Login() {
                 }
 
                 console.error("Supabase Login Error:", error);
-                toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
+
+                if (error.message.includes("Email not confirmed")) {
+                    toast.error("Email não confirmado. Verifique sua caixa de entrada.", {
+                        action: {
+                            label: "Reenviar Email",
+                            onClick: () => handleResendConfirmation()
+                        },
+                        duration: 8000
+                    });
+                } else {
+                    toast.error(error.message === "Invalid login credentials" ? "Email ou senha incorretos" : error.message);
+                }
+
                 setIsLoading(false);
                 return;
             }
@@ -97,6 +109,25 @@ export default function Login() {
                 toast.error("Erro inesperado ao tentar logar.");
             }
             setIsLoading(false);
+        }
+    };
+
+    const handleResendConfirmation = async () => {
+        if (!email) {
+            toast.error("Preencha o email para reenviar.");
+            return;
+        }
+
+        const toastId = toast.loading("Reenviando email...");
+        try {
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email: email,
+            });
+            if (error) throw error;
+            toast.success("Email reenviado! Verifique (inclusive SPAM).", { id: toastId });
+        } catch (err: any) {
+            toast.error("Erro ao reenviar: " + err.message, { id: toastId });
         }
     };
 
