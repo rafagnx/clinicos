@@ -214,12 +214,29 @@ app.use(cors({
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', time: new Date().toISOString() }));
 
 app.get('/api/debug-auth-config', (req, res) => {
+    // DIAGNOSTIC ENDPOINT for Auth Configuration
+    const sbUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'MISSING';
+    const sbKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'MISSING';
+    const sbServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'MISSING';
+    console.log('[Debug] Config Requested');
+
     res.json({
-        supabaseUrl: SUPABASE_URL,
-        supabaseKeyPrefix: SUPABASE_KEY ? SUPABASE_KEY.substring(0, 15) + '...' : 'MISSING',
-        envVarUrl: process.env.VITE_SUPABASE_URL ? 'SET' : 'Unset',
-        envVarKey: process.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'Unset',
-        headersReceived: req.headers
+        diagnosis: "Configuration Check",
+        backend_config: {
+            url_prefix: sbUrl.substring(0, 20) + '...',
+            anon_key_prefix: sbKey.substring(0, 10) + '...',
+            anon_key_suffix: sbKey.length > 10 ? sbKey.substring(sbKey.length - 5) : 'SHORT',
+            service_key_present: sbServiceKey !== 'MISSING',
+            service_key_prefix: sbServiceKey.substring(0, 5) + '...'
+        },
+        env_vars_detected: {
+            SUPABASE_URL: !!process.env.SUPABASE_URL,
+            VITE_SUPABASE_URL: !!process.env.VITE_SUPABASE_URL,
+            SUPABASE_KEY: !!process.env.SUPABASE_KEY,
+            VITE_SUPABASE_ANON_KEY: !!process.env.VITE_SUPABASE_ANON_KEY,
+            SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+        },
+        server_time: new Date().toISOString()
     });
 });
 // -----------------------------------------------------
