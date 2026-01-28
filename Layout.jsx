@@ -96,12 +96,33 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Auto-detect Organization if missing
-  // This effect runs ONCE on mount
+
+
+  const activeOrgId = localStorage.getItem("active-org-id");
+
+  const toggleTheme = () => setIsDark(!isDark);
+
+  const { data: user, isLoading: authLoading } = useQuery({
+    queryKey: ["auth-user"],
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (e) {
+        return null;
+      }
+    },
+    retry: false
+  });
+
+  // Auto-detect Organization & Process Invites
   useEffect(() => {
+    if (!user) return; // Wait for authenticated user
+
     const init = async () => {
-      // 1. Process any pending invites first (fixes google login invite flow)
-      await base44.auth.processPendingInvites();
+      // 1. Process any pending invites first
+      try {
+        await base44.auth.processPendingInvites();
+      } catch (e) { console.warn("Invite processing warning", e); }
 
       const storedOrgId = localStorage.getItem("active-org-id");
       if (!storedOrgId) {
@@ -119,23 +140,7 @@ export default function Layout() {
       }
     };
     init();
-  }, []);
-
-  const activeOrgId = localStorage.getItem("active-org-id");
-
-  const toggleTheme = () => setIsDark(!isDark);
-
-  const { data: user, isLoading: authLoading } = useQuery({
-    queryKey: ["auth-user"],
-    queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch (e) {
-        return null;
-      }
-    },
-    retry: false
-  });
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user && window.location.pathname !== '/login' && window.location.pathname !== '/register' && !window.location.pathname.startsWith('/accept-invitation')) {
@@ -265,6 +270,24 @@ export default function Layout() {
   const isSubscriptionActive = !organization || // Allow if org loading or not found yet (prevent flash) 
     ['active', 'trialing', 'manual_override'].includes(organization?.subscription_status) ||
     user?.email === 'rafamarketingdb@gmail.com';
+
+  // Check if we are still loading auth or if we need to redirect
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        {/* Background Ambience */}
+        <div className="absolute inset-0 overflow-hidden z-0">
+          <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+          <div className="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[80px] animate-pulse-slow delay-700"></div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-slate-400 text-sm animate-pulse">Carregando ClinicOS...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
