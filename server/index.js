@@ -908,6 +908,23 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     }
 });
 
+// User Profile Get
+app.get('/api/user/profile', requireAuth, async (req, res) => {
+    const { user } = req.auth;
+    try {
+        const { rows } = await pool.query('SELECT * FROM "user" WHERE id = $1', [user.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            // If checking profile but not in DB, return basic auth info
+            res.json({ id: user.id, email: user.email, name: user.email.split('@')[0] });
+        }
+    } catch (err) {
+        console.error("Get Profile Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // User Profile Sync (Real Implementation)
 app.put('/api/user/profile', requireAuth, async (req, res) => {
     const { user } = req.auth;
