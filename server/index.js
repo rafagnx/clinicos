@@ -908,11 +908,65 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     }
 });
 
-// User Profile Sync (Dummy for now to prevent 404/400)
+// User Profile Sync (Real Implementation)
 app.put('/api/user/profile', requireAuth, async (req, res) => {
-    // Ideally we would sync separate Users table here
-    // For now success to allow frontend flow to complete
-    res.json({ success: true });
+    const { user } = req.auth;
+    const data = req.body;
+    const now = new Date();
+
+    try {
+        // Map frontend fields (display_name -> name)
+        const updates = [];
+        const values = [];
+        let i = 1;
+
+        // Frontend sends 'display_name', DB uses 'name'
+        const nameToUpdate = data.display_name || data.name || data.full_name;
+
+        if (nameToUpdate) { updates.push(`name = $${i++}`); values.push(nameToUpdate); }
+        if (data.phone) { updates.push(`phone = $${i++}`); values.push(data.phone); }
+        if (data.specialty || data.speciality) { updates.push(`specialty = $${i++}`); values.push(data.specialty || data.speciality); }
+        if (data.user_type) { updates.push(`user_type = $${i++}`); values.push(data.user_type); }
+        if (data.photo_url || data.image) { updates.push(`image = $${i++}`); values.push(data.photo_url || data.image); }
+
+        updates.push(`"updatedAt" = $${i++}`);
+        values.push(now);
+
+        if (updates.length > 1) { // More than just updatedAt
+            values.push(user.id);
+            const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`;
+
+            console.log(`[Profile] Updating user ${user.id}:`, updates);
+
+            // Also update Supabase metadata is handled by frontend, but we own Postgres
+            const { rows } = await pool.query(query, values);
+
+            if (rows.length > 0) {
+                return res.json({ success: true, user: rows[0] });
+            } else {
+                // If user doesn't exist in Postgres (integrity error), we should potentially create them?
+                // For now, let's assume existence due to requireAuth, but handle 0 rows
+                console.warn(`[Profile] User ${user.id} not found in DB during update`);
+                // Attempt UPSERT/Insert if missing?
+                // Let's safe fail for now or try insert
+                await pool.query(`
+                    INSERT INTO "user" (id, name, email, "createdAt", "updatedAt")
+                    VALUES ($1, $2, $3, NOW(), NOW())
+                    ON CONFLICT (id) DO NOTHING
+                 `, [user.id, nameToUpdate || user.email.split('@')[0], user.email]);
+
+                // Retry update
+                const retry = await pool.query(query, values);
+                return res.json({ success: true, user: retry.rows[0] });
+            }
+        }
+
+        res.json({ success: true, message: "No meaningful changes" });
+
+    } catch (err) {
+        console.error("Profile Backend Update Error:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Pending Invites System (Replaces Better Auth Invites)
