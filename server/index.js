@@ -948,20 +948,20 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
         console.log(`[Admin Delete] Starting cascade delete for Org ${id}`);
 
         // 1. Delete Peripheral Data (Least Dependent)
-        await client.query('DELETE FROM "appointment" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "medical_record" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "notification" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "promotion" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "lead" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "financial_transaction" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "appointments" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "medical_records" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "notifications" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "promotions" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "leads" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "financial_transactions" WHERE "organizationId" = $1', [id]);
 
         // 2. Delete Core Clinic Data
-        await client.query('DELETE FROM "patient" WHERE "organizationId" = $1', [id]);
-        await client.query('DELETE FROM "professional" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "patients" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "professionals" WHERE "organizationId" = $1', [id]);
         await client.query('DELETE FROM "clinic_settings" WHERE "organizationId" = $1', [id]);
 
         // 3. Delete Access Control
-        await client.query('DELETE FROM "invite" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "pending_invites" WHERE "organizationId" = $1', [id]);
         await client.query('DELETE FROM "member" WHERE "organizationId" = $1', [id]);
 
         // 4. Finally Delete Organization

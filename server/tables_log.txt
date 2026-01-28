@@ -1,0 +1,17 @@
+appointments
+clinic_settings
+conversations
+financial_transactions
+leads
+medical_records
+member
+messages
+notification_preferences
+notifications
+organization
+patients
+pending_invites
+procedure_types
+professionals
+promotions
+user
