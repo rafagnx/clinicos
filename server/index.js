@@ -940,13 +940,48 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
         return res.status(403).json({ error: "Access Denied" });
     }
 
+    const client = await pool.connect();
+
     try {
-        await pool.query('DELETE FROM "organization" WHERE id = $1', [id]);
-        res.json({ success: true, message: "Deleted" });
+        await client.query('BEGIN');
+
+        console.log(`[Admin Delete] Starting cascade delete for Org ${id}`);
+
+        // 1. Delete Peripheral Data (Least Dependent)
+        await client.query('DELETE FROM "appointment" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "medical_record" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "notification" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "promotion" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "lead" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "financial_transaction" WHERE "organizationId" = $1', [id]);
+
+        // 2. Delete Core Clinic Data
+        await client.query('DELETE FROM "patient" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "professional" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "clinic_settings" WHERE "organizationId" = $1', [id]);
+
+        // 3. Delete Access Control
+        await client.query('DELETE FROM "invite" WHERE "organizationId" = $1', [id]);
+        await client.query('DELETE FROM "member" WHERE "organizationId" = $1', [id]);
+
+        // 4. Finally Delete Organization
+        const result = await client.query('DELETE FROM "organization" WHERE id = $1 RETURNING id', [id]);
+
+        await client.query('COMMIT');
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Organization not found" });
+        }
+
+        console.log(`[Admin Delete] Successfully deleted Org ${id}`);
+        res.json({ success: true, message: "Deleted successfully" });
+
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error("Delete Org Error:", err);
-        if (err.code === '23503') return res.status(400).json({ error: "Cannot delete org with active data" });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Failed to delete organization: " + err.message });
+    } finally {
+        client.release();
     }
 });
 
