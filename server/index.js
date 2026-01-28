@@ -1575,11 +1575,14 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+import { runOwnershipMigration } from './migration_ownership.js';
+
 app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
     try {
         console.log("Verifying database schema...");
         await initSchema();
+        await runOwnershipMigration(pool); // Run production fix
     } catch (err) {
         console.error("Schema init failed:", err);
     }
