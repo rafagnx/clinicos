@@ -1,0 +1,29 @@
+{
+  "patients": [
+    "organization_id"
+  ],
+  "appointments": [
+    "organization_id"
+  ],
+  "professionals": [
+    "organization_id"
+  ],
+  "notifications": [
+    "organization_id"
+  ],
+  "promotions": [
+    "organization_id"
+  ],
+  "leads": [
+    "organization_id"
+  ],
+  "financial_transactions": [
+    "organization_id"
+  ],
+  "clinic_settings": [
+    "organization_id"
+  ],
+  "member": [
+    "organizationId"
+  ]
+}

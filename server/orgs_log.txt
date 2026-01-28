@@ -1,0 +1,22 @@
+[
+  {
+    "id": "a6a9b7cd-1fa0-4c5d-9f9a-9256d945075a",
+    "name": "ClinicOS Demo",
+    "slug": "demo-clinic"
+  },
+  {
+    "id": "31c833dc-5844-4722-a9bf-a27cb38cdd09",
+    "name": "Clinica Sucesso",
+    "slug": "clinica-sucesso-v2"
+  },
+  {
+    "id": "bc550e05-d94f-461e-92da-bd3e3c8e2460",
+    "name": "Orofacial Clinic",
+    "slug": "orofacial-clinic-main"
+  },
+  {
+    "id": "434b055b-09be-4d7e-92ca-4f32590c94fc",
+    "name": "ClinicOS Master",
+    "slug": "master-admin"
+  }
+]
