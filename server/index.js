@@ -1183,6 +1183,17 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
     }
 });
 
+
+// DEBUG ENDPOINT (Remove in final prod)
+app.get('/api/debug-auth-config', (req, res) => {
+    res.json({
+        supabaseUrl: SUPABASE_URL,
+        supabaseKeyPrefix: SUPABASE_KEY ? SUPABASE_KEY.substring(0, 15) + '...' : 'MISSING',
+        envVarUrl: process.env.VITE_SUPABASE_URL ? 'SET' : 'Unset',
+        envVarKey: process.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'Unset'
+    });
+});
+
 // The "catchall" handler
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
