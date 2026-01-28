@@ -107,14 +107,16 @@ const requireAuth = async (req, res, next) => {
 
                 if (!targetOrgId) {
                     try {
-                        // Check if user has organizations
-                        // We must query 'organization_member' or 'organization' table.
-                        // Assuming 'organization' table has owner_id or user is in some member table.
-                        // Let's safe-bet on owner for now or single org.
-                        const orgRes = await pool.query('SELECT id FROM organization WHERE owner_id = $1 LIMIT 1', [user.id]);
+                        // Check if user has organizations (As Owner or Member)
+                        // We query the 'member' table which links users to orgs.
+                        const orgRes = await pool.query('SELECT "organizationId" FROM "member" WHERE "userId" = $1 ORDER BY "createdAt" ASC LIMIT 1', [user.id]);
                         if (orgRes.rows.length > 0) {
-                            targetOrgId = orgRes.rows[0].id;
+                            targetOrgId = orgRes.rows[0].organizationId;
                             // console.log(`[Auth] Auto-selected Org ${targetOrgId} for user ${user.email}`);
+                        } else {
+                            // Backup: Check owner_id directly on organization (legacy/failsafe)
+                            const ownerRes = await pool.query('SELECT id FROM "organization" WHERE owner_id = $1 LIMIT 1', [user.id]);
+                            if (ownerRes.rows.length > 0) targetOrgId = ownerRes.rows[0].id;
                         }
                     } catch (e) { /* ignore DB error in auth */ }
                 }
