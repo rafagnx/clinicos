@@ -1575,6 +1575,70 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
     }
 });
 
+// ADMIN: Accept Invite
+app.post('/api/admin/accept-invite', requireAuth, async (req, res) => {
+    const { token } = req.body;
+    const { user } = req.auth;
+
+    if (!token) return res.status(400).json({ error: "Token required" });
+
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // 1. Find Invite
+        const invRes = await client.query(`SELECT * FROM "pending_invites" WHERE token = $1 AND accepted = false`, [token]);
+        if (invRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: "Convite inválido ou já utilizado" });
+        }
+        const invite = invRes.rows[0];
+
+        // 2. Add to Member
+        // Check if already member
+        const memCheck = await client.query(`SELECT id FROM "member" WHERE "organizationId" = $1 AND "userId" = $2`, [invite.organization_id, user.id]);
+
+        if (memCheck.rows.length === 0) {
+            await client.query(`
+                INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
+                VALUES (gen_random_uuid(), $1, $2, $3, NOW(), NOW())
+            `, [invite.organization_id, user.id, invite.role || 'member']);
+        }
+
+        // 3. Add to Professionals (Equipe) - SYNC FIX
+        // Check if already professional
+        const profCheck = await client.query(`SELECT id FROM "professionals" WHERE "organization_id" = $1 AND "email" = $2`, [invite.organization_id, user.email]);
+
+        if (profCheck.rows.length === 0) {
+            await client.query(`
+                INSERT INTO "professionals" (
+                    id, "organization_id", "user_id", "full_name", email, 
+                    "role_type", specialty, status, "is_active", "createdAt", "updatedAt"
+                ) VALUES (
+                    gen_random_uuid(), $1, $2, $3, $4, 
+                    'profissional', 'Membro da Equipe', 'ativo', true, NOW(), NOW()
+                )
+            `, [invite.organization_id, user.id, user.name, user.email]);
+        }
+
+        // 4. Mark Accepted
+        await client.query(`UPDATE "pending_invites" SET accepted = true, "accepted_at" = NOW(), "accepted_by" = $1 WHERE id = $2`, [user.id, invite.id]);
+
+        await client.query('COMMIT');
+
+        console.log(`[Invite] User ${user.email} accepted invite for Org ${invite.organization_id}`);
+        res.json({ success: true, message: "Convite aceito!", organizationId: invite.organization_id });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error("Accept Invite Error:", error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        client.release();
+    }
+});
+
 
 // DEBUG ENDPOINT (Remove in final prod)
 app.get('/api/debug-auth-config', (req, res) => {
