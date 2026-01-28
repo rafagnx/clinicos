@@ -356,7 +356,7 @@ export default function AdminOrganizations() {
                         )
                     })
                 )
-                )}
+                }
             </div>
 
             {/* Dialogs */}
