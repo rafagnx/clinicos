@@ -93,6 +93,10 @@ export default function Profile() {
     onSuccess: () => {
       toast.success("Perfil atualizado! Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
+    },
+    onError: (error: any) => {
+      console.error("Profile Update Error:", error);
+      toast.error("Erro ao atualizar perfil: " + (error.message || "Desconhecido"));
     }
   });
 

@@ -138,8 +138,14 @@ export default function ClinicSettings() {
       queryClient.invalidateQueries({ queryKey: ["clinic-settings"] });
       toast.success("Configurações salvas com sucesso!");
     },
-    onError: () => {
-      toast.error("Erro ao salvar configurações.");
+    onError: (error: any) => {
+      console.error("ClinicSettings Save Error:", error);
+      const msg = error?.message || "Erro desconhecido";
+      if (msg.includes("401") || msg.includes("Unauthorized")) {
+        toast.error("Sessão expirada. Recarregue a página.");
+      } else {
+        toast.error(`Erro ao salvar: ${msg}`);
+      }
     }
   });
 

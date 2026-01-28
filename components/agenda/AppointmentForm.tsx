@@ -383,6 +383,17 @@ export default function AppointmentForm({
         }
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: (id: string | number) => base44.delete("Appointment", id),
+        onSuccess: () => {
+            toast.success("Agendamento removido!");
+            queryClient.invalidateQueries({ queryKey: ["appointments"] });
+            onSuccess?.();
+            onOpenChange(false);
+        },
+        onError: () => toast.error("Erro ao remover agendamento")
+    });
+
     const handleSubmit = () => {
         if (appointment?.id) {
             updateMutation.mutate(formData);
@@ -687,12 +698,30 @@ export default function AppointmentForm({
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t mt-4">
-                                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                                <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
-                                    {(createMutation.isPending || updateMutation.isPending) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                                    Confirmar
-                                </Button>
+                            <div className="flex justify-between items-center pt-4 border-t mt-4">
+                                {appointment?.id ? (
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (confirm("Tem certeza que deseja apagar este agendamento?")) {
+                                                deleteMutation.mutate(appointment.id);
+                                            }
+                                        }}
+                                        disabled={deleteMutation.isPending}
+                                    >
+                                        {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Excluir"}
+                                    </Button>
+                                ) : <div></div>}
+
+                                <div className="flex gap-3">
+                                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                                    <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+                                        {(createMutation.isPending || updateMutation.isPending) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
+                                        Confirmar
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
