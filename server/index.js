@@ -130,7 +130,7 @@ const requireAuth = async (req, res, next) => {
                         };
 
                         // Re-use logic (Duplicate for safety in fallback)
-                        const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
+                        const isSystemAdmin = user.email === "rafamarketingdb@gmail.com" || user.email === "marketingorofacial@gmail.com";
                         req.auth = {
                             userId: user.id,
                             organizationId: req.headers['x-organization-id'],
