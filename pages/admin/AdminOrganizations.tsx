@@ -25,6 +25,9 @@ export default function AdminOrganizations() {
     const [invitingOrg, setInvitingOrg] = useState(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
+    const [viewingMembersOrg, setViewingMembersOrg] = useState(null);
+    const [members, setMembers] = useState([]);
+    const [loadingMembers, setLoadingMembers] = useState(false);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -336,8 +339,19 @@ export default function AdminOrganizations() {
                                     <Button
                                         variant="outline"
                                         className={cn("px-3", isDark ? "border-slate-700 hover:bg-slate-800 text-slate-300" : "")}
-                                        title="Convidar Membro"
-                                        onClick={() => handleInvite(org)}
+                                        title="Ver Membros"
+                                        onClick={async () => {
+                                            setViewingMembersOrg(org);
+                                            setLoadingMembers(true);
+                                            try {
+                                                const data = await (base44.admin as any).getMembers(org.id);
+                                                setMembers(data);
+                                            } catch (error) {
+                                                toast.error("Erro ao carregar membros");
+                                            } finally {
+                                                setLoadingMembers(false);
+                                            }
+                                        }}
                                     >
                                         <Users className="w-4 h-4" />
                                     </Button>
@@ -414,6 +428,84 @@ export default function AdminOrganizations() {
                             onClose={() => setInvitingOrg(null)}
                         />
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* View Members Dialog */}
+            <Dialog open={!!viewingMembersOrg} onOpenChange={(open) => !open && setViewingMembersOrg(null)}>
+                <DialogContent className={cn("sm:max-w-2xl", isDark ? "bg-[#1C2333] border-slate-800 text-slate-200" : "")}>
+                    <DialogHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <DialogTitle className={isDark ? "text-white" : ""}>Membros da Equipe</DialogTitle>
+                            <CardDescription className={isDark ? "text-slate-400" : ""}>
+                                Usuários vinculados a {viewingMembersOrg?.name}
+                            </CardDescription>
+                        </div>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            className="mr-6"
+                            onClick={() => setInvitingOrg(viewingMembersOrg)}
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Novo Membro
+                        </Button>
+                    </DialogHeader>
+
+                    <div className="py-4">
+                        {loadingMembers ? (
+                            <div className="flex justify-center py-8">
+                                <span className="animate-spin text-slate-400">Loading...</span>
+                            </div>
+                        ) : members.length === 0 ? (
+                            <div className="text-center py-8 text-slate-500">
+                                Nenhum membro encontrado.
+                            </div>
+                        ) : (
+                            <div className="rounded-md border overflow-hidden">
+                                <Table>
+                                    <TableHeader className={isDark ? "bg-slate-900 border-slate-800" : "bg-slate-50"}>
+                                        <TableRow className={isDark ? "border-slate-800 hover:bg-slate-900" : ""}>
+                                            <TableHead className={isDark ? "text-slate-400" : ""}>Usuário</TableHead>
+                                            <TableHead className={isDark ? "text-slate-400" : ""}>Email</TableHead>
+                                            <TableHead className={isDark ? "text-slate-400" : ""}>Role</TableHead>
+                                            <TableHead className={isDark ? "text-slate-400 text-right" : "text-right"}>Entrou em</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {members.map((member: any) => (
+                                            <TableRow key={member.membershipId} className={isDark ? "border-slate-800 hover:bg-slate-800/50" : ""}>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold text-xs uppercase">
+                                                            {member.name ? member.name.charAt(0) : member.email.charAt(0)}
+                                                        </div>
+                                                        <span className={isDark ? "text-slate-200" : "text-slate-900"}>
+                                                            {member.name || "Sem nome"}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className={isDark ? "text-slate-400" : "text-slate-500"}>{member.email}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="secondary" className={cn(
+                                                        "uppercase text-[10px]",
+                                                        member.role === 'owner' ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" :
+                                                            member.role === 'admin' ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                                                                "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                                                    )}>
+                                                        {member.role}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className={cn("text-right", isDark ? "text-slate-500" : "text-slate-400")}>
+                                                    {format(new Date(member.joinedAt), "dd/MM/yyyy")}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

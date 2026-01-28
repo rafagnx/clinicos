@@ -700,6 +700,36 @@ app.get('/api/admin/organizations', requireAuth, async (req, res) => {
     }
 });
 
+// Admin: List Members of an Organization
+app.get('/api/admin/members/:orgId', requireAuth, async (req, res) => {
+    if (!req.auth.isSystemAdmin) {
+        return res.status(403).json({ error: "Access Denied" });
+    }
+    const { orgId } = req.params;
+    try {
+        const { rows } = await pool.query(`
+            SELECT 
+                m.id as "membershipId",
+                m.role,
+                m."createdAt" as "joinedAt",
+                u.id as "userId",
+                u.name,
+                u.email,
+                u.image
+            FROM "member" m
+            INNER JOIN "user" u ON u.id = m."userId"
+            WHERE m."organizationId" = $1
+            ORDER BY 
+                CASE WHEN m.role = 'owner' THEN 1 ELSE 2 END,
+                m."createdAt" ASC
+        `, [orgId]);
+        res.json(rows);
+    } catch (error) {
+        console.error("Admin Members Fetch Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Manual Organization Create (Bypass Better-Auth plugin if failing)
 app.post('/api/admin/organization/create', requireAuth, async (req, res) => {
     // Basic validation
