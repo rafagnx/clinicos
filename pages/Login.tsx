@@ -133,6 +133,9 @@ export default function Login() {
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
+        console.log("🔵 [Login] Attempting Google Auth...");
+        console.log("🔵 [Login] Supabase URL configured:", import.meta.env.VITE_SUPABASE_URL);
+
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
@@ -145,8 +148,17 @@ export default function Login() {
                     skipBrowserRedirect: false
                 }
             });
-            if (error) throw error;
+
+            if (error) {
+                console.error("🔴 [Login] Supabase OAuth Error:", error);
+                throw error;
+            }
+            console.log("🟢 [Login] Redirect initiated.");
+
         } catch (error: any) {
+            console.error("🔴 [Login] Exception:", error);
+            // Alert so user sees it even if console is closed
+            alert("Erro Login Google: " + error.message);
             toast.error("Erro no login Google: " + error.message);
             setIsLoading(false);
         }
