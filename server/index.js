@@ -261,7 +261,53 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Auth routes handled by Supabase direct integration
-// Manual routes for Organization/Admin exist below.
+// USER SELF-PROFILE UPDATE (Sync)
+app.put('/api/user/profile', requireAuth, async (req, res) => {
+    const { user } = req.auth;
+    const data = req.body;
+
+    // Allowed fields to update
+    const allowed = ['name', 'phone', 'specialty', 'user_type', 'photo_url', 'image'];
+
+    // Map 'display_name' to 'name'
+    if (data.display_name) data.name = data.display_name;
+
+    // Construct Update Query
+    try {
+        const updates = [];
+        const values = [];
+        let i = 1;
+
+        if (data.name) { updates.push(`name = $${i++}`); values.push(data.name); }
+        if (data.phone) { updates.push(`phone = $${i++}`); values.push(data.phone); }
+        if (data.specialty) { updates.push(`specialty = $${i++}`); values.push(data.specialty); }
+        if (data.user_type) { updates.push(`user_type = $${i++}`); values.push(data.user_type); }
+        if (data.photo_url || data.image) { updates.push(`image = $${i++}`); values.push(data.photo_url || data.image); }
+
+        updates.push(`"updatedAt" = NOW()`);
+
+        if (updates.length === 1) { // Only updatedAt
+            return res.json({ message: "No changes detected" });
+        }
+
+        values.push(user.id);
+        const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`;
+
+        console.log(`[Profile] Updating user ${user.id}:`, updates);
+
+        const { rows } = await pool.query(query, values);
+
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            // Fallback: If user doesn't exist in DB (integrity error), insert them
+            res.status(404).json({ error: "User record not found in DB - Try logging out and in again to sync." });
+        }
+    } catch (err) {
+        console.error("Profile update error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
 app.post("/api/debug/migrate", async (req, res) => {
