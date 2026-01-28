@@ -131,8 +131,11 @@ export default function Layout() {
           if (orgs && orgs.length > 0) {
             const firstOrg = orgs[0].organizationId || orgs[0].id;
             localStorage.setItem("active-org-id", firstOrg);
-            // Use window.location.reload() to apply headers
-            setTimeout(() => window.location.reload(), 100);
+
+            // Only reload if NOT processing an OAuth hash (prevent loop)
+            if (!window.location.hash.includes('access_token')) {
+              setTimeout(() => window.location.reload(), 100);
+            }
           }
         } catch (e) {
           console.warn("Could not auto-select organization", e);
