@@ -254,6 +254,12 @@ export default function AdminOrganizations() {
                                                     @{org.slug}
                                                     {isActiveContext && <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 rounded uppercase font-bold tracking-wider">Atual</span>}
                                                 </p>
+                                                <p className="text-xs mt-1 flex items-center gap-1 font-medium" title="Dono/Responsável">
+                                                    <span className={cn("w-1.5 h-1.5 rounded-full", org.ownerEmail ? "bg-indigo-500" : "bg-red-400")}></span>
+                                                    <span className={cn(isDark ? "text-slate-300" : "text-slate-600")}>
+                                                        {org.ownerEmail || "Sem proprietário identificado"}
+                                                    </span>
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">

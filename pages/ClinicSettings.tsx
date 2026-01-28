@@ -223,7 +223,15 @@ export default function ClinicSettings() {
     <div className={cn("p-4 lg:p-8 max-w-5xl mx-auto space-y-8", isDark ? "text-slate-100" : "")}>
       <div>
         <h1 className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>Configurações da Clínica</h1>
-        <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie as informações públicas e integrações do seu estabelecimento</p>
+        <div className="flex flex-col gap-1">
+          <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie as informações públicas e integrações do seu estabelecimento</p>
+          {organization?.ownerEmail && (
+            <p className="text-xs text-slate-400 font-mono mt-1 flex items-center gap-2" title="Dono da conta">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Proprietário: <span className="text-slate-500 dark:text-slate-300 font-semibold">{organization.ownerEmail}</span>
+            </p>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">

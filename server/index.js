@@ -682,7 +682,18 @@ app.get('/api/admin/organizations', requireAuth, async (req, res) => {
         return res.status(403).json({ error: "Access Denied: System Admin Only" });
     }
     try {
-        const { rows } = await pool.query('SELECT * FROM "organization" ORDER BY "createdAt" DESC');
+        const { rows } = await pool.query(`
+            SELECT 
+                o.*,
+                u.email as "ownerEmail",
+                u.name as "ownerName"
+            FROM "organization" o
+            LEFT JOIN "member" m ON m."organizationId" = o.id AND m.role = 'owner'
+            LEFT JOIN "user" u ON u.id = m."userId"
+            -- Use DISTINCT ON or Group By if multiple owners, but usually 1. 
+            -- Or just take first one found via implicit join logic.
+            ORDER BY o."createdAt" DESC
+        `);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -829,7 +840,8 @@ app.get('/api/user/organizations', requireAuth, async (req, res) => {
                 o.slug,
                 o.logo,
                 o.subscription_status,
-                o."createdAt"
+                o."createdAt",
+                (SELECT u.email FROM "member" om JOIN "user" u ON u.id = om."userId" WHERE om."organizationId" = o.id AND om.role = 'owner' LIMIT 1) as "ownerEmail"
             FROM "member" m
             INNER JOIN "organization" o ON o.id = m."organizationId"
             WHERE m."userId" = $1
@@ -849,30 +861,30 @@ app.get('/api/user/organizations', requireAuth, async (req, res) => {
 
             if (existingOrg.rows.length === 0) {
                 await pool.query(`
-                    INSERT INTO "organization" (id, name, slug, subscription_status, "createdAt", "updatedAt")
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                `, [orgId, 'ClinicOS Master', 'master-admin', 'active', now, now]);
+                    INSERT INTO "organization"(id, name, slug, subscription_status, "createdAt", "updatedAt")
+VALUES($1, $2, $3, $4, $5, $6)
+    `, [orgId, 'ClinicOS Master', 'master-admin', 'active', now, now]);
             }
 
             // Create membership
             const memberId = uuidv4();
             await pool.query(`
-                INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
-                VALUES ($1, $2, $3, $4, $5, $6)
+                INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
+VALUES($1, $2, $3, $4, $5, $6)
                 ON CONFLICT DO NOTHING
-            `, [memberId, finalOrgId, user.id, 'owner', now, now]);
+    `, [memberId, finalOrgId, user.id, 'owner', now, now]);
 
             // Re-fetch organizations
             const refetch = await pool.query(`
-                SELECT 
-                    m.id as "membershipId",
-                    m.role,
-                    m."organizationId",
-                    o.name as "organizationName",
-                    o.slug,
-                    o.logo,
-                    o.subscription_status,
-                    o."createdAt"
+SELECT
+m.id as "membershipId",
+    m.role,
+    m."organizationId",
+        o.name as "organizationName",
+        o.slug,
+        o.logo,
+        o.subscription_status,
+        o."createdAt"
                 FROM "member" m
                 INNER JOIN "organization" o ON o.id = m."organizationId"
                 WHERE m."userId" = $1
@@ -940,20 +952,20 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
         // Frontend sends 'display_name', DB uses 'name'
         const nameToUpdate = data.display_name || data.name || data.full_name;
 
-        if (nameToUpdate) { updates.push(`name = $${i++}`); values.push(nameToUpdate); }
-        if (data.phone) { updates.push(`phone = $${i++}`); values.push(data.phone); }
-        if (data.specialty || data.speciality) { updates.push(`specialty = $${i++}`); values.push(data.specialty || data.speciality); }
-        if (data.user_type) { updates.push(`user_type = $${i++}`); values.push(data.user_type); }
-        if (data.photo_url || data.image) { updates.push(`image = $${i++}`); values.push(data.photo_url || data.image); }
+        if (nameToUpdate) { updates.push(`name = $${i++} `); values.push(nameToUpdate); }
+        if (data.phone) { updates.push(`phone = $${i++} `); values.push(data.phone); }
+        if (data.specialty || data.speciality) { updates.push(`specialty = $${i++} `); values.push(data.specialty || data.speciality); }
+        if (data.user_type) { updates.push(`user_type = $${i++} `); values.push(data.user_type); }
+        if (data.photo_url || data.image) { updates.push(`image = $${i++} `); values.push(data.photo_url || data.image); }
 
-        updates.push(`"updatedAt" = $${i++}`);
+        updates.push(`"updatedAt" = $${i++} `);
         values.push(now);
 
         if (updates.length > 1) { // More than just updatedAt
             values.push(user.id);
-            const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING *`;
+            const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING * `;
 
-            console.log(`[Profile] Updating user ${user.id}:`, updates);
+            console.log(`[Profile] Updating user ${user.id}: `, updates);
 
             // Also update Supabase metadata is handled by frontend, but we own Postgres
             const { rows } = await pool.query(query, values);
@@ -967,10 +979,10 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
                 // Attempt UPSERT/Insert if missing?
                 // Let's safe fail for now or try insert
                 await pool.query(`
-                    INSERT INTO "user" (id, name, email, "createdAt", "updatedAt")
-                    VALUES ($1, $2, $3, NOW(), NOW())
-                    ON CONFLICT (id) DO NOTHING
-                 `, [user.id, nameToUpdate || user.email.split('@')[0], user.email]);
+                    INSERT INTO "user"(id, name, email, "createdAt", "updatedAt")
+VALUES($1, $2, $3, NOW(), NOW())
+                    ON CONFLICT(id) DO NOTHING
+    `, [user.id, nameToUpdate || user.email.split('@')[0], user.email]);
 
                 // Retry update
                 const retry = await pool.query(query, values);
@@ -999,22 +1011,22 @@ app.post('/api/admin/invites', requireAuth, async (req, res) => {
     try {
         // Create pending_invites table if not exists
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS "pending_invites" (
-                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                email TEXT NOT NULL,
-                organization_id TEXT NOT NULL,
-                role TEXT DEFAULT 'admin',
-                created_at TIMESTAMP DEFAULT NOW(),
-                created_by TEXT
-            );
-        `);
+            CREATE TABLE IF NOT EXISTS "pending_invites"(
+        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+        email TEXT NOT NULL,
+        organization_id TEXT NOT NULL,
+        role TEXT DEFAULT 'admin',
+        created_at TIMESTAMP DEFAULT NOW(),
+        created_by TEXT
+    );
+`);
 
         // Insert invite
         const result = await pool.query(`
-            INSERT INTO "pending_invites" (email, organization_id, role, created_by)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *
-        `, [email, organizationId, role || 'admin', user.id]);
+            INSERT INTO "pending_invites"(email, organization_id, role, created_by)
+VALUES($1, $2, $3, $4)
+RETURNING *
+    `, [email, organizationId, role || 'admin', user.id]);
 
         res.json({ success: true, invite: result.rows[0] });
     } catch (err) {
@@ -1045,9 +1057,9 @@ app.post('/api/user/invites/process', requireAuth, async (req, res) => {
                 // Add to member table
                 const memberId = uuidv4();
                 await pool.query(`
-                    INSERT INTO "member" (id, "organizationId", "userId", role, "createdAt", "updatedAt")
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
+                    INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
+VALUES($1, $2, $3, $4, $5, $6)
+    `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
             }
 
             results.push(invite);
@@ -1075,7 +1087,7 @@ app.get('/api/admin/invites/:orgId', requireAuth, async (req, res) => {
 
     try {
         const { rows } = await pool.query(`
-            SELECT * FROM "pending_invites" 
+SELECT * FROM "pending_invites" 
             WHERE organization_id = $1 
             ORDER BY created_at DESC
         `, [orgId]);
@@ -1252,13 +1264,13 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         data.organization_id = organizationId;
     }
 
-    console.log(`[DEBUG] Creating ${entity} in ${tableName}`);
-    console.log(`[DEBUG] Raw Data:`, JSON.stringify(data));
+    console.log(`[DEBUG] Creating ${entity} in ${tableName} `);
+    console.log(`[DEBUG] Raw Data: `, JSON.stringify(data));
 
     try {
         // SECURITY FIX: Filter invalid columns
         const keys = Object.keys(data).filter(key => isValidColumn(key));
-        console.log(`[DEBUG] Filtered Keys:`, keys);
+        console.log(`[DEBUG] Filtered Keys: `, keys);
 
         if (keys.length === 0) {
             return res.status(400).json({ error: "No valid data provided" });
@@ -1272,14 +1284,14 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
         const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
-        console.log(`[DEBUG] Query:`, query);
-        console.log(`[DEBUG] Values:`, values);
+        console.log(`[DEBUG] Query: `, query);
+        console.log(`[DEBUG] Values: `, values);
 
         const { rows } = await pool.query(query, values);
 
         res.json(rows[0]);
     } catch (error) {
-        const errorLog = `[${new Date().toISOString()}] Error creating ${entity}: ${error.message} \nDetail: ${error.detail} \nCode: ${error.code} \nData: ${JSON.stringify(data)}\n\n`;
+        const errorLog = `[${new Date().toISOString()}] Error creating ${entity}: ${error.message} \nDetail: ${error.detail} \nCode: ${error.code} \nData: ${JSON.stringify(data)} \n\n`;
         console.error(errorLog);
 
         try {
@@ -1473,7 +1485,7 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
         const inviteId = result.rows[0].id;
         // Construct Frontend URL (assuming VITE_FRONTEND_URL is set or deduce from origin)
         const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
-        const link = `${baseUrl}/accept-invitation/${inviteId}`;
+        const link = `${baseUrl} /accept-invitation/${inviteId} `;
 
         res.json({ link });
     } catch (error) {

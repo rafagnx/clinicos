@@ -1,0 +1,8 @@
+--- Querying Admin View Data ---
+┌─────────┬─────────────────────────┬────────────────────────────────┐
+│ (index) │ slug                    │ owner                          │
+├─────────┼─────────────────────────┼────────────────────────────────┤
+│ 0       │ 'orofacial-clinic-main' │ 'marketingorofacial@gmail.com' │
+│ 1       │ 'clinica-sucesso-v2'    │ 'rafamarketingdb@gmail.com'    │
+│ 2       │ 'demo-clinic'           │ 'NULL'                         │
+└─────────┴─────────────────────────┴────────────────────────────────┘
