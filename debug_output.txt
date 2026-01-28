@@ -1,0 +1,65 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host clinicos-it4q.onrender.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 216.24.57.7, 216.24.57.251
+*   Trying 216.24.57.7:443...
+* schannel: disabled automatic use of client certificate
+* ALPN: curl offers http/1.1
+* ALPN: server accepted http/1.1
+* Connected to clinicos-it4q.onrender.com (216.24.57.7) port 443
+* using HTTP/1.x
+> GET /api/debug-auth-config HTTP/1.1
+
+> Host: clinicos-it4q.onrender.com
+
+> User-Agent: curl/8.13.0
+
+> Accept: */*
+
+> 
+
+* Request completely sent off
+* schannel: remote party requests renegotiation
+* schannel: renegotiating SSL/TLS connection
+* schannel: SSL/TLS connection renegotiated
+< HTTP/1.1 200 OK
+
+< Date: Wed, 28 Jan 2026 14:04:11 GMT
+
+< Content-Type: application/json; charset=utf-8
+
+< Transfer-Encoding: chunked
+
+< Connection: keep-alive
+
+< CF-RAY: 9c51099b8abee016-GIG
+
+< access-control-allow-credentials: true
+
+< etag: W/"189-a6vgNZLbO/8mSbX5iu5Te62L0Us"
+
+< rndr-id: 6d815166-d37f-4c08
+
+< vary: Origin
+
+< vary: Accept-Encoding
+
+< x-powered-by: Express
+
+< x-render-origin-server: Render
+
+< cf-cache-status: DYNAMIC
+
+< Server: cloudflare
+
+< alt-svc: h3=":443"; ma=86400
+
+< 
+
+{ [405 bytes data]
+
+100   393    0   393    0     0   1306      0 --:--:-- --:--:-- --:--:--  1314
+* Connection #0 to host clinicos-it4q.onrender.com left intact
+{"diagnosis":"Configuration Check","backend_config":{"url_prefix":"MISSING...","anon_key_prefix":"MISSING...","anon_key_suffix":"SHORT","service_key_present":false,"service_key_prefix":"MISSI..."},"env_vars_detected":{"SUPABASE_URL":false,"VITE_SUPABASE_URL":false,"SUPABASE_KEY":false,"VITE_SUPABASE_ANON_KEY":false,"SUPABASE_SERVICE_ROLE_KEY":false},"server_time":"2026-01-28T14:04:11.575Z"}
