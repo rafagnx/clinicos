@@ -336,14 +336,9 @@ export default function Layout() {
             {!isCollapsed ? (
               <div className="flex items-center gap-3 animate-in fade-in duration-300 slide-in-from-left-2">
                 <img
-                  src={clinicSettings?.logo_url || "/logo-clinica.png"}
-                  alt={clinicSettings?.clinic_name || "ClinicOS"}
+                  src="/logo-clinica.png"
+                  alt="ClinicOS"
                   className="h-8 w-auto object-contain"
-                  onError={(e) => {
-                    // Fallback to stylized icon if image fails
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement.querySelector('.fallback-icon')?.classList.remove('hidden');
-                  }}
                 />
 
                 {/* Stylized Text Name */}
@@ -351,31 +346,19 @@ export default function Layout() {
                   "text-xl font-display font-bold tracking-tight",
                   isDark ? "text-white" : "text-slate-900"
                 )}>
-                  {clinicSettings?.clinic_name || "ClinicOS"}
+                  ClinicOS
 
                   {/* Subscription Badge */}
                   <SubscriptionBadge org={organization} user={user} />
                 </span>
-
-                {/* Fallback Icon (Hidden by default) */}
-                <div className="fallback-icon hidden w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center w-full">
                 <img
-                  src={clinicSettings?.logo_url || "/logo-clinica.png"}
-                  alt="Logo"
+                  src="/logo-clinica.png"
+                  alt="ClinicOS"
                   className="h-8 w-8 object-contain"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                  }}
                 />
-                <div className="hidden w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
               </div>
             )}
 
