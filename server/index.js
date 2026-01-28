@@ -614,7 +614,19 @@ const initSchema = async () => {
                 }
             }
 
-            // 5. Update Appointments Columns
+            // 5. Update Clinic Settings Columns (Fix 500 Error)
+            const settingsCols = [
+                { name: 'facebook', type: 'TEXT' },
+                { name: 'primary_color', type: 'VARCHAR(20) DEFAULT \'#3B82F6\'' }
+            ];
+            for (const col of settingsCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'clinic_settings' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 6. Update Appointments Columns
             const aptCols = [
                 { name: 'patient_id', type: 'INTEGER' },
                 { name: 'professional_id', type: 'INTEGER' },
@@ -1249,6 +1261,11 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
         data.name = data.full_name;
         delete data.full_name;
+    }
+
+    // DATA FIX: Cleanup ClinicSettings artifacts
+    if (entity === 'ClinicSettings') {
+        if (data.full_name !== undefined) delete data.full_name;
     }
 
     try {
