@@ -141,8 +141,11 @@ export default function Professionals() {
 
   const isAdmin = user?.role?.toLowerCase()?.includes("admin") ||
     user?.role?.toLowerCase()?.includes("gerente") ||
+    user?.role?.toLowerCase()?.includes("owner") ||
     user?.role === "admin" ||
+    user?.role === "owner" ||
     user?.email === "rafamarketingdb@gmail.com" || // Hardcoded fallback for owner
+    user?.email === "marketingorofacial@gmail.com" || // Specific fallback
     user?.user_metadata?.role === "admin";
 
   const getRoleLabel = (roleType) => {
