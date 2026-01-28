@@ -100,9 +100,29 @@ const requireAuth = async (req, res, next) => {
                 }
 
                 const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
+
+                // --- ORG CONTEXT AUTO_FIX ---
+                // If Frontend didn't send org ID (race condition), we try to assume the defaults.
+                let targetOrgId = req.headers['x-organization-id'];
+
+                if (!targetOrgId) {
+                    try {
+                        // Check if user has organizations
+                        // We must query 'organization_member' or 'organization' table.
+                        // Assuming 'organization' table has owner_id or user is in some member table.
+                        // Let's safe-bet on owner for now or single org.
+                        const orgRes = await pool.query('SELECT id FROM organization WHERE owner_id = $1 LIMIT 1', [user.id]);
+                        if (orgRes.rows.length > 0) {
+                            targetOrgId = orgRes.rows[0].id;
+                            // console.log(`[Auth] Auto-selected Org ${targetOrgId} for user ${user.email}`);
+                        }
+                    } catch (e) { /* ignore DB error in auth */ }
+                }
+                // -----------------------------
+
                 req.auth = {
                     userId: user.id,
-                    organizationId: req.headers['x-organization-id'],
+                    organizationId: targetOrgId,
                     user: { ...user, role: isSystemAdmin ? 'admin' : (user.user_metadata?.role || 'user') },
                     isSystemAdmin: isSystemAdmin
                 };
