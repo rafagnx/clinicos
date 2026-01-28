@@ -1523,34 +1523,50 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ADMIN: Create Invite
+app.post('/api/admin/invites', requireAuth, async (req, res) => {
+    const { email, organizationId, role } = req.body;
+    const { user } = req.auth;
+
+    if (!email || !organizationId) return res.status(400).json({ error: "Email and OrgID required" });
+
+    try {
+        const token = uuidv4(); // Generate a unique token for the link
+        const id = uuidv4();
+
+        await pool.query(`
+            INSERT INTO "pending_invites" (id, email, "organization_id", role, token, "created_by", "created_at", accepted)
+            VALUES ($1, $2, $3, $4, $5, $6, NOW(), false)
+        `, [id, email, organizationId, role, token, user.id]);
+
+        res.json({ success: true, message: "Invite created", token });
+    } catch (err) {
+        console.error("Create Invite Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ADMIN: Get Invite Link (to share via WhatsApp)
 app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
-    const { email } = req.query;
-    const { organizationId } = req.auth;
+    const { email, organizationId } = req.query;
 
     if (!email || !organizationId) return res.status(400).json({ error: "Email and Org required" });
 
     try {
-        // Better Auth uses "id" as the token in the URL usually
-        // Table "invitation" must be queried. Lowercase or CamelCase? 
-        // We created it with CamelCase "invitation" (invitationId, email, organizationId...)
-        // Wait, init_org_tables.js used "organizationId" (camel).
-        // Let's try to select id from invitation.
-
         const result = await pool.query(`
-            SELECT "id" FROM "invitation" 
-            WHERE "email" = $1 AND "organizationId" = $2 
-            ORDER BY "createdAt" DESC LIMIT 1
-         `, [email, organizationId]);
+            SELECT "token" FROM "pending_invites" 
+            WHERE "email" = $1 AND "organization_id" = $2 
+            ORDER BY "created_at" DESC LIMIT 1
+        `, [email, organizationId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: "Invite not found" });
         }
 
-        const inviteId = result.rows[0].id;
-        // Construct Frontend URL (assuming VITE_FRONTEND_URL is set or deduce from origin)
+        const token = result.rows[0].token;
+        // Construct Frontend URL
         const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
-        const link = `${baseUrl} /accept-invitation/${inviteId} `;
+        const link = `${baseUrl}/register?token=${token}`; // Assuming register page handles token
 
         res.json({ link });
     } catch (error) {

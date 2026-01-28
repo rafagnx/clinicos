@@ -576,17 +576,24 @@ function InviteManagerForm({ org, onClose, isDark }) {
 
             if (!saveResponse.ok) throw new Error('Falha ao salvar convite');
 
+            const responseData = await saveResponse.json();
+            const inviteToken = responseData.token;
+
             toast.success("Convite registrado!");
 
             // 2. Prepare WhatsApp message
             const baseUrl = window.location.origin;
-            const inviteLink = `${baseUrl}/register`;
-            const message = `Olá! Você foi convidado para gerenciar a clínica *${org.name}* no ClinicOS.\n\nCrie sua conta usando o email:\n${data.email}\n\nAcesse: ${inviteLink}`;
+            const inviteLink = `${baseUrl}/register?token=${inviteToken}`;
+            const message = `Olá! Você foi convidado para gerenciar a clínica *${org.name}* no ClinicOS.\n\nCrie sua conta acessando:\n${inviteLink}\n\nOu use o email: ${data.email}`;
 
             // 3. Open WhatsApp if phone provided
             if (data.phone) {
                 const whatsappUrl = `https://wa.me/55${data.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
+
+                // Allow popup
+                setTimeout(() => {
+                    window.open(whatsappUrl, '_blank');
+                }, 100);
             }
 
             onClose();

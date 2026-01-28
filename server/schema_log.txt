@@ -1,0 +1,10 @@
+[
+  "created_at (timestamp without time zone)",
+  "accepted (boolean)",
+  "id (uuid)",
+  "role (text)",
+  "created_by (text)",
+  "token (text)",
+  "organization_id (text)",
+  "email (text)"
+]
