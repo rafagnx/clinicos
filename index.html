@@ -37,7 +37,7 @@
         // Check specific known keys or just any huge key
         if (key.includes('supabase.auth.token') || key.includes('-auth-token') || key === 'clinicos-token') {
           var raw = localStorage.getItem(key);
-          if (raw && raw.length > 3000) {
+          if (raw && raw.length > 8000) {
             console.log('🛡️ Analyzing large token: ' + key + ' (' + raw.length + ' bytes)');
             try {
               // Try parsing as JSON first
@@ -48,17 +48,17 @@
                 console.log('✅ Token sanitized: ' + key);
                 cleaned = true;
               }
-              // Double check: if it's still huge after cleaning (or wasn't dirty in that specific way but is still huge)
-              // If it's a raw JWT string stored as JSON value or something
-              // Backend now supports up to 1MB headers, so we relax this to 950KB
-              if (localStorage.getItem(key).length > 950000) {
-                console.warn('⚠️ Token still too large (' + localStorage.getItem(key).length + '). Deleting to force refresh.');
+              
+              // AGGRESSIVE CHECK: If still > 10KB, nuke it.
+              // Normal JWTs are < 4KB. 10KB is plenty.
+              if (localStorage.getItem(key).length > 10000) {
+                console.warn('⚠️ Token still HUGE (' + localStorage.getItem(key).length + '). Nuking.');
                 localStorage.removeItem(key);
                 cleaned = true;
               }
             } catch (e) {
               // Not JSON? If it's a raw string and huge, delete it.
-              if (raw.length > 50000) {
+              if (raw.length > 8000) {
                 console.warn('⚠️ Non-JSON large token found (' + key + '). Deleting.');
                 localStorage.removeItem(key);
                 cleaned = true;
@@ -69,11 +69,14 @@
       }
 
       if (cleaned) {
-        console.log('🔄 Refreshing page to apply clean tokens...');
-        // Optional: Add a visual indicator or just reload
-        // window.location.reload(); 
-        // Reloading might cause a loop if we are not careful. 
-        // Better to let the app load with clean tokens.
+        console.log('🔄 Cleaning complete. Refreshing...');
+        // Prevent infinite reload loop
+        if (!sessionStorage.getItem('auth_cleaned')) {
+            sessionStorage.setItem('auth_cleaned', 'true');
+            window.location.reload(); 
+        }
+      } else {
+        sessionStorage.removeItem('auth_cleaned');
       }
     } catch (e) {
       console.error('Shield check failed', e);
