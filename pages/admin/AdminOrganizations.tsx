@@ -24,8 +24,13 @@ export default function AdminOrganizations() {
     const [editingOrg, setEditingOrg] = useState(null);
     const [invitingOrg, setInvitingOrg] = useState(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
+
+    useEffect(() => {
+        setActiveOrgId(localStorage.getItem("active-org-id"));
+    }, []);
 
     const handleProToggle = async (orgId: string, currentStatus: string) => {
         const isCurrentlyPro = currentStatus === 'active' || currentStatus === 'manual_override';
@@ -221,109 +226,136 @@ export default function AdminOrganizations() {
                         <p className="text-slate-500">Comece criando sua primeira organização.</p>
                     </div>
                 ) : (
-                    organizations.map((org) => (
-                        <Card key={org.id} className={cn("group hover:shadow-lg transition-all duration-300 overflow-hidden relative border-none", isDark ? "bg-[#1C2333]" : "bg-white")}>
-                            {/* Decorative Top Border */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                    organizations.map((org) => {
+                        const isActiveContext = org.id === activeOrgId;
+                        return (
+                            <Card key={org.id} className={cn(
+                                "group hover:shadow-lg transition-all duration-300 overflow-hidden relative border-none",
+                                isDark ? "bg-[#1C2333]" : "bg-white",
+                                isActiveContext ? "ring-2 ring-emerald-500 shadow-lg shadow-emerald-500/10" : ""
+                            )}>
+                                {/* Decorative Top Border */}
+                                <div className={cn("absolute top-0 left-0 w-full h-1", isActiveContext ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-purple-600")}></div>
 
-                            <CardHeader className="pb-3 pt-5">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl border", isDark ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" : "bg-blue-50 text-blue-600 border-blue-100")}>
-                                            {org.name.charAt(0).toUpperCase()}
+                                <CardHeader className="pb-3 pt-5">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn("w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl border",
+                                                isDark ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" : "bg-blue-50 text-blue-600 border-blue-100",
+                                                isActiveContext && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                            )}>
+                                                {org.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <CardTitle className={cn("text-lg font-semibold line-clamp-1", isDark ? "text-white" : "text-slate-900")} title={org.name}>
+                                                    {org.name}
+                                                </CardTitle>
+                                                <p className="text-sm text-slate-500 font-mono flex items-center gap-2">
+                                                    @{org.slug}
+                                                    {isActiveContext && <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 rounded uppercase font-bold tracking-wider">Atual</span>}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <Badge variant="outline" className={cn("flex items-center gap-1", isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                                Ativo
+                                            </Badge>
+                                            {/* PRO Toggle */}
+                                            <div className="flex items-center gap-2">
+                                                <span className={cn("text-xs font-medium",
+                                                    org.subscription_status === 'active' || org.subscription_status === 'manual_override'
+                                                        ? "text-purple-500"
+                                                        : "text-slate-500"
+                                                )}>
+                                                    {org.subscription_status === 'active' || org.subscription_status === 'manual_override' ? (
+                                                        <span className="flex items-center gap-1">
+                                                            <Crown className="w-3 h-3" />
+                                                            PRO
+                                                        </span>
+                                                    ) : 'FREE'}
+                                                </span>
+                                                <Switch
+                                                    checked={org.subscription_status === 'active' || org.subscription_status === 'manual_override'}
+                                                    onCheckedChange={() => handleProToggle(org.id, org.subscription_status || 'canceled')}
+                                                    className="data-[state=checked]:bg-purple-600"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+
+                                <CardContent className={cn("py-3 space-y-3", isDark ? "bg-slate-900/30" : "bg-slate-50/50")}>
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-slate-500 mb-1">Criado em</p>
+                                            <p className={cn("font-medium", isDark ? "text-slate-300" : "text-slate-700")}>
+                                                {org.createdAt ? format(new Date(org.createdAt), "dd MMM, yyyy") : "-"}
+                                            </p>
                                         </div>
                                         <div>
-                                            <CardTitle className={cn("text-lg font-semibold line-clamp-1", isDark ? "text-white" : "text-slate-900")} title={org.name}>
-                                                {org.name}
-                                            </CardTitle>
-                                            <p className="text-sm text-slate-500 font-mono">@{org.slug}</p>
+                                            <p className="text-slate-500 mb-1">Status</p>
+                                            <div className={cn("flex items-center gap-1 font-medium", isDark ? "text-slate-300" : "text-slate-700")}>
+                                                <Building2 className="w-3 h-3 text-slate-500" />
+                                                <span>Operacional</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <Badge variant="outline" className={cn("flex items-center gap-1", isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            Ativo
-                                        </Badge>
-                                        {/* PRO Toggle */}
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn("text-xs font-medium",
-                                                org.subscription_status === 'active' || org.subscription_status === 'manual_override'
-                                                    ? "text-purple-500"
-                                                    : "text-slate-500"
-                                            )}>
-                                                {org.subscription_status === 'active' || org.subscription_status === 'manual_override' ? (
-                                                    <span className="flex items-center gap-1">
-                                                        <Crown className="w-3 h-3" />
-                                                        PRO
-                                                    </span>
-                                                ) : 'FREE'}
-                                            </span>
-                                            <Switch
-                                                checked={org.subscription_status === 'active' || org.subscription_status === 'manual_override'}
-                                                onCheckedChange={() => handleProToggle(org.id, org.subscription_status || 'canceled')}
-                                                className="data-[state=checked]:bg-purple-600"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardHeader>
+                                </CardContent>
 
-                            <CardContent className={cn("py-3 space-y-3", isDark ? "bg-slate-900/30" : "bg-slate-50/50")}>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="text-slate-500 mb-1">Criado em</p>
-                                        <p className={cn("font-medium", isDark ? "text-slate-300" : "text-slate-700")}>
-                                            {org.createdAt ? format(new Date(org.createdAt), "dd MMM, yyyy") : "-"}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-500 mb-1">Status</p>
-                                        <div className={cn("flex items-center gap-1 font-medium", isDark ? "text-slate-300" : "text-slate-700")}>
-                                            <Building2 className="w-3 h-3 text-slate-500" />
-                                            <span>Operacional</span>
-                                        </div>
-                                    </div>
+                                <div className={cn("p-4 flex items-center gap-3 border-t", isDark ? "bg-[#1C2333] border-slate-800" : "bg-white border-slate-100")}>
+                                    <Button
+                                        disabled={isActiveContext}
+                                        className={cn("flex-1 shadow-sm transition-colors",
+                                            isDark ? "bg-slate-800 hover:bg-slate-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white",
+                                            isActiveContext && "opacity-50 cursor-not-allowed bg-emerald-900/20 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-900/20"
+                                        )}
+                                        onClick={() => {
+                                            localStorage.setItem("active-org-id", org.id);
+                                            window.location.href = "/Dashboard";
+                                        }}
+                                    >
+                                        {isActiveContext ? (
+                                            <>
+                                                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div>
+                                                Visualizando
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                Acessar
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className={cn("px-3", isDark ? "border-slate-700 hover:bg-slate-800 text-slate-300" : "")}
+                                        title="Convidar Membro"
+                                        onClick={() => handleInvite(org)}
+                                    >
+                                        <Users className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        className={cn("px-3", isDark ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100")}
+                                        title="Configurações"
+                                        onClick={() => setEditingOrg(org)}
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        className={cn("px-3 text-red-500", isDark ? "hover:bg-red-900/20 hover:text-red-400" : "hover:bg-red-50 hover:text-red-600")}
+                                        title="Excluir"
+                                        onClick={() => setDeletingId(org.id)}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
-                            </CardContent>
-
-                            <div className={cn("p-4 flex items-center gap-3 border-t", isDark ? "bg-[#1C2333] border-slate-800" : "bg-white border-slate-100")}>
-                                <Button
-                                    className={cn("flex-1 shadow-sm transition-colors", isDark ? "bg-slate-800 hover:bg-slate-700 text-white" : "bg-slate-900 hover:bg-slate-800 text-white")}
-                                    onClick={() => {
-                                        localStorage.setItem("active-org-id", org.id);
-                                        window.location.href = "/Dashboard";
-                                    }}
-                                >
-                                    <ExternalLink className="w-4 h-4 mr-2" />
-                                    Acessar
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className={cn("px-3", isDark ? "border-slate-700 hover:bg-slate-800 text-slate-300" : "")}
-                                    title="Convidar Membro"
-                                    onClick={() => handleInvite(org)}
-                                >
-                                    <Users className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    className={cn("px-3", isDark ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100")}
-                                    title="Configurações"
-                                    onClick={() => setEditingOrg(org)}
-                                >
-                                    <Settings className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    className={cn("px-3 text-red-500", isDark ? "hover:bg-red-900/20 hover:text-red-400" : "hover:bg-red-50 hover:text-red-600")}
-                                    title="Excluir"
-                                    onClick={() => setDeletingId(org.id)}
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </Card>
-                    ))
+                            </Card>
+                        )
+                    })
+                )
                 )}
             </div>
 
