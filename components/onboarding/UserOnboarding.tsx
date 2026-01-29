@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Stethoscope, User, Shield } from "lucide-react";
+import { Loader2, Stethoscope, User, Shield, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 
 export default function UserOnboarding() {
@@ -19,7 +19,8 @@ export default function UserOnboarding() {
         specialty: "",
         council_number: "",
         council_state: "",
-        phone: ""
+        phone: "",
+        email: ""
     });
 
     const { data: user } = useQuery({ queryKey: ["auth-user"] });
@@ -39,28 +40,38 @@ export default function UserOnboarding() {
     useEffect(() => {
         // If authenticated, not loading, and NO professional profile found -> Trigger Onboarding
         if (user && !isLoading && !professionalProfile) {
-            // Double check local storage to avoid annoying users if they just closed it (opional)
             setIsOpen(true);
         }
     }, [user, isLoading, professionalProfile]);
 
     const createProfileMutation = useMutation({
         mutationFn: async (data) => {
+            const fullNameKey = user.user_metadata?.full_name || user.email.split('@')[0];
+            const finalName = ['profissional', 'hof', 'biomedico'].includes(role) && !fullNameKey.startsWith('Dr')
+                ? `Dr(a). ${fullNameKey}`
+                : fullNameKey;
+
             const payload = {
-                user_id: user.id, // Link to auth user
-                email: user.email,
-                full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+                // user_id removed as it doesn't exist in schema
+                email: formData.email || user.email,
+                name: finalName, // Changed full_name to name based on schema logs
                 photo_url: user.user_metadata?.avatar_url || "",
                 status: "ativo",
                 role_type: role,
+                specialty: isClinical ? formData.specialty : (role === 'gerente' ? 'Gerência' : (role === 'marketing' ? 'Marketing' : 'Administrativo')),
+                council_number: formData.council_number || "",
+                council_state: formData.council_state || "",
+                phone: formData.phone || "", // Ensure phone is sent
                 ...data
             };
 
-            // Add "Dr(a)" prefix if clinical
-            if (['profissional', 'hof', 'biomedico'].includes(role) && !payload.full_name.startsWith('Dr')) {
-                payload.full_name = `Dr(a). ${payload.full_name}`;
-            }
+            // Ensure email is consistent
+            if (formData.email) payload.email = formData.email;
 
+            // Clean up potentially conflicting fields from spread
+            if (payload.full_name) delete payload.full_name;
+
+            console.log("Creating Profile Payload:", payload);
             return base44.entities.Professional.create(payload);
         },
         onSuccess: () => {
@@ -69,7 +80,8 @@ export default function UserOnboarding() {
             queryClient.invalidateQueries({ queryKey: ["my-professional-profile"] });
             setIsOpen(false);
         },
-        onError: () => {
+        onError: (error) => {
+            console.error("Onboarding Error:", error);
             toast.error("Erro ao salvar perfil. Tente novamente.");
         }
     });
@@ -91,7 +103,6 @@ export default function UserOnboarding() {
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => { if (!open && professionalProfile) setIsOpen(false); }}>
-            {/* Prevent closing if mandatory? Let's allow closing but it pops up again on refresh */}
             <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle className="text-2xl text-center">🎉 Bem-vindo ao ClinicOS!</DialogTitle>
@@ -126,6 +137,16 @@ export default function UserOnboarding() {
                                 </button>
 
                                 <button
+                                    onClick={() => setRole('marketing')}
+                                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${role === 'marketing' ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200'}`}
+                                >
+                                    <div className="p-3 bg-pink-100 text-pink-600 rounded-full">
+                                        <Megaphone className="w-6 h-6" />
+                                    </div>
+                                    <span className="font-bold text-sm">Marketing</span>
+                                </button>
+
+                                <button
                                     onClick={() => setRole('secretaria')}
                                     className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${role === 'secretaria' ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-200'}`}
                                 >
@@ -151,6 +172,7 @@ export default function UserOnboarding() {
                         </div>
                     ) : (
                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                            {/* Role Summary */}
                             <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-600 flex items-center gap-3">
                                 <div className="p-2 bg-white rounded-full shadow-sm">
                                     {isClinical ? <Stethoscope className="w-4 h-4 text-primary" /> : <User className="w-4 h-4 text-primary" />}
@@ -159,6 +181,16 @@ export default function UserOnboarding() {
                                     Você selecionou: <strong>{role.toUpperCase()}</strong>
                                     <button onClick={() => setStep(1)} className="block text-primary text-xs underline mt-1">Alterar</button>
                                 </div>
+                            </div>
+
+                            {/* Email Field - Requested by User */}
+                            <div>
+                                <Label>Seu E-mail (Confirme)</Label>
+                                <Input
+                                    value={formData.email || user?.email || ""}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="seu@email.com"
+                                />
                             </div>
 
                             {isClinical ? (
