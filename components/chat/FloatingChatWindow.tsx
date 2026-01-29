@@ -12,6 +12,8 @@ import { useOutletContext } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
+import { supabase } from "@/lib/supabaseClient";
+
 export default function FloatingChatWindow({ recipient, currentUser, onClose, isMinimized, onToggleMinimize }) {
     const queryClient = useQueryClient();
     const [inputText, setInputText] = useState("");
@@ -34,13 +36,40 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         enabled: !!recipient && !!currentUser
     });
 
-    // 2. Fetch Messages
+    // 2. Fetch Messages (Initial Load Only - No Polling)
     const { data: messages = [] } = useQuery({
         queryKey: ["messages", conversation?.id],
         queryFn: () => base44.list("Message", { filter: { conversation_id: conversation.id } }),
-        enabled: !!conversation,
-        refetchInterval: 3000
+        enabled: !!conversation
     });
+
+    // 3. Realtime Subscription (Supabase LIVE)
+    useEffect(() => {
+        if (!conversation?.id) return;
+
+        const channel = supabase
+            .channel(`room:${conversation.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${conversation.id}`
+                },
+                (payload) => {
+                    // Instant update via Query Cache
+                    queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
+
+                    // Optional: Play sound or visual hint
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [conversation?.id, queryClient]);
 
     // Scroll to bottom on new messages
     useEffect(() => {
