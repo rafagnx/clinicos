@@ -499,6 +499,17 @@ const initSchema = async () => {
             `);
 
             await client.query(`
+                CREATE TABLE IF NOT EXISTS "conversations" (
+                    id SERIAL PRIMARY KEY,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "messages" (
+                    id SERIAL PRIMARY KEY,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
                 CREATE TABLE IF NOT EXISTS "notifications" (
                     "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
                     "title" TEXT,
@@ -646,6 +657,37 @@ const initSchema = async () => {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
                 if (colCheck.rows.length === 0) {
                     await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 7. Ensure CHAT Columns (Fix 500 Error)
+            const chatCols = [
+                { name: 'professional_id', type: 'TEXT' }, // Stores User UUID (Sender)
+                { name: 'recipient_professional_id', type: 'INTEGER' }, // Stores Professional ID (Target)
+                { name: 'status', type: 'VARCHAR(50) DEFAULT \'active\'' },
+                { name: 'last_message_at', type: 'TIMESTAMP DEFAULT NOW()' },
+                { name: 'organization_id', type: 'TEXT' }
+            ];
+            for (const col of chatCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'conversations' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "conversations" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 8. Ensure MESSAGES Columns
+            const msgCols = [
+                { name: 'conversation_id', type: 'INTEGER' },
+                { name: 'sender_id', type: 'TEXT' }, // User UUID
+                { name: 'text', type: 'TEXT' },
+                { name: 'read', type: 'BOOLEAN DEFAULT FALSE' },
+                { name: 'created_date', type: 'TIMESTAMP DEFAULT NOW()' },
+                { name: 'organization_id', type: 'TEXT' }
+            ];
+            for (const col of msgCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'messages' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "messages" ADD COLUMN "${col.name}" ${col.type};`);
                 }
             }
 
