@@ -16,31 +16,13 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
     const scrollRef = useRef(null);
 
     // 1. Find or Create Conversation Context
-    // We need to find if there is already a conversation with this recipient.
-    // Since we don't have a direct "get conversation by participants" endpoint confirmed, 
-    // we might have to list conversations and filter. Warning: This handles poorly at scale, but ok for now.
     const { data: conversation } = useQuery({
         queryKey: ["conversation-with", recipient.id],
         queryFn: async () => {
             const all = await base44.entities.Conversation.list();
-            // Filter for conversation containing both users
-            // Assuming conversation logic: usually has participant_ids or similar.
-            // Or based on Schema: has `professional_id` and `patient_id`. 
-            // If two professionals? The schema might process them as generic 'users' or 'members'.
-            // Let's assume standard logic: 
-            // strict check if we are professional and they are patient or vice versa?
-            // For "Team Chat", likely professional-to-professional.
-            // If schema is professional_id/patient_id, prof-prof chat might be tricky via standard fields.
-            // Let's assume there is a generic mechanism or we use the 'Conversation' entity as best effort.
-
-            // FALLBACK: If we can't find by ID logic, just filter by who started it or participant logic if available.
-            // Let's assume we filter by `conversation.professional_id === recipient.id` etc.
-
             return all.find(c =>
                 (c.professional_id === currentUser.id && c.patient_id === recipient.id) ||
                 (c.professional_id === recipient.id && c.patient_id === currentUser.id)
-                // If team chat (prof-prof), this schema might be limiting. 
-                // We will assume for now this works or we create a new one.
             );
         },
         enabled: !!recipient && !!currentUser
@@ -99,6 +81,9 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
 
     if (!recipient) return null;
 
+    // Helper to get display name safely
+    const displayName = recipient.name || recipient.full_name || recipient.email || "Usuário";
+
     return (
         <AnimatePresence>
             <motion.div
@@ -119,12 +104,12 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                         <div className="relative">
                             <Avatar className="w-8 h-8 border-2 border-white/20">
                                 <AvatarImage src={recipient.photo_url} />
-                                <AvatarFallback>{recipient.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                <AvatarFallback>{displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-indigo-600 rounded-full"></span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-bold text-white leading-none">{recipient.name}</span>
+                            <span className="text-sm font-bold text-white leading-none">{displayName}</span>
                             <span className="text-[10px] text-indigo-100 opacity-80 mt-0.5">Online agora</span>
                         </div>
                     </div>
@@ -150,7 +135,7 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                                     <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center mb-2">
                                         <Send className="w-5 h-5 text-indigo-500" />
                                     </div>
-                                    <p className="text-xs text-slate-500">Inicie a conversa com {recipient.name}</p>
+                                    <p className="text-xs text-slate-500">Inicie a conversa com {displayName}</p>
                                 </div>
                             ) : (
                                 messages.map((msg, i) => {
@@ -212,4 +197,3 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         </AnimatePresence>
     );
 }
-

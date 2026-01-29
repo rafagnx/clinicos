@@ -23,21 +23,19 @@ export default function Chat() {
 
   const { data: professionals = [], isLoading } = useQuery({
     queryKey: ["professionals"],
-    queryFn: () => base44.entities.Professional.list({ sort: [{ field: "full_name", direction: "asc" }] })
+    queryFn: () => base44.entities.Professional.list({ sort: [{ field: "name", direction: "asc" }] })
   });
 
   const filteredProfessionals = (professionals || [])
     .filter((p: any) => p.id !== currentUser?.id) // Exclude self
     .filter((p: any) =>
-      (p.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.name || p.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.specialty || "").toLowerCase().includes(searchQuery.toLowerCase())
     );
 
   // Mock status for now - random online/offline
-  // In a real app, this would come from a websocket or polling 'last_active'
   const getStatus = (id: any) => {
-    // Deterministic random based on ID char code sum
     const sum = id.toString().split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
     return sum % 3 === 0 ? "offline" : (sum % 3 === 1 ? "busy" : "online");
   };
@@ -71,6 +69,8 @@ export default function Chat() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProfessionals.map((prof: any) => {
           const status = getStatus(prof.id);
+          const displayName = prof.name || prof.full_name || prof.email;
+
           return (
             <Card
               key={prof.id}
@@ -89,7 +89,7 @@ export default function Chat() {
                   <Avatar className="w-14 h-14 border-2 border-white dark:border-slate-800 shadow-sm">
                     <AvatarImage src={prof.photo_url} />
                     <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold">
-                      {prof.full_name?.substring(0, 2).toUpperCase()}
+                      {displayName?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <span className={cn(
@@ -100,7 +100,7 @@ export default function Chat() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
                     <h3 className={cn("font-bold truncate pr-2", isDark ? "text-white" : "text-slate-900")}>
-                      {prof.full_name}
+                      {displayName}
                     </h3>
                   </div>
                   <p className={cn("text-xs font-medium uppercase tracking-wider mb-2 truncate", isDark ? "text-indigo-400" : "text-indigo-600")}>
@@ -151,4 +151,3 @@ export default function Chat() {
     </div>
   );
 }
-
