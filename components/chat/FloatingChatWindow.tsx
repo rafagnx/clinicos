@@ -79,12 +79,27 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                 convId = newConv.id;
             }
 
-            return base44.entities.Message.create({
+            const result = await base44.entities.Message.create({
                 conversation_id: convId,
                 sender_id: currentUser.id,
                 text,
                 created_date: new Date().toISOString()
             });
+
+            // Notification Logic
+            try {
+                await base44.entities.Notification.create({
+                    user_id: recipient.id,
+                    type: "alert",
+                    title: `Nova mensagem de ${currentUser.name || "Colega"}`,
+                    message: text.substring(0, 50) + (text.length > 50 ? "..." : ""),
+                    read: false,
+                    organization_id: currentUser.active_organization_id,
+                    action_url: "/chat"
+                });
+            } catch (e) { console.warn("Notif error", e); }
+
+            return result;
         },
         onSuccess: () => {
             setInputText("");

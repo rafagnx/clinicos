@@ -12,6 +12,7 @@ import { format, addMinutes, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { sendAppointmentNotifications } from "@/functions/sendAppointmentNotifications";
 import { base44 } from "@/lib/base44Client";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -383,14 +384,9 @@ export default function AppointmentForm({
             onOpenChange(false);
 
             // Notify Professional
-            if (variables.professional_id) {
-                await base44.entities.Notification.create({
-                    user_id: variables.professional_id,
-                    title: "Novo Agendamento",
-                    message: `Novo agendamento: ${variables.type} com ${variables.patient_name || "Paciente"} em ${format(new Date(variables.date), "dd/MM")} às ${variables.time}.`,
-                    type: "appointment",
-                    read: false
-                });
+            if (data && data.id) {
+                const notifApp = { ...data, ...variables, id: data.id }; // Merge backend result with form data
+                sendAppointmentNotifications(notifApp, "created");
             }
         },
         onError: () => toast.error("Erro ao criar agendamento")
