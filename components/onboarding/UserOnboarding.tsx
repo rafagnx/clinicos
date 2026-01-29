@@ -52,18 +52,21 @@ export default function UserOnboarding() {
                 : fullNameKey;
 
             const payload = {
-                // user_id removed as it doesn't exist in schema
+                ...data, // Spread first!
                 email: formData.email || user.email,
-                name: finalName, // Changed full_name to name based on schema logs
+                name: finalName,
                 photo_url: user.user_metadata?.avatar_url || "",
                 status: "ativo",
                 role_type: role,
+                organization_id: user.active_organization_id,
                 specialty: isClinical ? formData.specialty : (role === 'gerente' ? 'Gerência' : (role === 'marketing' ? 'Marketing' : 'Administrativo')),
                 council_number: formData.council_number || "",
                 council_state: formData.council_state || "",
-                phone: formData.phone || "", // Ensure phone is sent
-                ...data
+                phone: formData.phone || "",
             };
+
+            // Final safety check for email
+            if (!payload.email) payload.email = user.email;
 
             // Ensure email is consistent
             if (formData.email) payload.email = formData.email;
@@ -102,8 +105,8 @@ export default function UserOnboarding() {
     const isClinical = ['profissional', 'hof', 'biomedico'].includes(role);
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => { if (!open && professionalProfile) setIsOpen(false); }}>
-            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle className="text-2xl text-center">🎉 Bem-vindo ao ClinicOS!</DialogTitle>
                     <DialogDescription className="text-center">
