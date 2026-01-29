@@ -289,9 +289,14 @@ export default function AppointmentForm({
         queryFn: () => base44.entities.Professional.list()
     });
 
-    // Secretaries = All staff who are NOT clinical
+    // Secretaries = Allowed scheduling roles (Secretary, Admin, Manager, Receptionist)
     const secretaries = React.useMemo(() => {
-        return allStaff.filter(p => !isClinical(p));
+        return allStaff.filter(p => {
+            const role = (p.role_type || "").toLowerCase();
+            const specialty = (p.specialty || "").toLowerCase();
+            // Explicitly allow these roles as requested
+            return ["secretária", "secretaria", "recepcionista", "admin", "administrador", "gerente", "management"].some(r => role.includes(r) || specialty.includes(r));
+        });
     }, [allStaff]);
 
     const { data: customProcedures = [] } = useQuery({
