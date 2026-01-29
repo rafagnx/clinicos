@@ -57,6 +57,16 @@ export default {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                calendar: {
+                    blue: "hsl(var(--calendar-blue))",
+                    yellow: "hsl(var(--calendar-yellow))",
+                    "green-light": "hsl(var(--calendar-green-light))",
+                    pink: "hsl(var(--calendar-pink))",
+                    green: "hsl(var(--calendar-green))",
+                    purple: "hsl(var(--calendar-purple))",
+                    gray: "hsl(var(--calendar-gray))",
+                    holiday: "hsl(var(--calendar-holiday))",
+                },
             },
             borderRadius: {
                 lg: "var(--radius)",

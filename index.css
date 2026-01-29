@@ -33,6 +33,16 @@
     --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --gradient-premium: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+
+    /* Calendar colors */
+    --calendar-blue: 220 70% 75%;
+    --calendar-yellow: 45 85% 75%;
+    --calendar-green-light: 140 50% 70%;
+    --calendar-pink: 350 60% 82%;
+    --calendar-green: 155 50% 60%;
+    --calendar-purple: 270 50% 78%;
+    --calendar-gray: 0 0% 80%;
+    --calendar-holiday: 0 0% 85%;
   }
 
   .dark {
@@ -56,6 +66,16 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 239 84% 67%;
+
+    /* Calendar Dark Mode */
+    --calendar-blue: 220 50% 50%;
+    --calendar-yellow: 45 70% 50%;
+    --calendar-green-light: 140 40% 45%;
+    --calendar-pink: 350 45% 55%;
+    --calendar-green: 155 40% 40%;
+    --calendar-purple: 270 40% 55%;
+    --calendar-gray: 0 0% 40%;
+    --calendar-holiday: 0 0% 35%;
   }
 }
 

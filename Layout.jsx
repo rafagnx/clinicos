@@ -17,8 +17,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
   Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Moon, Sun, Search,
-  ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles
+  ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles, Megaphone
 } from "lucide-react";
+import { useFeatures } from "@/hooks/useFeatures";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/pwa/PWAInstallPrompt";
@@ -195,6 +196,51 @@ export default function Layout() {
   });
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const { hasFeature } = useFeatures();
+
+  // Dynamic Navigation builder
+  const dynamicNavigation = React.useMemo(() => {
+    // Deep copy to avoid mutating the static reference
+    const nav = JSON.parse(JSON.stringify(navigation));
+
+    // Inject Marketing module if enabled
+    if (hasFeature('marketing')) {
+      const comGroup = nav.find(g => g.group === "Comercial");
+      if (comGroup) {
+        comGroup.items.push({
+          name: "Marketing",
+          href: "Marketing",
+          icon: Megaphone, // Will rely on icon component matching, check if JSON stringify breaks icon references?
+          // PROBLEM: JSON.stringify will kill the 'icon' property because it's a React component/function.
+          // WE CANNOT USE JSON.parse(JSON.stringify) for components.
+          gradient: "from-pink-600 to-rose-600"
+        });
+      }
+    }
+    return nav;
+  }, [hasFeature]);
+
+  // FIX: Since we can't deep copy components easily, let's map the static array instead.
+  const finalNavigation = navigation.map(group => {
+    if (group.group === "Comercial" && hasFeature('marketing')) {
+      // Return new group object with appended item
+      // Check if already exists to be safe? (map runs every render but returns new array)
+      return {
+        ...group,
+        items: [
+          ...group.items,
+          {
+            name: "Marketing",
+            href: "Marketing",
+            icon: Megaphone,
+            gradient: "from-pink-600 to-rose-600"
+          }
+        ]
+      };
+    }
+    return group;
+  });
 
   const NavItem = ({ item, isActive }) => (
     <Link
@@ -378,7 +424,7 @@ export default function Layout() {
               }
             `}</style>
             <TooltipProvider delayDuration={0}>
-              {navigation.map((group, idx) => (
+              {finalNavigation.map((group, idx) => (
                 <div key={idx} className="mb-3">
                   {!isCollapsed && group.group && (
                     <h3 className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">

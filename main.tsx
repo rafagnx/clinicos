@@ -32,6 +32,7 @@ import NewMedicalRecord from './pages/NewMedicalRecord'
 import PatientHistory from './pages/PatientHistory'
 import ImportPatients from './pages/ImportPatients'
 import ProcedureTypes from './pages/settings/ProcedureTypes'
+import Marketing from './pages/Marketing'
 
 import AdminDashboard from './pages/AdminDashboard'
 import AdminOrganizations from './pages/admin/AdminOrganizations'
@@ -106,6 +107,7 @@ const App = () => {
                     <Route path="/Reports" element={<Reports />} />
                     <Route path="/Chat" element={<Chat />} />
                     <Route path="/Profile" element={<Profile />} />
+                    <Route path="/Marketing" element={<Marketing />} />
 
                     {/* Subroutes */}
                     <Route path="/AgendaReports" element={<AgendaReports />} />

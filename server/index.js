@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createClient } from '@supabase/supabase-js';
 import { stripeService } from './stripe-service.js';
 import { startCleanupJob } from './jobs/cleanup.js';
+import { createMarketingRoutes } from './marketing-routes.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -278,6 +279,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// Marketing / Calendar Routes
+app.use('/api/marketing', createMarketingRoutes(pool, requireAuth));
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -557,6 +561,16 @@ const initSchema = async () => {
                     "discount_value" NUMERIC(10, 2),
                     "active" BOOLEAN DEFAULT TRUE,
                     "organization_id" TEXT,
+                    "created_at" TIMESTAMP DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS "calendar_events" (
+                    "id" SERIAL PRIMARY KEY,
+                    "organization_id" TEXT NOT NULL,
+                    "date" DATE NOT NULL,
+                    "content" TEXT,
+                    "category" VARCHAR(50),
+                    "platform" VARCHAR(50),
+                    "status" VARCHAR(50) DEFAULT 'planned',
                     "created_at" TIMESTAMP DEFAULT NOW()
                 );
             `);
