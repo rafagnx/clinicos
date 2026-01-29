@@ -358,7 +358,19 @@ export default function AppointmentForm({
                 throw new Error("Informe quem realizou o agendamento");
             }
 
-            const startDateTime = new Date(data.date);
+            // SAFE DATE PARSING (Local Time)
+            let startDateTime: Date;
+
+            if (data.date instanceof Date) {
+                startDateTime = new Date(data.date);
+            } else if (typeof data.date === 'string') {
+                // Force "YYYY-MM-DD" to be treated as Local Midnight, not UTC
+                const [y, m, d] = data.date.split('T')[0].split('-').map(Number);
+                startDateTime = new Date(y, m - 1, d);
+            } else {
+                startDateTime = new Date();
+            }
+
             const [hours, minutes] = data.time.split(":");
             startDateTime.setHours(parseInt(hours), parseInt(minutes));
 
@@ -394,7 +406,18 @@ export default function AppointmentForm({
 
     const updateMutation = useMutation({
         mutationFn: (data: any) => {
-            const startDateTime = new Date(data.date);
+            // SAFE DATE PARSING (Local Time)
+            let startDateTime: Date;
+            if (data.date instanceof Date) {
+                startDateTime = new Date(data.date);
+            } else if (typeof data.date === 'string') {
+                // Force "YYYY-MM-DD" to be treated as Local Midnight, not UTC
+                const [y, m, d] = data.date.split('T')[0].split('-').map(Number);
+                startDateTime = new Date(y, m - 1, d);
+            } else {
+                startDateTime = new Date();
+            }
+
             const [hours, minutes] = data.time.split(":");
             startDateTime.setHours(parseInt(hours), parseInt(minutes));
 
