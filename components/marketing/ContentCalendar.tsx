@@ -1,68 +1,65 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CategoryColor } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarGrid } from './CalendarGrid';
 import { CategoryLegend } from './CategoryLegend';
 import { NotesSection } from './NotesSection';
+import { MonthSummary } from './MonthSummary';
+import { UpcomingEvents } from './UpcomingEvents';
+import { TimelineView } from './TimelineView';
+import { Button } from '@/components/ui/button';
+import { Calendar as CalendarIcon, GanttChartSquare } from 'lucide-react';
+import { getHolidays } from '@/utils/holidays';
 
 export function ContentCalendar() {
     const [currentMonth, setCurrentMonth] = useState(0); // January
     const [currentYear] = useState(2026);
     const [selectedColor, setSelectedColor] = useState<CategoryColor>(null);
-
-    // Note: we might want to allow year navigation too, but for now fixed to 2026 as per original
-    // or dynamic based on date. Let's make it simple.
+    const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar');
 
     const {
         events,
-        // notes, setNotes, // API doesn't have general notes yet, maybe store in localStorage or new table?
-        // For now we'll mock notes or omit if not critical, or use localStorage like before just for notes?
-        // Let's implement local state for notes for now or localStorage until we add a backend field.
         createEvent,
         updateEvent,
-        deleteEvent,
-        getDayEvents
+        deleteEvent
     } = useCalendarData();
 
-    // Re-implementing the data structure transformation for the grid
-    // The grid expects { "YYYY-MM-DD": { color, text } }
-    // Our API returns a list of events.
-    // We need to map the list to the object.
-    // Also, the API supports multiple events per day, but the UI seems designed for one?
-    // The UI `CalendarDay` shows `dayData.text`.
-    // If we have multiple events, we might need to join them or pick the first.
+    // Prepare Calendar Grid Data (Including Holidays)
+    const calendarData = useMemo(() => {
+        const data: any = {};
 
-    const calendarData: any = {};
-    events.forEach((e: any) => {
-        // Basic mapping: color based on some logic or stored? 
-        // The original `calendar_events` table has `category`, `platform`.
-        // We didn't add a 'color' column to the DB table explicitly? 
-        // Ah, Step 123 `calendar_events` has `category`, `platform`, `status`.
-        // It does NOT have `color`.
-        // We should map `category` (string) to color, or add `color` column.
-        // Or we store the color in `category` if it's one of the presets.
+        // 1. Add Events
+        events.forEach((e: any) => {
+            const dateKey = e.date.split('T')[0];
+            data[dateKey] = {
+                color: e.category as CategoryColor,
+                text: e.content
+            };
+        });
 
-        // Let's assume we store the "color name" in `category` for simplicity, 
-        // OR we map `platform` to color?
-        // The original code used `category` with color property.
+        // 2. Add Holidays if no event on that day
+        const holidays = getHolidays(currentYear);
+        holidays.forEach(h => {
+            // Correctly format date to YYYY-MM-DD local
+            const y = h.date.getFullYear();
+            const m = String(h.date.getMonth() + 1).padStart(2, '0');
+            const d = String(h.date.getDate()).padStart(2, '0');
+            const dateKey = `${y}-${m}-${d}`;
 
-        // Let's check `DEFAULT_CATEGORIES` in types/calendar.ts
-        // { id: '1', name: 'TRÁFEGO BITTENCOURT', color: 'blue' }
+            if (!data[dateKey]) {
+                data[dateKey] = {
+                    color: 'holiday',
+                    text: h.name,
+                    isFixed: true // Flag to prevent editing if we wanted
+                };
+            }
+        });
 
-        // So if the event has a category name that matches, we get the color.
-        // If we just saved the color name in the DB as `category`, that works too.
+        return data;
+    }, [events, currentYear]);
 
-        // For this implementation, let's look for a matching category.
-        // Ideally, we persist the chosen "category" (which implies color).
-
-        calendarData[e.date.split('T')[0]] = {
-            color: e.category as CategoryColor, // We'll save the color name in the 'category' column
-            text: e.content
-        };
-    });
-
-    // Notes logic - fallback to localStorage or temporary
+    // Notes logic - fallback to localStorage
     const [notes, setNotes] = useState(localStorage.getItem('marketing-notes') || '');
     const handleNotesChange = (val: string) => {
         setNotes(val);
@@ -78,6 +75,7 @@ export function ContentCalendar() {
     };
 
     const handleUpdateDay = async (dateKey: string, data: { color: CategoryColor, text: string }) => {
+        // Prevent editing holidays if we added isFixed check, but for now we allow overwriting
         // Check if event exists
         const existing = events.find((e: any) => e.date.startsWith(dateKey));
 
@@ -109,7 +107,6 @@ export function ContentCalendar() {
         }
     };
 
-    // Categories management - mostly static for now unless we add DB table for categories
     const categories = [
         { id: '1', name: 'TRÁFEGO BITTENCOURT', color: 'blue' as CategoryColor },
         { id: '2', name: 'TRÁFEGO LETÍCIA', color: 'yellow' as CategoryColor },
@@ -117,63 +114,103 @@ export function ContentCalendar() {
         { id: '4', name: 'DIVULGAÇÃO LETÍCIA', color: 'pink' as CategoryColor },
         { id: '5', name: 'CRIAR ARTES', color: 'green' as CategoryColor },
         { id: '6', name: 'OUTRAS CIDADES', color: 'purple' as CategoryColor },
-        { id: '7', name: 'FERIADO', color: 'gray' as CategoryColor },
+        { id: '7', name: 'FERIADO', color: 'gray' as CategoryColor }, // Added manually to match screenshot/holidays
     ];
 
     return (
-        <div className="min-h-screen bg-background p-4 md:p-6">
-            <div className="max-w-[1200px] mx-auto">
+        <div className="min-h-screen bg-background/50 p-4 md:p-6">
+            <div className="max-w-[1400px] mx-auto">
+
+                {/* Header Controls */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex bg-card border border-border rounded-lg p-1 gap-1">
+                        <Button
+                            variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('calendar')}
+                            className="gap-2 text-xs"
+                        >
+                            <CalendarIcon className="w-4 h-4" />
+                            Calendário
+                        </Button>
+                        <Button
+                            variant={viewMode === 'timeline' ? 'secondary' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('timeline')}
+                            className="gap-2 text-xs"
+                        >
+                            <GanttChartSquare className="w-4 h-4" />
+                            Timeline
+                        </Button>
+                    </div>
+                </div>
+
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Left sidebar with vertical text and legend */}
-                    <div className="hidden lg:flex items-stretch gap-3 shrink-0">
-                        {/* Vertical text */}
-                        <div className="flex items-center">
-                            <div
-                                className="text-xs font-bold tracking-[0.25em] text-calendar-purple/80"
-                                style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
-                            >
-                                CONTEÚDO
+                    {/* Left Sidebar */}
+                    <div className="hidden lg:flex flex-col gap-6 shrink-0 w-64">
+                        {/* Categories */}
+                        <div className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                                <div
+                                    className="text-xs font-bold tracking-[0.25em] text-calendar-purple/80 mb-2"
+                                    style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                                >
+                                    CONTEÚDO
+                                </div>
+                                <div className="w-1.5 flex-1 bg-calendar-purple rounded-full" />
+                            </div>
+                            <div className="flex-1">
+                                <CategoryLegend
+                                    categories={categories}
+                                    selectedColor={selectedColor}
+                                    onSelectColor={setSelectedColor}
+                                    onUpdateCategory={() => { }}
+                                />
                             </div>
                         </div>
-                        {/* Vertical purple bar */}
-                        <div className="w-1.5 bg-calendar-purple rounded-full" />
-                        {/* Legend */}
-                        <div className="w-48">
-                            <CategoryLegend
-                                categories={categories}
-                                selectedColor={selectedColor}
-                                onSelectColor={setSelectedColor}
-                                onUpdateCategory={() => { }} // Not implementing category edit for now
-                            />
-                        </div>
-                    </div>
 
-                    {/* Main calendar */}
-                    <div className="flex-1">
-                        <CalendarHeader
-                            month={currentMonth}
-                            year={currentYear}
-                            onPrevMonth={handlePrevMonth}
-                            onNextMonth={handleNextMonth}
-                        />
-                        <CalendarGrid
-                            month={currentMonth}
-                            year={currentYear}
-                            data={calendarData}
-                            selectedColor={selectedColor}
-                            onUpdateDay={handleUpdateDay}
-                            onClearDay={handleClearDay}
+                        {/* Summary Widget */}
+                        <MonthSummary
+                            currentMonth={currentMonth}
+                            currentYear={currentYear}
+                            events={events}
                         />
                     </div>
 
-                    {/* Right sidebar with notes */}
-                    <div className="hidden lg:block w-56 shrink-0">
+                    {/* Main Content */}
+                    <div className="flex-1 min-w-0">
+                        {viewMode === 'calendar' ? (
+                            <>
+                                <CalendarHeader
+                                    month={currentMonth}
+                                    year={currentYear}
+                                    onPrevMonth={handlePrevMonth}
+                                    onNextMonth={handleNextMonth}
+                                />
+                                <CalendarGrid
+                                    month={currentMonth}
+                                    year={currentYear}
+                                    data={calendarData}
+                                    selectedColor={selectedColor}
+                                    onUpdateDay={handleUpdateDay}
+                                    onClearDay={handleClearDay}
+                                />
+                            </>
+                        ) : (
+                            <TimelineView year={currentYear} events={events} />
+                        )}
+                    </div>
+
+                    {/* Right Sidebar */}
+                    <div className="hidden xl:flex flex-col gap-6 w-64 shrink-0">
+                        <UpcomingEvents events={events} />
                         <NotesSection notes={notes} onNotesChange={handleNotesChange} />
                     </div>
                 </div>
 
-                {/* Mobile layout */}
+                {/* Mobile Fallback */}
                 <div className="lg:hidden space-y-4 mt-6">
+                    <UpcomingEvents events={events} />
                     <CategoryLegend
                         categories={categories}
                         selectedColor={selectedColor}
@@ -181,11 +218,6 @@ export function ContentCalendar() {
                         onUpdateCategory={() => { }}
                     />
                     <NotesSection notes={notes} onNotesChange={handleNotesChange} />
-                </div>
-
-                {/* Instructions */}
-                <div className="mt-8 text-center text-xs text-muted-foreground">
-                    <p>Selecione uma cor e clique nos dias para pintar • Clique sem cor selecionada para adicionar texto</p>
                 </div>
             </div>
         </div>
