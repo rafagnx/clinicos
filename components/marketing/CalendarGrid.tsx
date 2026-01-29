@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
-import { CalendarData, CategoryColor, DayData, WEEKDAYS_PT } from '@/types/calendar';
+import { CalendarData, CategoryColor, DayData, WEEKDAYS_PT, Category } from '@/types/calendar';
 import { CalendarDay } from './CalendarDay';
 
 interface CalendarGridProps {
     month: number;
     year: number;
     data: CalendarData;
+    categories: Category[];
     selectedColor: CategoryColor;
     onUpdateDay: (dateKey: string, data: DayData) => void;
     onClearDay: (dateKey: string) => void;
@@ -21,6 +22,7 @@ export function CalendarGrid({
     month,
     year,
     data,
+    categories,
     selectedColor,
     onUpdateDay,
     onClearDay,
