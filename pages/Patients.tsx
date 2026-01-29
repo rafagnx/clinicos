@@ -199,18 +199,16 @@ export default function Patients() {
                   <Download className="w-4 h-4 text-slate-500" />
                   Exportar CSV
                 </DropdownMenuItem>
-                {(user?.role?.toLowerCase()?.includes("admin") || user?.role === "admin") && (
-                  <>
-                    <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                    <DropdownMenuItem
-                      onClick={() => setShowBulkDelete(!showBulkDelete)}
-                      className="gap-2 text-rose-500 focus:text-rose-600 focus:bg-rose-50/10 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {showBulkDelete ? "Sair da Seleção" : "Gerenciar Exclusão"}
-                    </DropdownMenuItem>
-                  </>
-                )}
+                <>
+                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                  <DropdownMenuItem
+                    onClick={() => setShowBulkDelete(!showBulkDelete)}
+                    className="gap-2 text-rose-500 focus:text-rose-600 focus:bg-rose-50/10 cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {showBulkDelete ? "Sair da Seleção" : "Gerenciar Exclusão"}
+                  </DropdownMenuItem>
+                </>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -340,16 +338,22 @@ export default function Patients() {
               <span className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
                 {selectedPatients.length} selecionado(s)
               </span>
-              {selectedPatients.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedPatients([])}
-                  className="text-xs text-slate-500"
-                >
-                  Limpar
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedPatients(filteredPatients.map(p => p.id))}
+                className="text-xs text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+              >
+                Selecionar Todos ({filteredPatients.length})
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedPatients([])}
+                className="text-xs text-slate-500"
+              >
+                Limpar
+              </Button>
             </div>
             {selectedPatients.length > 0 && (
               <Button

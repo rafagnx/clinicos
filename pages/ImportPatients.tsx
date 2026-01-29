@@ -66,7 +66,15 @@ export default function ImportPatients() {
       setIsUploading(true);
       setProgress(10);
 
-      const text = await file.text();
+      const buffer = await file.arrayBuffer();
+      let text = new TextDecoder('utf-8').decode(buffer);
+
+      // Heuristic: If we see the replacement character , it's likely NOT UTF-8, probably windows-1252 (ANSI)
+      if (text.includes('')) {
+        console.warn("Detected possible encoding issue (), falling back to windows-1252");
+        text = new TextDecoder('windows-1252').decode(buffer);
+      }
+
       const rows = text.split("\n").map(r => r.trim()).filter(r => r);
 
       if (rows.length < 2) {
