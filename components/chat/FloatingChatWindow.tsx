@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function FloatingChatWindow({ recipient, currentUser, onClose, isMinimized, onToggleMinimize }) {
     const queryClient = useQueryClient();
@@ -21,8 +22,12 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         queryFn: async () => {
             const all = await base44.entities.Conversation.list();
             return all.find(c =>
+                // Case 1: Standard Prof-Patient
                 (c.professional_id === currentUser.id && c.patient_id === recipient.id) ||
-                (c.professional_id === recipient.id && c.patient_id === currentUser.id)
+                (c.professional_id === recipient.id && c.patient_id === currentUser.id) ||
+                // Case 2: Team Chat (Prof-Prof) using new schema
+                (c.professional_id === currentUser.id && c.recipient_professional_id === recipient.id) ||
+                (c.professional_id === recipient.id && c.recipient_professional_id === currentUser.id)
             );
         },
         enabled: !!recipient && !!currentUser
@@ -49,13 +54,27 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
             let convId = conversation?.id;
 
             if (!convId) {
+                // Determine if recipient is a patient or professional
+                // For now, in "Chat Team", recipient is always professional.
+                // We'll assume if they have 'role_type' or if we are in Team Chat context.
+                // But safer to check:
+                const isTeamChat = true; // Since this component is used in Chat.tsx which lists professionals.
+
                 // Create new conversation
-                const newConv = await base44.entities.Conversation.create({
+                const payload: any = {
                     professional_id: currentUser.id,
-                    patient_id: recipient.id,
                     status: 'active',
                     last_message_at: new Date().toISOString()
-                });
+                };
+
+                if (isTeamChat) {
+                    payload.recipient_professional_id = recipient.id;
+                    // Ensure patient_id is not sent or is explicitly null if needed (API should handle missing)
+                } else {
+                    payload.patient_id = recipient.id;
+                }
+
+                const newConv = await base44.entities.Conversation.create(payload);
                 convId = newConv.id;
             }
 
@@ -70,19 +89,35 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
             setInputText("");
             queryClient.invalidateQueries({ queryKey: ["messages"] });
             queryClient.invalidateQueries({ queryKey: ["conversation-with"] });
+        },
+        onError: (err) => {
+            console.error("Failed to send message", err);
         }
     });
 
-    const handleSend = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSend = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!inputText.trim()) return;
         sendMessageMutation.mutate(inputText);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const addEmoji = (emoji: string) => {
+        setInputText(prev => prev + emoji);
     };
 
     if (!recipient) return null;
 
     // Helper to get display name safely
     const displayName = recipient.name || recipient.full_name || recipient.email || "Usuário";
+
+    const commonEmojis = ["👍", "👋", "🎉", "🔥", "❤️", "😂", "😮", "😢", "🙏", "✅", "❌", "📅"];
 
     return (
         <AnimatePresence>
@@ -162,20 +197,40 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
 
                         {/* Footer */}
                         <div className="p-3 bg-white dark:bg-[#1C2333] border-t dark:border-slate-800">
-                            <form onSubmit={handleSend} className="flex items-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-slate-400 hover:text-indigo-500 shrink-0"
-                                >
-                                    <Paperclip className="w-4 h-4" />
-                                </Button>
+                            <form onSubmit={handleSend} className="flex items-center gap-2">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-slate-400 hover:text-indigo-500 shrink-0"
+                                        >
+                                            <Smile className="w-4 h-4" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-64 p-2" sideOffset={10} side="top" align="start">
+                                        <div className="grid grid-cols-6 gap-2">
+                                            {commonEmojis.map(emoji => (
+                                                <button
+                                                    key={emoji}
+                                                    className="text-xl hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 rounded-md transition-colors"
+                                                    onClick={() => addEmoji(emoji)}
+                                                    type="button"
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+
                                 <Input
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                     placeholder="Digite sua mensagem..."
-                                    className="min-h-[36px] max-h-24 py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-indigo-500 resize-none rounded-lg"
+                                    className="h-9 py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-lg"
                                     autoFocus
                                 />
                                 <Button
