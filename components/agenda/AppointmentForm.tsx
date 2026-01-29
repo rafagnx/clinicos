@@ -139,6 +139,7 @@ export default function AppointmentForm({
     open,
     onOpenChange,
     appointment,
+    professionals,
     onSuccess
 }: AppointmentFormProps) {
     const queryClient = useQueryClient();
@@ -262,10 +263,37 @@ export default function AppointmentForm({
         }
     }, [open, appointment]);
 
-    const { data: professionals = [] } = useQuery({
+    // Use provided professionals or fetch if missing (but Agenda should pass them)
+    // If we need to fetch, we should probably filter too, but for now relies on prop
+    const { data: fetchedProfessionals } = useQuery({
         queryKey: ["professionals"],
+        queryFn: () => base44.entities.Professional.list(),
+        enabled: !professionals || professionals.length === 0
+    });
+
+    const activeProfessionals = React.useMemo(() => {
+        const source = professionals && professionals.length > 0 ? professionals : (fetchedProfessionals || []);
+        // Strict filter for clinical professionals only
+        return source.filter(p => {
+            const role = (p.role_type || "").toLowerCase();
+            const specialty = (p.specialty || "").toLowerCase();
+            return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+        });
+    }, [professionals, fetchedProfessionals]);
+
+    // Query for secretaries specifically
+    const { data: allStaff = [] } = useQuery({
+        queryKey: ["all-staff"],
         queryFn: () => base44.entities.Professional.list()
     });
+
+    const secretaries = React.useMemo(() => {
+        return allStaff.filter(p => {
+            const role = (p.role_type || "").toLowerCase();
+            const specialty = (p.specialty || "").toLowerCase();
+            return ["secretária", "secretaria", "recepcionista", "atendente", "admin", "administrador"].some(r => role.includes(r) || specialty.includes(r));
+        });
+    }, [allStaff]);
 
     const { data: customProcedures = [] } = useQuery({
         queryKey: ["procedure-types"],
@@ -367,8 +395,8 @@ export default function AppointmentForm({
 
             const payload = {
                 ...data,
-                start_time: format(startDateTime, "HH:mm"),
-                end_time: format(endDateTime, "HH:mm"),
+                start_time: startDateTime.toISOString(),
+                end_time: endDateTime.toISOString(),
                 date: format(startDateTime, "yyyy-MM-dd"),
                 promotion_id: data.promotion_id === "none" ? null : data.promotion_id
             };
@@ -499,7 +527,7 @@ export default function AppointmentForm({
                                         <SelectValue placeholder="Selecione o profissional" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {professionals.map(prof => (
+                                        {activeProfessionals.map(prof => (
                                             <SelectItem key={prof.id} value={prof.id}>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: prof.color || '#3b82f6' }} />

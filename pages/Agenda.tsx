@@ -64,14 +64,56 @@ const statusConfig = {
 };
 
 // Função para determinar a cor do card baseado no profissional e tipo
-const getAppointmentCardColor = (apt, isDark) => {
-  // Compromisso = Cinza
-  if (apt.type === "compromisso") {
-    return isDark ? "border-l-slate-600 bg-gradient-to-r from-slate-800/80 to-slate-900/80" : "border-l-slate-400 bg-gradient-to-r from-slate-50 to-white";
+// Helper to safely parse time string (HH:mm or ISO)
+const parseTime = (timeStr: string) => {
+  if (!timeStr) return { h: 0, m: 0, str: "00:00" };
+
+  // ISO Format (2026-01-29T10:30:00.000Z)
+  if (timeStr.includes("T")) {
+    const date = new Date(timeStr);
+    if (!isNaN(date.getTime())) {
+      const h = date.getHours();
+      const m = date.getMinutes();
+      return { h, m, str: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` };
+    }
   }
-  return isDark
-    ? "border-l-indigo-500 bg-gradient-to-r from-[#1C2333] to-[#232936] hover:from-[#232936] hover:to-[#2A303F]"
-    : "border-l-indigo-500 bg-gradient-to-r from-white to-slate-50/50 hover:to-indigo-50/30";
+
+  // Simple HH:mm
+  if (timeStr.includes(":")) {
+    const [hStr, mStr] = timeStr.split(":");
+    const h = parseInt(hStr || "0");
+    const m = parseInt(mStr || "0");
+    return { h, m, str: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` };
+  }
+
+  return { h: 0, m: 0, str: "00:00" };
+};
+
+// Função para determinar a cor do card baseado no profissional e tipo
+const getAppointmentCardColor = (apt, isDark) => {
+  if (!apt) return "";
+
+  // 1. By Status
+  if (apt.status === "finalizado") return "border-l-emerald-500 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-900/10";
+  if (apt.status === "cancelado") return "border-l-slate-400 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50";
+  if (apt.status === "faltou") return "border-l-rose-500 bg-rose-50/50 hover:bg-rose-100/50 dark:bg-rose-900/10";
+
+  // 2. By Type
+  if (apt.type === "Compromisso") return "border-l-slate-500 bg-slate-100 dark:bg-slate-800";
+  if (apt.type === "Retorno") return "border-l-amber-500 bg-amber-50 dark:bg-amber-900/10";
+
+  // 3. By Procedure Category (heuristic) or Professional
+  // Default vibrant colors
+  const vibrantColors = [
+    "border-l-violet-500 bg-violet-50/60 hover:bg-violet-100/50 dark:bg-violet-900/20",
+    "border-l-pink-500 bg-pink-50/60 hover:bg-pink-100/50 dark:bg-pink-900/20",
+    "border-l-cyan-500 bg-cyan-50/60 hover:bg-cyan-100/50 dark:bg-cyan-900/20",
+    "border-l-indigo-500 bg-indigo-50/60 hover:bg-indigo-100/50 dark:bg-indigo-900/20",
+  ];
+
+  // Hash the ID to pick a stable color
+  const hash = (apt.professional_id || "").split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return vibrantColors[hash % vibrantColors.length];
 };
 
 // Helper to deduplicate professionals
@@ -103,9 +145,19 @@ export default function Agenda() {
   // Queries
   const { data: rawProfessionals = [], isLoading: isLoadingProfs } = useQuery({
     queryKey: ["professionals"],
-    queryFn: () => base44.list("Professional", {
-      sort: [{ field: "full_name", direction: "asc" }]
-    }),
+    queryFn: async () => {
+      const data = await base44.list("Professional", {
+        sort: [{ field: "full_name", direction: "asc" }]
+      });
+      // Filter for valid agenda roles
+      return data.filter(p => {
+        const role = (p.role_type || "").toLowerCase();
+        const specialty = (p.specialty || "").toLowerCase();
+        // Allow: HOF, Biomédico, Doutor, Esteticista, Dentista
+        // Removed "profissional" as it's too generic and includes staff
+        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+      });
+    },
   });
 
   const professionals = uniqueProfessionals(rawProfessionals);
@@ -406,21 +458,33 @@ export default function Agenda() {
 
             {/* Render Appointments Absolute Overlay */}
             {filteredAppointments.map((apt) => {
-              const start = parseISO(`${apt.date}T${apt.start_time}`);
-              const end = parseISO(`${apt.date}T${apt.end_time}`);
-              const duration = (end.getTime() - start.getTime()) / (1000 * 60);
+              if (!apt.start_time) return null;
+
+              const { h, m, str: timeDisplay } = parseTime(apt.start_time);
+              const startDateTime = new Date(`${apt.date}T${timeDisplay}`);
+
+              // Determine end time
+              let durationMinutes = 30; // default
+              if (apt.end_time) {
+                const end = parseTime(apt.end_time);
+                durationMinutes = (end.h * 60 + end.m) - (h * 60 + m);
+              } else if (apt.duration) {
+                durationMinutes = apt.duration;
+              }
+
+              // Handle overnight or negative duration safety
+              if (durationMinutes < 15) durationMinutes = 30;
 
               // Calculate position
-              // Base time is 7:00 (index 0). Each slot is 30 mins (height 50px).
-              // Need to map time to px.
-              if (!apt.start_time) return null;
-              const [h, m] = apt.start_time.split(":").map(Number);
+              // Base time is 7:00. 
               const minutesSince7 = (h - 7) * 60 + m;
+              // If before 7am, skip or clamp? Let's hide if too early for now, or clamp to 0.
+              if (minutesSince7 < 0) return null; // Or render at top
+
               const slots = minutesSince7 / 30;
-              // Each slot row is min-h-[50px]
               const ROW_HEIGHT = 50;
               const top = slots * ROW_HEIGHT;
-              const height = (duration / 30) * ROW_HEIGHT;
+              const height = (durationMinutes / 30) * ROW_HEIGHT;
 
               let left = "0";
               let width = "100%";
@@ -436,33 +500,36 @@ export default function Agenda() {
                 width = `${colWidth}%`;
               }
 
-              // Adjust left buffer slightly to avoid border overlap
+              // Adjust layout to look like "chips"
               const style = {
-                top: `${top}px`,
-                height: `${height - 2}px`,
-                left: `calc(${left} + 2px)`, // +2px margin
-                width: `calc(${width} - 4px)` // -4px margin total
+                top: `${top + 2}px`, // Slight offset
+                height: `${height - 4}px`, // Slight gap
+                left: `calc(${left} + 4px)`,
+                width: `calc(${width} - 8px)`
               };
+
+              // Safety check for max height (don't overflow day)
+              // max slots = 25 (7:00 to 19:00+). 
 
               const status = statusConfig[apt.status] || statusConfig.agendado;
               const professional = apt.professional || professionals?.find((p: any) => p.id === apt.professional_id);
-              const professionalName = professional?.full_name ? professional.full_name.split(" ")[0] : "";
+
+              const cardColorClass = getAppointmentCardColor(apt, isDark);
 
               return (
                 <div
                   key={apt.id}
-                  className="absolute z-10 pl-[80px] pointer-events-none w-full" // Offset by timeline width
+                  className="absolute z-10 pl-[80px] pointer-events-none w-full transition-all duration-300 ease-in-out"
                   style={{ top: 0, bottom: 0, left: 0, right: 0 }}
                 >
                   <div className="relative w-full h-full pointer-events-none">
                     <Card
                       className={cn(
-                        "absolute shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden flex flex-col pointer-events-auto",
-                        "border-l-[3px] rounded-r-xl rounded-l-sm border-y border-r backdrop-blur-sm",
-                        getAppointmentCardColor(apt, isDark),
-                        isDark
-                          ? "border-slate-700/50 shadow-black/20"
-                          : "border-slate-200/60 shadow-indigo-100/50"
+                        "absolute cursor-pointer overflow-hidden flex flex-col pointer-events-auto",
+                        "shadow-sm hover:shadow-lg hover:scale-[1.02] hover:z-50 transition-all duration-200",
+                        "rounded-lg border-l-4 border-y border-r-0 backdrop-blur-sm",
+                        cardColorClass,
+                        isDark ? "border-slate-700/50" : "border-slate-200/60"
                       )}
                       style={style}
                       onClick={(e) => {
@@ -471,17 +538,17 @@ export default function Agenda() {
                         setIsFormOpen(true);
                       }}
                     >
-                      <div className="p-2 flex flex-col h-full gap-0.5 relative z-10">
-                        <div className="flex items-center gap-2 min-w-0">
+                      <div className="p-1.5 flex flex-col h-full gap-0.5 relative z-10">
+                        <div className="flex items-center gap-1.5 min-w-0">
                           <span className={cn(
-                            "text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] tracking-tight",
-                            isDark ? "bg-black/20 text-white/90" : "bg-white/60 text-indigo-900/80"
+                            "text-[10px] font-bold px-1.5 py-0.5 rounded-md tracking-tight shadow-sm",
+                            isDark ? "bg-black/40 text-white" : "bg-white/80 text-slate-700"
                           )}>
-                            {apt.start_time}
+                            {timeDisplay}
                           </span>
                           <span className={cn(
-                            "text-xs font-semibold truncate tracking-tight",
-                            isDark ? "text-slate-100" : "text-slate-900"
+                            "text-xs font-bold truncate leading-none",
+                            isDark ? "text-slate-100" : "text-slate-800"
                           )}>
                             {apt.patient?.full_name?.split(" ")[0] || "Paciente"}
                           </span>
