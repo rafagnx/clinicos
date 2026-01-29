@@ -160,7 +160,9 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                                 <AvatarImage src={recipient.photo_url} />
                                 <AvatarFallback>{displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-indigo-600 rounded-full"></span>
+                            {!recipient.is_group && (
+                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-indigo-600 rounded-full"></span>
+                            )}
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-white leading-none">{displayName}</span>
@@ -200,12 +202,17 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                                                 "max-w-[80%] p-3 rounded-2xl text-xs relative group",
                                                 isMe ? "bg-indigo-600 text-white rounded-br-none" : "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-bl-none shadow-sm"
                                             )}>
+                                                {conversation?.is_group && !isMe && (
+                                                    <span className="block text-[10px] font-bold text-indigo-500 mb-0.5">
+                                                        {getSenderName(msg.sender_id)}
+                                                    </span>
+                                                )}
                                                 {msg.text}
                                                 <span className={cn(
                                                     "text-[9px] block mt-1 opacity-70 text-right",
                                                     isMe ? "text-indigo-100" : "text-slate-400"
                                                 )}>
-                                                    12:30
+                                                    {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </div>

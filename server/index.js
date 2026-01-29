@@ -1428,6 +1428,84 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     }
 });
 
+// CREATE GROUP CHAT
+app.post('/api/conversations/group', requireAuth, async (req, res) => {
+    const { name, participants, image } = req.body;
+    const { user, organizationId } = req.auth;
+
+    if (!name || !participants || !Array.isArray(participants) || participants.length === 0) {
+        return res.status(400).json({ error: "Name and Participants required" });
+    }
+
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // 1. Create Conversation
+        const convRes = await client.query(`
+            INSERT INTO conversations (
+                organization_id, "professional_id", "status", "last_message_at", "is_group", "name", "image", "admin_ids"
+            ) VALUES ($1, $2, 'active', NOW(), true, $3, $4, $5)
+            RETURNING *
+        `, [organizationId, user.id, name, image || null, [user.id]]);
+        const conversation = convRes.rows[0];
+
+        // 2. Add Participants (Members)
+        // Add Creator
+        await client.query(`
+            INSERT INTO conversation_members (conversation_id, user_id, role)
+            VALUES ($1, $2, 'admin')
+        `, [conversation.id, user.id]);
+
+        // Add Others
+        for (const partId of participants) {
+            if (partId !== user.id) {
+                await client.query(`
+                    INSERT INTO conversation_members (conversation_id, user_id, role)
+                    VALUES ($1, $2, 'member')
+                ON CONFLICT DO NOTHING
+                `, [conversation.id, partId]);
+            }
+        }
+
+        await client.query('COMMIT');
+        res.json(conversation);
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error("Create Group Error:", error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        client.release();
+    }
+});
+
+// FETCH CONVERSATIONS (DMs + Groups)
+app.get('/api/conversations/me', requireAuth, async (req, res) => {
+    const { user, organizationId } = req.auth;
+
+    try {
+        const { rows } = await pool.query(`
+            SELECT DISTINCT c.*
+            FROM conversations c
+            LEFT JOIN conversation_members cm ON cm.conversation_id = c.id
+            WHERE c.organization_id = $1
+            AND (
+                c.professional_id = $2 
+                OR c.recipient_professional_id::text = $2 
+                OR cm.user_id = $2
+            )
+            ORDER BY c.last_message_at DESC
+        `, [organizationId, user.id]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Fetch Conversations Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // GENERIC UPDATE
 app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     const { entity, id } = req.params;
