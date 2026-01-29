@@ -91,6 +91,7 @@ export function CalendarGrid({
                             dateKey={cell.dateKey}
                             isCurrentMonth={cell.isCurrentMonth}
                             dayData={data[cell.dateKey]}
+                            categories={categories}
                             selectedColor={selectedColor}
                             onUpdateDay={onUpdateDay}
                             onClearDay={onClearDay}
