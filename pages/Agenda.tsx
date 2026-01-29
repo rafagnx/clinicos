@@ -155,7 +155,7 @@ export default function Agenda() {
         const specialty = (p.specialty || "").toLowerCase();
         // Allow: HOF, Biomédico, Doutor, Esteticista, Dentista
         // Removed "profissional" as it's too generic and includes staff
-        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista", "profissional"].some(r => role.includes(r) || specialty.includes(r));
       });
     },
   });
