@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   const renderWidget = (id) => {
     switch (id) {
-      case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} />;
+      case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
       case "financial_summary": return <FinancialSummaryWidget appointments={safeAppointments} />;
       case "chat_activity": return <ChatActivityWidget conversations={[]} currentUserEmail={user?.email} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;

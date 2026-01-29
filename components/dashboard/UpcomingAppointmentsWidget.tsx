@@ -8,7 +8,7 @@ import { ptBR } from "date-fns/locale";
 import { useOutletContext } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-export default function UpcomingAppointmentsWidget({ appointments, patients }) {
+export default function UpcomingAppointmentsWidget({ appointments, patients, professionals }) {
     const { isDark } = useOutletContext<{ isDark: boolean }>();
     const today = format(new Date(), "yyyy-MM-dd");
     const upcoming = appointments
@@ -32,7 +32,9 @@ export default function UpcomingAppointmentsWidget({ appointments, patients }) {
                     {upcoming.map((apt) => {
                         const patient = patients.find(p => p.id === apt.patient_id);
                         const patientName = apt.patient?.full_name || patient?.full_name || apt.patient_name || "Paciente sem nome";
-                        const professionalName = apt.professional?.full_name || apt.professional_name;
+
+                        const professional = professionals?.find(p => p.id === apt.professional_id);
+                        const professionalName = apt.professional?.full_name || apt.professional_name || professional?.full_name || professional?.name;
 
                         return (
                             <div key={apt.id} className={cn(
