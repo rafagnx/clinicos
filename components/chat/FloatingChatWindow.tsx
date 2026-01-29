@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 export default function FloatingChatWindow({ recipient, currentUser, onClose, isMinimized, onToggleMinimize }) {
     const queryClient = useQueryClient();
@@ -108,16 +109,17 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         }
     };
 
-    const addEmoji = (emoji: string) => {
-        setInputText(prev => prev + emoji);
+    const [showEmoji, setShowEmoji] = useState(false);
+
+    const onEmojiClick = (emojiData: EmojiClickData) => {
+        setInputText((prev) => prev + emojiData.emoji);
+        // Don't close popover immediately for multiple emojis
     };
 
     if (!recipient) return null;
 
     // Helper to get display name safely
     const displayName = recipient.name || recipient.full_name || recipient.email || "Usuário";
-
-    const commonEmojis = ["👍", "👋", "🎉", "🔥", "❤️", "😂", "😮", "😢", "🙏", "✅", "❌", "📅"];
 
     return (
         <AnimatePresence>
@@ -195,10 +197,9 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                             )}
                         </div>
 
-                        {/* Footer */}
                         <div className="p-3 bg-white dark:bg-[#1C2333] border-t dark:border-slate-800">
-                            <form onSubmit={handleSend} className="flex items-center gap-2">
-                                <Popover>
+                            <form onSubmit={handleSend} className="flex items-center gap-2 relative">
+                                <Popover open={showEmoji} onOpenChange={setShowEmoji}>
                                     <PopoverTrigger asChild>
                                         <Button
                                             type="button"
@@ -206,22 +207,17 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                                             size="icon"
                                             className="h-8 w-8 text-slate-400 hover:text-indigo-500 shrink-0"
                                         >
-                                            <Smile className="w-4 h-4" />
+                                            <Smile className="w-5 h-5" />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-64 p-2" sideOffset={10} side="top" align="start">
-                                        <div className="grid grid-cols-6 gap-2">
-                                            {commonEmojis.map(emoji => (
-                                                <button
-                                                    key={emoji}
-                                                    className="text-xl hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 rounded-md transition-colors"
-                                                    onClick={() => addEmoji(emoji)}
-                                                    type="button"
-                                                >
-                                                    {emoji}
-                                                </button>
-                                            ))}
-                                        </div>
+                                    <PopoverContent className="w-auto p-0 border-none shadow-xl z-50" side="top" align="start">
+                                        <EmojiPicker
+                                            onEmojiClick={onEmojiClick}
+                                            width={300}
+                                            height={400}
+                                            searchDisabled={false}
+                                            skinTonesDisabled
+                                        />
                                     </PopoverContent>
                                 </Popover>
 
@@ -230,12 +226,12 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Digite sua mensagem..."
-                                    className="h-9 py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-lg"
+                                    className="h-9 py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border-0 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-lg flex-1"
                                     autoFocus
                                 />
                                 <Button
                                     type="submit"
-                                    disabled={!inputText.trim()}
+                                    disabled={!inputText.trim() || sendMessageMutation.isPending}
                                     size="icon"
                                     className={cn(
                                         "h-8 w-8 shrink-0 transition-all",

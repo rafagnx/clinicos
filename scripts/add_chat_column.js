@@ -7,21 +7,24 @@ const client = new Client({
     ssl: { rejectUnauthorized: false }
 });
 
-async function inspect() {
+async function migrate() {
     try {
         await client.connect();
 
-        console.log('\n--- CONVERSATIONS SCHEMA ---');
+        console.log('\n--- ADDING COLUMN: recipient_professional_id ---');
+        await client.query(`
+            ALTER TABLE conversations 
+            ADD COLUMN IF NOT EXISTS recipient_professional_id INTEGER REFERENCES professionals(id);
+        `);
+        console.log('Column added successfully.');
+
+        console.log('\n--- VERIFY SCHEMA ---');
         const cols = await client.query(`
             SELECT column_name, data_type 
             FROM information_schema.columns 
             WHERE table_name = 'conversations'
         `);
         console.table(cols.rows);
-
-        console.log('\n--- RECENT CONVERSATIONS ---');
-        const rows = await client.query('SELECT * FROM conversations ORDER BY created_at DESC LIMIT 5');
-        console.log(rows.rows);
 
     } catch (err) {
         console.error('Error:', err);
@@ -30,4 +33,4 @@ async function inspect() {
     }
 }
 
-inspect();
+migrate();
