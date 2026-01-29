@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Search, MessageSquare, MoreVertical, Phone, Mail, MapPin, Circle, Plus, Users } from "lucide-react";
 import FloatingChatWindow from "@/components/chat/FloatingChatWindow";
 import CreateGroupDialog from "@/components/chat/CreateGroupDialog";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Chat() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
@@ -33,13 +34,21 @@ export default function Chat() {
   const { data: myConversations = [], refetch: refetchGroups } = useQuery({
     queryKey: ["my-conversations"],
     queryFn: async () => {
-      const token = localStorage.getItem("token"); // ClinicOS specific
-      // Use standard fetch for custom route
+      // Get Token correctly (Supabase or Fallback)
+      let token = null;
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.access_token) {
+        token = data.session.access_token;
+      } else {
+        token = localStorage.getItem("clinicos-token");
+      }
+
+      if (!token) return [];
+
       const res = await fetch("/api/conversations/me", {
-        headers: { "Authorization": `Bearer ${token}` } // Only if needed, otherwise cookie
-        // Actually base44 handles auth automatically for most parts, but for custom fetch we might need credentials: include
+        headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!res.ok) return []; // Fallback
+      if (!res.ok) return [];
       return res.json();
     }
   });
