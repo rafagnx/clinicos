@@ -206,17 +206,18 @@ export default function Chat() {
             )
           })}
         </div>
-
-        {/* Floating Window */}
-        {activeRecipient && currentUser && (
-          <FloatingChatWindow
-            recipient={activeRecipient}
-            currentUser={currentUser}
-            onClose={() => setActiveRecipient(null)}
-            isMinimized={isMinimized}
-            onToggleMinimize={() => setIsMinimized(!isMinimized)}
-          />
-        )}
       </div>
-      );
+
+      {/* Floating Window */}
+      {activeRecipient && currentUser && (
+        <FloatingChatWindow
+          recipient={activeRecipient}
+          currentUser={currentUser}
+          onClose={() => setActiveRecipient(null)}
+          isMinimized={isMinimized}
+          onToggleMinimize={() => setIsMinimized(!isMinimized)}
+        />
+      )}
+    </div>
+  );
 }

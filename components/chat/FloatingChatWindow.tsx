@@ -49,6 +49,19 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
         }
     }, [messages, isMinimized]);
 
+    // Fetch Sender Details for Group Chat
+    const { data: professionals = [] } = useQuery({
+        queryKey: ["professionals-list"],
+        queryFn: () => base44.entities.Professional.list(),
+        enabled: !!conversation?.is_group
+    });
+
+    const getSenderName = (id: string) => {
+        if (id === currentUser.id) return "Você";
+        const prof = professionals.find(p => p.id === id || p.user_id === id);
+        return prof?.name || prof?.full_name || "Membro";
+    };
+
     // 3. Send Mutation
     const sendMessageMutation = useMutation<any, Error, string>({
         mutationFn: async (text: string) => {
