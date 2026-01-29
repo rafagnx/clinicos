@@ -112,7 +112,7 @@ const getAppointmentCardColor = (apt, isDark) => {
   ];
 
   // Hash the ID to pick a stable color
-  const hash = (apt.professional_id || "").split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = String(apt.professional_id || "").split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return vibrantColors[hash % vibrantColors.length];
 };
 
