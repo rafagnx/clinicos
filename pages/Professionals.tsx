@@ -420,16 +420,16 @@ export default function Professionals() {
             </div>
 
             <div>
-              <Label>{formData.role_type === "profissional" ? "Especialidade *" : "Cargo/Função"}</Label>
+              <Label>{(formData.role_type === "profissional" || formData.role_type === "hof" || formData.role_type === "biomedico") ? "Especialidade *" : "Cargo/Função"}</Label>
               <Input
                 value={formData.specialty}
                 onChange={(e) => setFormData(p => ({ ...p, specialty: e.target.value }))}
-                placeholder={formData.role_type === "profissional" ? "Ex: Cardiologia" : "Ex: Recepcionista"}
-                required={formData.role_type === "profissional"}
+                placeholder={(formData.role_type === "profissional" || formData.role_type === "hof" || formData.role_type === "biomedico") ? "Ex: Cardiologia" : "Ex: Recepcionista"}
+                required={(formData.role_type === "profissional" || formData.role_type === "hof" || formData.role_type === "biomedico")}
               />
             </div>
 
-            {formData.role_type === "profissional" && (
+            {(formData.role_type === "profissional" || formData.role_type === "hof" || formData.role_type === "biomedico") && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Número do Conselho</Label>
@@ -468,7 +468,7 @@ export default function Professionals() {
               />
             </div>
 
-            {formData.role_type === "profissional" && (
+            {(formData.role_type === "profissional" || formData.role_type === "hof" || formData.role_type === "biomedico") && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Cor na Agenda</Label>
