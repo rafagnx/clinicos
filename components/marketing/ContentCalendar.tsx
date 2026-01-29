@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { CategoryColor } from '@/types/calendar';
+import { CategoryColor, CalendarData, DayData } from '@/types/calendar';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarGrid } from './CalendarGrid';
@@ -11,6 +11,7 @@ import { TimelineView } from './TimelineView';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, GanttChartSquare } from 'lucide-react';
 import { getHolidays } from '@/utils/holidays';
+import { ConflictWidget } from './ConflictWidget';
 
 export function ContentCalendar() {
     const [currentMonth, setCurrentMonth] = useState(0); // January
@@ -27,37 +28,52 @@ export function ContentCalendar() {
 
     // Prepare Calendar Grid Data (Including Holidays)
     const calendarData = useMemo(() => {
-        const data: any = {};
+        const data: CalendarData = {};
 
         // 1. Add Events
         events.forEach((e: any) => {
             const dateKey = e.date.split('T')[0];
-            data[dateKey] = {
+            if (!data[dateKey]) {
+                data[dateKey] = [];
+            }
+            data[dateKey].push({
                 color: e.category as CategoryColor,
                 text: e.content
-            };
+            });
         });
 
-        // 2. Add Holidays if no event on that day
+        // 2. Add Holidays
         const holidays = getHolidays(currentYear);
         holidays.forEach(h => {
-            // Correctly format date to YYYY-MM-DD local
             const y = h.date.getFullYear();
             const m = String(h.date.getMonth() + 1).padStart(2, '0');
             const d = String(h.date.getDate()).padStart(2, '0');
             const dateKey = `${y}-${m}-${d}`;
 
             if (!data[dateKey]) {
-                data[dateKey] = {
-                    color: 'holiday',
-                    text: h.name,
-                    isFixed: true // Flag to prevent editing if we wanted
-                };
+                data[dateKey] = [];
             }
+            // Add holiday as an event
+            data[dateKey].push({
+                color: 'holiday',
+                text: h.name,
+                // isFixed: true 
+            });
         });
 
         return data;
     }, [events, currentYear]);
+
+    // Calculate Conflicts
+    const conflicts = useMemo(() => {
+        return Object.entries(calendarData)
+            .filter(([_, dayEvents]) => dayEvents.length > 1)
+            .map(([date, dayEvents]) => ({
+                date,
+                events: dayEvents
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+    }, [calendarData]);
 
     // Notes logic - fallback to localStorage
     const [notes, setNotes] = useState(localStorage.getItem('marketing-notes') || '');
@@ -80,31 +96,25 @@ export function ContentCalendar() {
         const existing = events.find((e: any) => e.date.startsWith(dateKey));
 
         if (data.text || data.color) {
-            if (existing) {
-                updateEvent({
-                    id: existing.id,
-                    data: {
-                        date: dateKey,
-                        content: data.text,
-                        category: data.color || 'gray'
-                    }
-                });
-            } else {
-                createEvent({
-                    date: dateKey,
-                    content: data.text,
-                    category: data.color || 'gray',
-                    organization_id: '' // backend sets this
-                });
-            }
+            // ALWAYS CREATE for now to support MULTIPLE EVENTS (unless editing specific ID, which requires UI change)
+            // But wait, if I want to conflict, I should ADD. 
+            // If I want to "Edit" the single one, I should update. 
+            // The "Edit" dialog in CalendarDay will need to distinguish Add vs Edit.
+            // For now, the handleUpdateDay interface implies "Update the DAY". 
+            // Let's modify logic: always CREATE a new event with the data
+            createEvent({
+                date: dateKey,
+                content: data.text,
+                category: data.color || 'gray',
+                organization_id: ''
+            });
         }
     };
 
     const handleClearDay = (dateKey: string) => {
-        const existing = events.find((e: any) => e.date.startsWith(dateKey));
-        if (existing) {
-            deleteEvent(existing.id);
-        }
+        // Delete ALL events on that day
+        const dayEvents = events.filter((e: any) => e.date.startsWith(dateKey));
+        dayEvents.forEach((e: any) => deleteEvent(e.id));
     };
 
     const categories = [
@@ -169,6 +179,9 @@ export function ContentCalendar() {
                             </div>
                         </div>
 
+                        {/* CONFLICT WIDGET */}
+                        <ConflictWidget conflicts={conflicts} />
+
                         {/* Summary Widget */}
                         <MonthSummary
                             currentMonth={currentMonth}
@@ -191,6 +204,7 @@ export function ContentCalendar() {
                                     month={currentMonth}
                                     year={currentYear}
                                     data={calendarData}
+                                    categories={categories}
                                     selectedColor={selectedColor}
                                     onUpdateDay={handleUpdateDay}
                                     onClearDay={handleClearDay}

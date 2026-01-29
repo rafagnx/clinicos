@@ -21,7 +21,7 @@ export interface DayData {
 }
 
 export interface CalendarData {
-    [key: string]: DayData; // key format: "YYYY-MM-DD"
+    [key: string]: DayData[]; // key format: "YYYY-MM-DD"
 }
 
 export interface MonthData {
