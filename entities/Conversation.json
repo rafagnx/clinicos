@@ -1,0 +1,44 @@
+{
+    "entity": "Conversation",
+    "fields": [
+        {
+            "name": "id",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true
+        },
+        {
+            "name": "professional_id",
+            "type": "int",
+            "required": true,
+            "references": "Professional"
+        },
+        {
+            "name": "patient_id",
+            "type": "int",
+            "required": false,
+            "references": "Patient"
+        },
+        {
+            "name": "recipient_professional_id",
+            "type": "int",
+            "required": false,
+            "references": "Professional"
+        },
+        {
+            "name": "status",
+            "type": "text",
+            "defaultValue": "active"
+        },
+        {
+            "name": "created_at",
+            "type": "datetime",
+            "defaultValue": "now()"
+        },
+        {
+            "name": "last_message_at",
+            "type": "datetime",
+            "defaultValue": "now()"
+        }
+    ]
+}

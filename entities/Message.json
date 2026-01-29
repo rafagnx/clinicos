@@ -1,0 +1,38 @@
+{
+    "entity": "Message",
+    "fields": [
+        {
+            "name": "id",
+            "type": "int",
+            "primaryKey": true,
+            "autoIncrement": true
+        },
+        {
+            "name": "conversation_id",
+            "type": "int",
+            "required": true,
+            "references": "Conversation"
+        },
+        {
+            "name": "sender_id",
+            "type": "int",
+            "required": true,
+            "references": "Professional"
+        },
+        {
+            "name": "text",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "created_date",
+            "type": "datetime",
+            "defaultValue": "now()"
+        },
+        {
+            "name": "read",
+            "type": "boolean",
+            "defaultValue": false
+        }
+    ]
+}
