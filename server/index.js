@@ -563,16 +563,7 @@ const initSchema = async () => {
                     "organization_id" TEXT,
                     "created_at" TIMESTAMP DEFAULT NOW()
                 );
-                CREATE TABLE IF NOT EXISTS "calendar_events" (
-                    "id" SERIAL PRIMARY KEY,
-                    "organization_id" TEXT NOT NULL,
-                    "date" DATE NOT NULL,
-                    "content" TEXT,
-                    "category" VARCHAR(50),
-                    "platform" VARCHAR(50),
-                    "status" VARCHAR(50) DEFAULT 'planned',
-                    "created_at" TIMESTAMP DEFAULT NOW()
-                );
+
             `);
 
             // 2. Add organization_id to key tables if missing

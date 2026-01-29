@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { base44 } from '@/lib/base44Client';
+import { supabase } from '@/lib/supabaseClient';
 import { format } from 'date-fns';
 
 export interface CalendarEvent {
@@ -20,19 +21,15 @@ const API_URL = '/api/marketing/events';
 // API Client Wrapper (Since base44Client might not have this module yet)
 const marketingApi = {
     list: async (start?: string, end?: string) => {
-        // We assume the cookie/auth header is sent automatically by the browser/axios
-        // or by base44 client interceptors if configured globally.
-        // If using fetch locally:
-        const token = localStorage.getItem('supabase.auth.token')
-            ? JSON.parse(localStorage.getItem('supabase.auth.token')!).currentSession.access_token
-            : null;
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
 
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        // Also try to get from base44 client internal state if possible, 
-        // but standard fetch with updated server auth logic (checking header) is safest.
-        // NOTE: The server logic check `req.headers.authorization` OR cookie.
+        // Add Org ID
+        const orgId = localStorage.getItem('active-org-id');
+        if (orgId) headers['x-organization-id'] = orgId;
 
         const query = new URLSearchParams();
         if (start) query.append('start', start);
@@ -44,11 +41,14 @@ const marketingApi = {
     },
 
     create: async (data: Partial<CalendarEvent>) => {
-        const token = localStorage.getItem('supabase.auth.token')
-            ? JSON.parse(localStorage.getItem('supabase.auth.token')!).currentSession.access_token
-            : null;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const orgId = localStorage.getItem('active-org-id');
+        if (orgId) headers['x-organization-id'] = orgId;
 
         const res = await fetch(API_URL, {
             method: 'POST',
@@ -60,11 +60,14 @@ const marketingApi = {
     },
 
     update: async (id: number, data: Partial<CalendarEvent>) => {
-        const token = localStorage.getItem('supabase.auth.token')
-            ? JSON.parse(localStorage.getItem('supabase.auth.token')!).currentSession.access_token
-            : null;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const orgId = localStorage.getItem('active-org-id');
+        if (orgId) headers['x-organization-id'] = orgId;
 
         const res = await fetch(`${API_URL}/${id}`, {
             method: 'PUT',
@@ -76,11 +79,14 @@ const marketingApi = {
     },
 
     delete: async (id: number) => {
-        const token = localStorage.getItem('supabase.auth.token')
-            ? JSON.parse(localStorage.getItem('supabase.auth.token')!).currentSession.access_token
-            : null;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
         const headers: any = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const orgId = localStorage.getItem('active-org-id');
+        if (orgId) headers['x-organization-id'] = orgId;
 
         const res = await fetch(`${API_URL}/${id}`, {
             method: 'DELETE',
