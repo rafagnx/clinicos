@@ -551,6 +551,11 @@ export default function Agenda() {
                             isDark ? "text-slate-100" : "text-slate-800"
                           )}>
                             {apt.patient?.full_name?.split(" ")[0] || "Paciente"}
+                            {apt.professional && (
+                              <span className={cn("text-[10px] ml-1 opacity-75 font-normal", isDark ? "text-slate-300" : "text-slate-600")}>
+                                - {apt.professional.name || apt.professional.full_name || "Dr(a)."}
+                              </span>
+                            )}
                           </span>
                         </div>
 

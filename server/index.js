@@ -496,6 +496,32 @@ const initSchema = async () => {
                     end_time TIMESTAMP NOT NULL,
                     created_at TIMESTAMP DEFAULT NOW()
                 );
+                
+                -- Ensure appointments has all required columns
+                DO $$
+                BEGIN
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "patient_id" INTEGER;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "professional_id" TEXT; -- Changed to TEXT to match UUIDs if needed, or maintain consistency
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "status" TEXT DEFAULT 'agendado';
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "type" TEXT DEFAULT 'Compromisso';
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "procedure_name" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "appointments" ADD COLUMN "notes" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                         ALTER TABLE "appointments" ADD COLUMN "organization_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                END $$;
             `);
 
             await client.query(`
