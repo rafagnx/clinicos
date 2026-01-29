@@ -1638,6 +1638,10 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         if (data.full_name !== undefined) delete data.full_name;
     }
 
+    // DATA FIX: Cleanup Joined Objects (Appointments, etc)
+    const joinedFields = ['patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name'];
+    joinedFields.forEach(field => delete data[field]);
+
     try {
         // SECURITY FIX: Filter invalid columns
         const keys = Object.keys(data).filter(key => isValidColumn(key));
