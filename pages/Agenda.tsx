@@ -489,15 +489,24 @@ export default function Agenda() {
               let left = "0";
               let width = "100%";
 
-              if (view === "week" && apt.date) {
-                const [y, mm, d] = apt.date.split("-").map(Number); // parse date string parts
-                const localDate = new Date(y, mm - 1, d); // Construct date
-                const dayIndex = localDate.getDay(); // 0 (Sun) - 6 (Sat). Our week starts on Sun (0) per startOfWeek logic above.
+              if (view === "week") {
+                // Fix: Handle cases where date is ISO or missing. extracting from start_time if needed.
+                let dateStr = apt.date;
+                if (!dateStr && apt.start_time) {
+                  dateStr = apt.start_time.split("T")[0];
+                }
 
-                // Adjust for week start 0
-                const colWidth = 100 / 7;
-                left = `${dayIndex * colWidth}%`;
-                width = `${colWidth}%`;
+                if (dateStr) {
+                  // Handle "2026-01-29T..." vs "2026-01-29"
+                  const cleanDate = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
+                  const [y, mm, d] = cleanDate.split("-").map(Number);
+                  const localDate = new Date(y, mm - 1, d);
+                  const dayIndex = localDate.getDay(); // 0 (Sun) - 6 (Sat)
+
+                  const colWidth = 100 / 7;
+                  left = `${dayIndex * colWidth}%`;
+                  width = `${colWidth}%`;
+                }
               }
 
               // Adjust layout to look like "chips"
