@@ -271,28 +271,27 @@ export default function AppointmentForm({
         enabled: !professionals || professionals.length === 0
     });
 
+    // Helper to identify clinical professionals
+    const isClinical = (p: any) => {
+        const role = (p.role_type || "").toLowerCase();
+        const specialty = (p.specialty || "").toLowerCase();
+        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+    };
+
     const activeProfessionals = React.useMemo(() => {
         const source = professionals && professionals.length > 0 ? professionals : (fetchedProfessionals || []);
-        // Strict filter for clinical professionals only
-        return source.filter(p => {
-            const role = (p.role_type || "").toLowerCase();
-            const specialty = (p.specialty || "").toLowerCase();
-            return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
-        });
+        return source.filter(isClinical);
     }, [professionals, fetchedProfessionals]);
 
-    // Query for secretaries specifically
+    // Query for all staff to find secretaries
     const { data: allStaff = [] } = useQuery({
         queryKey: ["all-staff"],
         queryFn: () => base44.entities.Professional.list()
     });
 
+    // Secretaries = All staff who are NOT clinical
     const secretaries = React.useMemo(() => {
-        return allStaff.filter(p => {
-            const role = (p.role_type || "").toLowerCase();
-            const specialty = (p.specialty || "").toLowerCase();
-            return ["secretária", "secretaria", "recepcionista", "atendente", "admin", "administrador"].some(r => role.includes(r) || specialty.includes(r));
-        });
+        return allStaff.filter(p => !isClinical(p));
     }, [allStaff]);
 
     const { data: customProcedures = [] } = useQuery({
@@ -317,7 +316,6 @@ export default function AppointmentForm({
         enabled: step === 1 && open
     });
 
-    // Calculate End Time
     // Calculate End Time
     const endTime = React.useMemo(() => {
         if (!formData.date || !formData.time || !formData.duration) return "--:--";
@@ -344,6 +342,9 @@ export default function AppointmentForm({
         mutationFn: (data: any) => {
             if (!data.date || !data.time || !data.duration) {
                 throw new Error("Missing required fields");
+            }
+            if (!data.scheduled_by) {
+                throw new Error("Informe quem realizou o agendamento");
             }
 
             const startDateTime = new Date(data.date);
@@ -698,12 +699,38 @@ export default function AppointmentForm({
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Agendado por</Label>
-                                <Input
-                                    placeholder="Nome da atendente (opcional)"
-                                    value={formData.scheduled_by}
-                                    onChange={(e) => setFormData(p => ({ ...p, scheduled_by: e.target.value }))}
-                                />
+                                <Label>Agendado por *</Label>
+                                {secretaries.length > 0 ? (
+                                    <Select
+                                        value={formData.scheduled_by}
+                                        onValueChange={(v) => setFormData(p => ({ ...p, scheduled_by: v }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione quem agendou" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {secretaries.map(sec => (
+                                                <SelectItem key={sec.id} value={sec.full_name || sec.name || "Secretária"}>
+                                                    {sec.full_name || sec.name}
+                                                </SelectItem>
+                                            ))}
+                                            <SelectItem value="other_manual">Outro (Digitar)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        placeholder="Digite seu nome (Obrigatório)"
+                                        value={formData.scheduled_by}
+                                        onChange={(e) => setFormData(p => ({ ...p, scheduled_by: e.target.value }))}
+                                    />
+                                )}
+                                {formData.scheduled_by === "other_manual" && (
+                                    <Input
+                                        placeholder="Digite o nome..."
+                                        className="mt-2"
+                                        onChange={(e) => setFormData(p => ({ ...p, scheduled_by: e.target.value }))}
+                                    />
+                                )}
                             </div>
 
                             <div className="space-y-2">
