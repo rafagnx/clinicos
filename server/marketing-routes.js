@@ -70,8 +70,8 @@ export const createMarketingRoutes = (pool, requireAuth) => {
         const { date, content, category, platform, status, notes } = req.body;
 
         // Simple Validation
-        if (!date || !content) {
-            return res.status(400).json({ error: "Date and Content are required" });
+        if (!date) {
+            return res.status(400).json({ error: "Date is required" });
         }
 
         try {

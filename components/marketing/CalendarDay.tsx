@@ -106,8 +106,9 @@ export function CalendarDay({
                 <DialogContent className="sm:max-w-md animate-scale-in">
                     <DialogHeader>
                         <DialogTitle>Editar dia {day}</DialogTitle>
+                        <div id="dialog-desc" className="sr-only">Edite a cor e o texto do evento</div>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-4 py-4" aria-describedby="dialog-desc">
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Cor</label>
                             <div className="flex flex-wrap gap-2">
