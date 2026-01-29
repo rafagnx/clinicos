@@ -1,5 +1,15 @@
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/lib/base44Client";
+import { useOutletContext } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Search, MessageSquare, MoreVertical, Phone, Mail, MapPin, Circle, Plus, Users } from "lucide-react";
+import FloatingChatWindow from "@/components/chat/FloatingChatWindow";
 import CreateGroupDialog from "@/components/chat/CreateGroupDialog";
-import { Plus, Users } from "lucide-react";
 
 export default function Chat() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
