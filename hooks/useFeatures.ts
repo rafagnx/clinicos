@@ -28,6 +28,12 @@ export const useFeatures = () => {
             return true;
         }
 
+        // Hardcode fallback for Orofacial Clinic (temporary fix for visibility)
+        const activeOrgId = localStorage.getItem("active-org-id");
+        if (activeOrgId === 'bc550e05-d94f-461e-92da-bd3e3c8e2460' && featureName === 'marketing') {
+            return true;
+        }
+
         if (!organization) return false;
 
         // 2. Check metadata

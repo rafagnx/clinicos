@@ -180,9 +180,7 @@ export default function Professionals() {
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: formData });
     } else {
-      // OLD FLOW DEPRECATED - Use InviteDialog instead
-      // But keeping fallback just in case called directly
-      console.warn("Manual create called??");
+      createMutation.mutate(formData);
     }
   };
 
@@ -215,13 +213,26 @@ export default function Professionals() {
             <p className="text-slate-500 mt-1">{professionals.length} membros cadastrados</p>
           </div>
           {(isAdmin || professionals.length === 0) && (
-            <Button
-              onClick={() => setIsInviteOpen(true)}
-              className="gap-2 bg-blue-600 hover:bg-blue-700"
-            >
-              <UserPlus className="w-4 h-4" />
-              Adicionar Membro
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setIsInviteOpen(true)}
+                variant="outline"
+                className="gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Convidar por Email
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditing(null);
+                  setIsFormOpen(true);
+                }}
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                <UserPlus className="w-4 h-4" />
+                Novo Membro (Direto)
+              </Button>
+            </div>
           )}
         </div>
 
