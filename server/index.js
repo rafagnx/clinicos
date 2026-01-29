@@ -661,6 +661,7 @@ const initSchema = async () => {
             }
 
             // 7. Ensure CHAT Columns (Fix 500 Error)
+            // Using IF NOT EXISTS to prevent race conditions during concurrent server starts
             const chatCols = [
                 { name: 'professional_id', type: 'TEXT' }, // Stores User UUID (Sender)
                 { name: 'recipient_professional_id', type: 'INTEGER' }, // Stores Professional ID (Target)
@@ -669,9 +670,12 @@ const initSchema = async () => {
                 { name: 'organization_id', type: 'TEXT' }
             ];
             for (const col of chatCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'conversations' AND column_name = $1;`, [col.name]);
-                if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "conversations" ADD COLUMN "${col.name}" ${col.type}; `);
+                // Postgres 9.6+ supports IF NOT EXISTS
+                await client.query(`ALTER TABLE "conversations" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+
+                // TYPE FIX: Ensure professional_id is TEXT
+                if (col.name === 'professional_id') {
+                    await client.query(`ALTER TABLE "conversations" ALTER COLUMN "professional_id" TYPE TEXT USING professional_id::text;`);
                 }
             }
 
@@ -685,9 +689,11 @@ const initSchema = async () => {
                 { name: 'organization_id', type: 'TEXT' }
             ];
             for (const col of msgCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'messages' AND column_name = $1;`, [col.name]);
-                if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "messages" ADD COLUMN "${col.name}" ${col.type};`);
+                await client.query(`ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+
+                // TYPE FIX: Ensure sender_id is TEXT (if it was created as INTEGER previously)
+                if (col.name === 'sender_id') {
+                    await client.query(`ALTER TABLE "messages" ALTER COLUMN "sender_id" TYPE TEXT USING sender_id::text;`);
                 }
             }
 
