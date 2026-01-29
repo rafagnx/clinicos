@@ -299,14 +299,18 @@ export default function Professionals() {
                             {getRoleLabel(prof.role_type)}
                           </Badge>
 
-                          {prof.is_admin && (
-                            <div className="relative">
-                              <div className="absolute inset-0 bg-amber-400 blur-md opacity-40 animate-pulse rounded-full"></div>
-                              <Badge className="relative text-[10px] bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 text-amber-950 font-black border-0 shadow-sm px-2 h-5">
-                                ⭐ ADMIN
-                              </Badge>
-                            </div>
-                          )}
+                          {((prof.role_type || "").toLowerCase().includes("admin") ||
+                            (prof.role_type || "").toLowerCase().includes("gerente") ||
+                            (prof.role_type || "").toLowerCase().includes("owner") ||
+                            prof.email === "rafamarketingdb@gmail.com" ||
+                            prof.is_admin) && (
+                              <div className="relative ml-2">
+                                <div className="absolute inset-0 bg-amber-400 blur-md opacity-40 animate-pulse rounded-full"></div>
+                                <Badge className="relative text-[10px] bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-500 text-amber-950 font-black border-0 shadow-sm px-2 h-5 flex items-center gap-1">
+                                  <span className="text-[10px]">⭐</span> ADMIN
+                                </Badge>
+                              </div>
+                            )}
                         </div>
 
                         {prof.specialty && (

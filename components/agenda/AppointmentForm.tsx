@@ -295,7 +295,12 @@ export default function AppointmentForm({
             const role = (p.role_type || "").toLowerCase();
             const specialty = (p.specialty || "").toLowerCase();
             // Explicitly allow these roles as requested
-            return ["secretária", "secretaria", "recepcionista", "admin", "administrador", "gerente", "management"].some(r => role.includes(r) || specialty.includes(r));
+            const isAllowedRole = ["secretária", "secretaria", "recepcionista", "admin", "administrador", "gerente", "management"].some(r => role.includes(r) || specialty.includes(r));
+
+            // Explicitly exclude "Rafa" (Admin) as requested
+            const isRafa = (p.full_name || p.name || "").toLowerCase().includes("rafa");
+
+            return isAllowedRole && !isRafa;
         });
     }, [allStaff]);
 
