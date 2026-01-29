@@ -12,10 +12,15 @@ import FloatingChatWindow from "@/components/chat/FloatingChatWindow";
 import CreateGroupDialog from "@/components/chat/CreateGroupDialog";
 import { supabase } from "@/lib/supabaseClient";
 
+import { useChat } from "@/context/ChatContext"; // Import Context
+
 export default function Chat() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
-  const [activeRecipient, setActiveRecipient] = useState(null);
-  const [isMinimized, setIsMinimized] = useState(false);
+  // Remove local state
+  // const [activeRecipient, setActiveRecipient] = useState(null);
+  // const [isMinimized, setIsMinimized] = useState(false);
+  const { openChat, activeRecipient } = useChat(); // Use Context
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
@@ -88,7 +93,7 @@ export default function Chat() {
         currentUser={currentUser}
         onGroupCreated={(group) => {
           refetchGroups();
-          setActiveRecipient(group); // Auto open
+          openChat(group); // Use Context
         }}
       />
 
@@ -135,8 +140,7 @@ export default function Chat() {
                   activeRecipient?.id === group.id ? "ring-2 ring-indigo-500" : ""
                 )}
                 onClick={() => {
-                  setActiveRecipient(group);
-                  setIsMinimized(false);
+                  openChat(group); // Use Context
                 }}
               >
                 <div className="p-5 flex items-start gap-4">
@@ -175,8 +179,7 @@ export default function Chat() {
                   activeRecipient?.id === prof.id ? "ring-2 ring-indigo-500" : ""
                 )}
                 onClick={() => {
-                  setActiveRecipient(prof);
-                  setIsMinimized(false);
+                  openChat(prof); // Use Context
                 }}
               >
                 <div className="p-5 flex items-start gap-4">
@@ -234,16 +237,7 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Floating Window */}
-      {activeRecipient && currentUser && (
-        <FloatingChatWindow
-          recipient={activeRecipient}
-          currentUser={currentUser}
-          onClose={() => setActiveRecipient(null)}
-          isMinimized={isMinimized}
-          onToggleMinimize={() => setIsMinimized(!isMinimized)}
-        />
-      )}
+      {/* REMOVED: Floating Window Local Render */}
     </div>
   );
 }

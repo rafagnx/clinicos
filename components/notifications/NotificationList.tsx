@@ -24,8 +24,11 @@ const getNotificationIcon = (type: string) => {
     }
 };
 
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+
 export default function NotificationList({ notifications, onMarkAsRead, onDelete, user }: any) {
     const queryClient = useQueryClient();
+    const navigate = useNavigate(); // Initialize hook
 
     const markAsReadMutation = useMutation({
         mutationFn: onMarkAsRead,
@@ -58,6 +61,19 @@ export default function NotificationList({ notifications, onMarkAsRead, onDelete
     }
 
     const unreadCount = notifications.filter((n: any) => !n.read).length;
+
+    const handleNotificationClick = (notification: any) => {
+        if (!notification.read) {
+            markAsReadMutation.mutate(notification.id);
+        }
+
+        // Handle navigation if link exists
+        if (notification.link) {
+            navigate(notification.link);
+        } else if (notification.action_url) {
+            navigate(notification.action_url);
+        }
+    };
 
     return (
         <div className="w-full">
@@ -104,6 +120,7 @@ export default function NotificationList({ notifications, onMarkAsRead, onDelete
                                         ? "bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900"
                                         : "bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800"
                                 )}
+                                onClick={() => handleNotificationClick(notification)}
                             >
                                 <div className="flex gap-3">
                                     {/* Icon */}

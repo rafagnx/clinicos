@@ -11,13 +11,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useOutletContext } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { useChat } from "@/context/ChatContext"; // Import Context
 
 import { supabase } from "@/lib/supabaseClient";
 
-export default function FloatingChatWindow({ recipient, currentUser, onClose, isMinimized, onToggleMinimize }) {
+export default function FloatingChatWindow({ recipient, currentUser }: any) {
+    const { closeChat, isMinimized, toggleMinimize } = useChat(); // Use Context
+    const onClose = closeChat;
+    const onToggleMinimize = toggleMinimize;
+
     const queryClient = useQueryClient();
     const [inputText, setInputText] = useState("");
-    const scrollRef = useRef(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     // 1. Find or Create Conversation Context
     const { data: conversation } = useQuery({
@@ -134,11 +139,14 @@ export default function FloatingChatWindow({ recipient, currentUser, onClose, is
                     await base44.entities.Notification.create({
                         user_id: recipient.id,
                         type: "alert",
-                        title: `Nova mensagem de ${currentUser.name || "Colega"}`,
+                        // FIX: Ensure sender is explicitly "Nova mensagem de [Current User Name]"
+                        // Use currentUser.name directly.
+                        title: `Nova mensagem de ${currentUser.name || currentUser.full_name || "Colega"}`,
                         message: text.substring(0, 50) + (text.length > 50 ? "..." : ""),
                         read: false,
                         organization_id: currentUser.active_organization_id,
-                        action_url: "/chat"
+                        // FIX: Use 'link' not 'action_url' based on schema
+                        link: `/chat?open_chat_with=${currentUser.id}`
                     });
                 } catch (e) { console.warn("Notif error", e); }
             }

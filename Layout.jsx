@@ -25,6 +25,8 @@ import NotificationPermissionPrompt from "@/components/notifications/Notificatio
 import PWAInstallPrompt from "@/components/pwa/PWAInstallPrompt";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
+import { ChatProvider, useChat } from "@/context/ChatContext";
+import FloatingChatWindow from "@/components/chat/FloatingChatWindow";
 
 // Theme Context
 const ThemeContext = React.createContext({
@@ -340,6 +342,38 @@ export default function Layout() {
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+      <ChatProvider>
+        <LayoutContent
+          user={user}
+          isDark={isDark}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          toggleTheme={toggleTheme}
+          unreadCount={unreadCount}
+          notifications={notifications}
+          finalNavigation={finalNavigation}
+          activeOrgId={activeOrgId}
+          isSubscriptionActive={isSubscriptionActive}
+          SubscriptionLock={SubscriptionLock}
+        />
+      </ChatProvider>
+    </ThemeContext.Provider>
+  );
+}
+
+// Separate component to consume ChatContext
+
+function LayoutContent({
+  user, isDark, sidebarOpen, setSidebarOpen, isCollapsed, setIsCollapsed,
+  toggleTheme, unreadCount, notifications, finalNavigation, activeOrgId,
+  isSubscriptionActive, SubscriptionLock
+}) {
+  const { activeRecipient, isOpen, isMinimized, closeChat, toggleMinimize } = useChat();
+
+  return (
+    <>
       {!isSubscriptionActive && <SubscriptionLock />}
       <div className={cn(
         "min-h-screen font-sans transition-colors duration-300 flex",
@@ -395,7 +429,7 @@ export default function Layout() {
                   ClinicOS
 
                   {/* Subscription Badge */}
-                  <SubscriptionBadge org={organization} user={user} />
+                  <SubscriptionBadge org={null} user={user} />
                 </span>
               </div>
             ) : (
@@ -434,11 +468,54 @@ export default function Layout() {
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const isActive = location.pathname.includes(item.href);
+                      // Custom Nav Item logic moved inside loop for simplicity in refactor
+                      const content = (
+                        <Link
+                          to={createPageUrl(item.href)}
+                          className={cn(
+                            "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
+                            isCollapsed ? "justify-center px-0" : "mx-2",
+                            isActive
+                              ? (isDark
+                                ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white shadow-lg shadow-indigo-500/20"
+                                : "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-md shadow-indigo-200/50")
+                              : (isDark
+                                ? "text-slate-400 hover:text-white hover:bg-white/5"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                          )}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <div className={cn(
+                            "relative p-2 rounded-lg transition-all duration-300",
+                            isActive && `bg-gradient-to-br ${item.gradient} shadow-lg`
+                          )}>
+                            <item.icon className={cn(
+                              "w-5 h-5 transition-all duration-300",
+                              isActive ? "text-white" : (isDark ? "text-slate-400 group-hover:text-white" : "text-slate-600 group-hover:text-slate-900")
+                            )} />
+                            {isActive && (
+                              <div className={cn(
+                                "absolute inset-0 rounded-lg blur-xl opacity-50 bg-gradient-to-br",
+                                item.gradient
+                              )} />
+                            )}
+                          </div>
+                          {!isCollapsed && <span className="relative z-10">{item.name}</span>}
+                          {!isCollapsed && isActive && (
+                            <motion.div
+                              layoutId="activeNav"
+                              className="absolute right-2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            />
+                          )}
+                        </Link>
+                      );
+
                       if (isCollapsed) {
                         return (
                           <Tooltip key={item.name}>
                             <TooltipTrigger asChild>
-                              <div><NavItem item={item} isActive={isActive} /></div>
+                              <div>{content}</div>
                             </TooltipTrigger>
                             <TooltipContent side="right" className={cn(
                               "ml-2 z-50 font-medium",
@@ -449,7 +526,7 @@ export default function Layout() {
                           </Tooltip>
                         )
                       }
-                      return <NavItem key={item.name} item={item} isActive={isActive} />
+                      return <div key={item.name}>{content}</div>
                     })}
                   </div>
                 </div>
@@ -484,6 +561,7 @@ export default function Layout() {
               </div>
             )}
           </nav>
+
 
           {/* Footer User Profile */}
           {user && (
@@ -650,11 +728,22 @@ export default function Layout() {
           </main>
         </div>
 
+        {/* Global Chat Window */}
+        {isOpen && activeRecipient && user && (
+          <FloatingChatWindow
+            recipient={activeRecipient}
+            currentUser={user}
+            onClose={closeChat}
+            isMinimized={isMinimized}
+            onToggleMinimize={toggleMinimize}
+          />
+        )}
+
         <NotificationPermissionPrompt />
         <PWAInstallPrompt />
         <UserOnboarding />
       </div>
-    </ThemeContext.Provider>
+    </>
   );
 }
 
