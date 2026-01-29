@@ -68,8 +68,15 @@ export default function Chat() {
   );
 
   const getStatus = (id: any) => {
-    const sum = id.toString().split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
-    return sum % 3 === 0 ? "offline" : (sum % 3 === 1 ? "busy" : "online");
+    // Deterministic fake status for MVP
+    const str = String(id || "");
+    const sum = str.split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
+
+    // 50% Online, 30% Busy, 20% Offline
+    const mod = sum % 10;
+    if (mod < 5) return "online";
+    if (mod < 8) return "busy";
+    return "offline";
   };
 
   return (
@@ -207,10 +214,10 @@ export default function Chat() {
                   isDark ? "border-slate-800" : "border-slate-100 group-hover:bg-indigo-50/30"
                 )}>
                   <span className={cn("text-xs font-medium flex items-center gap-1.5",
-                    status === "online" ? "text-emerald-500" : "text-slate-400"
+                    status === "online" ? "text-emerald-500" : (status === "busy" ? "text-amber-500" : "text-slate-400")
                   )}>
                     <Circle className={cn("w-2 h-2 fill-current")} />
-                    {status === "online" ? "Disponível" : "Ausente"}
+                    {status === "online" ? "Disponível" : (status === "busy" ? "Ocupado" : "Ausente")}
                   </span>
                   <Button
                     variant="ghost"
