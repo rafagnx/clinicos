@@ -210,7 +210,7 @@ export default function Chat() {
                     status === "online" ? "text-emerald-500" : (status === "busy" ? "text-amber-500" : "text-slate-400")
                   )}>
                     <Circle className={cn("w-2 h-2 fill-current")} />
-                    {status === "online" ? "Disponível" : (status === "busy" ? "Ocupado" : "Ausente")}
+                    {status === "online" ? "Online agora" : (status === "busy" ? "Ocupado" : "Ausente")}
                   </span>
                   <Button
                     variant="ghost"

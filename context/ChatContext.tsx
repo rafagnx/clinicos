@@ -12,6 +12,7 @@ interface ChatContextType {
     toggleMinimize: () => void;
     currentUser: any | null;
     getStatus: (id: any) => "online" | "busy" | "offline";
+    updateStatus: (status: "online" | "busy" | "offline") => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -44,16 +45,46 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setIsMinimized(prev => !prev);
     };
 
-    const getStatus = (id: any) => {
-        // Deterministic fake status for MVP (Consistent across app)
-        const str = String(id || "");
-        const sum = str.split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
+    const [usersStatus, setUsersStatus] = useState<Record<string, string>>({});
 
-        // 50% Online, 30% Busy, 20% Offline
-        const mod = sum % 10;
-        if (mod < 5) return "online";
-        if (mod < 8) return "busy";
-        return "offline";
+    // Fetch Initial Statuses
+    useQuery({
+        queryKey: ["all-pros-status"],
+        queryFn: async () => {
+            const pros = await base44.entities.Professional.list();
+            const statusMap: any = {};
+            pros.forEach((p: any) => {
+                statusMap[p.id] = p.chat_status || "offline";
+                if (p.user_id) statusMap[p.user_id] = p.chat_status || "offline";
+            });
+            setUsersStatus(statusMap);
+            return statusMap;
+        },
+        refetchInterval: 10000 // Poll every 10s for simple MVP
+    });
+
+    const updateStatus = async (newStatus: "online" | "busy" | "offline") => {
+        if (!currentUser?.id) return;
+
+        // Optimistic update
+        setUsersStatus(prev => ({ ...prev, [currentUser.id]: newStatus }));
+
+        // DB Update (Find professional record linked to user)
+        // Note: Ideally we update via ID, but here we might need to find the pro first or assume currentUser has pro_id
+        try {
+            const [pro] = await base44.entities.Professional.list({ user_id: currentUser.id });
+            if (pro) {
+                await base44.entities.Professional.update(pro.id, { chat_status: newStatus });
+                // Also update map with pro id
+                setUsersStatus(prev => ({ ...prev, [pro.id]: newStatus }));
+            }
+        } catch (e) {
+            console.error("Failed to update status", e);
+        }
+    };
+
+    const getStatus = (id: any) => {
+        return (usersStatus[id] as "online" | "busy" | "offline") || "offline";
     };
 
     // Listen for "open_chat_with" query param
@@ -96,7 +127,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             closeChat,
             toggleMinimize,
             currentUser,
-            getStatus
+            getStatus,
+            updateStatus
         }}>
             {children}
         </ChatContext.Provider>

@@ -370,7 +370,7 @@ function LayoutContent({
   toggleTheme, unreadCount, notifications, finalNavigation, activeOrgId,
   isSubscriptionActive, SubscriptionLock
 }) {
-  const { activeRecipient, isOpen, isMinimized, closeChat, toggleMinimize } = useChat();
+  const { activeRecipient, isOpen, isMinimized, closeChat, toggleMinimize, updateStatus, getStatus, currentUser } = useChat();
 
   return (
     <>
@@ -598,6 +598,16 @@ function LayoutContent({
                         </Avatar>
                       </div>
 
+                      {/* Status Indicator (Absolute on Avatar) */}
+                      {!isCollapsed && ( // Only show when expanded to avoid clutter
+                        <span className={cn(
+                          "absolute bottom-0 left-7 w-3.5 h-3.5 border-2 border-white dark:border-[#0B0F17] rounded-full z-20",
+                          getStatus(user.id) === "online" ? "bg-emerald-500" : (getStatus(user.id) === "busy" ? "bg-amber-500" : "bg-slate-400")
+                        )} />
+                      )}
+
+
+
                       {!isCollapsed && (
                         <div className="text-left overflow-hidden flex-1 group">
                           {user.email === 'rafamarketingdb@gmail.com' ? (
@@ -627,6 +637,25 @@ function LayoutContent({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className={cn("w-56", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
+
+                  {/* Status Selector */}
+                  <DropdownMenuItem onClick={() => updateStatus("online")} className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2" />
+                    <span>Online</span>
+                    {getStatus(user.id) === "online" && <span className="ml-auto text-xs opacity-50">✓</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus("busy")} className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
+                    <span>Ocupado</span>
+                    {getStatus(user.id) === "busy" && <span className="ml-auto text-xs opacity-50">✓</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus("offline")} className="cursor-pointer">
+                    <div className="w-2 h-2 rounded-full bg-slate-400 mr-2" />
+                    <span>Invisível</span>
+                    {getStatus(user.id) === "offline" && <span className="ml-auto text-xs opacity-50">✓</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className={isDark ? "bg-slate-800" : ""} />
+
                   <DropdownMenuItem asChild>
                     <Link to="/Profile" className="cursor-pointer">
                       <Settings className="w-4 h-4 mr-2" />
