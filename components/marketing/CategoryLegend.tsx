@@ -59,7 +59,7 @@ export function CategoryLegend({
                                 type="text"
                                 value={category.name}
                                 onChange={(e) => onUpdateCategory(category.id, { name: e.target.value })}
-                                onClick={(e) => e.stopPropagation()}
+                                // onClick={(e) => e.stopPropagation()}
                                 className={cn(
                                     'w-full bg-transparent text-[11px] font-bold text-foreground/90 tracking-wide whitespace-nowrap',
                                     'border-none outline-none text-center',
