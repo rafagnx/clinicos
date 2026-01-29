@@ -50,6 +50,8 @@ export const useFeatures = () => {
             features = metadata?.features || metadata || {};
         }
 
+        if (featureName === 'marketing') return true; // Enabled for everyone by default as per user request
+
         return features[featureName] === true;
     };
 
