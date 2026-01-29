@@ -72,17 +72,7 @@ export default function Chat() {
     (g.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatus = (id: any) => {
-    // Deterministic fake status for MVP
-    const str = String(id || "");
-    const sum = str.split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
-
-    // 50% Online, 30% Busy, 20% Offline
-    const mod = sum % 10;
-    if (mod < 5) return "online";
-    if (mod < 8) return "busy";
-    return "offline";
-  };
+  const { getStatus } = useChat();
 
   return (
     <div className="h-full flex flex-col gap-6">

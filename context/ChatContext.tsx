@@ -11,6 +11,7 @@ interface ChatContextType {
     closeChat: () => void;
     toggleMinimize: () => void;
     currentUser: any | null;
+    getStatus: (id: any) => "online" | "busy" | "offline";
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -41,6 +42,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     const toggleMinimize = () => {
         setIsMinimized(prev => !prev);
+    };
+
+    const getStatus = (id: any) => {
+        // Deterministic fake status for MVP (Consistent across app)
+        const str = String(id || "");
+        const sum = str.split('').reduce((a: any, b: any) => a + b.charCodeAt(0), 0);
+
+        // 50% Online, 30% Busy, 20% Offline
+        const mod = sum % 10;
+        if (mod < 5) return "online";
+        if (mod < 8) return "busy";
+        return "offline";
     };
 
     // Listen for "open_chat_with" query param
@@ -82,7 +95,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             openChat,
             closeChat,
             toggleMinimize,
-            currentUser
+            currentUser,
+            getStatus
         }}>
             {children}
         </ChatContext.Provider>

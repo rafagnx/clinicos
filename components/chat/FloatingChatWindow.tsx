@@ -16,7 +16,7 @@ import { useChat } from "@/context/ChatContext"; // Import Context
 import { supabase } from "@/lib/supabaseClient";
 
 export default function FloatingChatWindow({ recipient, currentUser }: any) {
-    const { closeChat, isMinimized, toggleMinimize } = useChat(); // Use Context
+    const { closeChat, isMinimized, toggleMinimize, getStatus } = useChat(); // Use Context
     const onClose = closeChat;
     const onToggleMinimize = toggleMinimize;
 
@@ -188,6 +188,11 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
     // Helper to get display name safely
     const displayName = recipient.name || recipient.full_name || recipient.email || "Usuário";
 
+    // Helper for display text
+    const status = getStatus(recipient.id);
+    const statusText = status === "online" ? "Online agora" : (status === "busy" ? "Ocupado" : "Ausente");
+    const statusColor = status === "online" ? "text-emerald-300" : (status === "busy" ? "text-amber-300" : "text-slate-400");
+
     return (
         <AnimatePresence>
             <motion.div
@@ -211,12 +216,14 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
                                 <AvatarFallback>{displayName.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             {!recipient.is_group && (
-                                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-indigo-600 rounded-full"></span>
+                                <span className={cn("absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-indigo-600 rounded-full",
+                                    status === "online" ? "bg-emerald-500" : (status === "busy" ? "bg-amber-500" : "bg-slate-400")
+                                )}></span>
                             )}
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-white leading-none">{displayName}</span>
-                            <span className="text-[10px] text-indigo-100 opacity-80 mt-0.5">Online agora</span>
+                            <span className={cn("text-[10px] opacity-80 mt-0.5", statusColor)}>{statusText}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
