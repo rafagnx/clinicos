@@ -652,8 +652,11 @@ export default function Layout() {
 
         <NotificationPermissionPrompt />
         <PWAInstallPrompt />
+        <UserOnboarding />
       </div>
     </ThemeContext.Provider>
   );
 }
+
+import UserOnboarding from "@/components/onboarding/UserOnboarding";
 
