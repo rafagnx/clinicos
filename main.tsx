@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from "@/components/ui/sonner"
 import { Toaster as ToasterOriginal } from "@/components/ui/toaster"
 import './index.css'
+import './registerSW' // PWA Registration
 
 import Layout from './Layout'
 import Login from './pages/Login'

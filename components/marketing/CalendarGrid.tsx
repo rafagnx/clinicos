@@ -66,33 +66,35 @@ export function CalendarGrid({
     }, [month, year]);
 
     return (
-        <div className="space-y-1">
-            {/* Weekday headers */}
-            <div className="grid grid-cols-7 gap-1.5">
-                {WEEKDAYS_PT.map((day) => (
-                    <div
-                        key={day}
-                        className="text-center text-xs font-semibold text-muted-foreground py-1.5"
-                    >
-                        {day}
-                    </div>
-                ))}
-            </div>
+        <div className="space-y-1 overflow-x-auto pb-2">
+            <div className="min-w-[700px]"> {/* Force minimum width for matrix */}
+                {/* Weekday headers */}
+                <div className="grid grid-cols-7 gap-1.5">
+                    {WEEKDAYS_PT.map((day) => (
+                        <div
+                            key={day}
+                            className="text-center text-xs font-semibold text-muted-foreground py-1.5"
+                        >
+                            {day}
+                        </div>
+                    ))}
+                </div>
 
-            {/* Calendar cells */}
-            <div className="grid grid-cols-7 gap-1.5">
-                {cells.map((cell, index) => (
-                    <CalendarDay
-                        key={`${cell.dateKey}-${index}`}
-                        day={cell.day}
-                        dateKey={cell.dateKey}
-                        isCurrentMonth={cell.isCurrentMonth}
-                        dayData={data[cell.dateKey]}
-                        selectedColor={selectedColor}
-                        onUpdateDay={onUpdateDay}
-                        onClearDay={onClearDay}
-                    />
-                ))}
+                {/* Calendar cells */}
+                <div className="grid grid-cols-7 gap-1.5">
+                    {cells.map((cell, index) => (
+                        <CalendarDay
+                            key={`${cell.dateKey}-${index}`}
+                            day={cell.day}
+                            dateKey={cell.dateKey}
+                            isCurrentMonth={cell.isCurrentMonth}
+                            dayData={data[cell.dateKey]}
+                            selectedColor={selectedColor}
+                            onUpdateDay={onUpdateDay}
+                            onClearDay={onClearDay}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
