@@ -507,6 +507,65 @@ const initSchema = async () => {
                     id SERIAL PRIMARY KEY,
                     created_at TIMESTAMP DEFAULT NOW()
                 );
+                CREATE TABLE IF NOT EXISTS "conversation_members" (
+                    "conversation_id" INTEGER,
+                    "user_id" TEXT,
+                    "role" TEXT DEFAULT 'member',
+                    "joined_at" TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY ("conversation_id", "user_id")
+                );
+
+                -- Ensure conversations has group columns
+                DO $$
+                BEGIN
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "is_group" BOOLEAN DEFAULT FALSE;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "name" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "image" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "admin_ids" TEXT[];
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "organization_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "professional_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "recipient_professional_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "patient_id" INTEGER;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "conversations" ADD COLUMN "status" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                         ALTER TABLE "conversations" ADD COLUMN "last_message_at" TIMESTAMP;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                END $$;
+
+                -- Ensure messages has columns
+                DO $$
+                BEGIN
+                     BEGIN
+                        ALTER TABLE "messages" ADD COLUMN "conversation_id" INTEGER;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                     BEGIN
+                        ALTER TABLE "messages" ADD COLUMN "sender_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                     BEGIN
+                        ALTER TABLE "messages" ADD COLUMN "text" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN
+                        ALTER TABLE "messages" ADD COLUMN "organization_id" TEXT;
+                    EXCEPTION WHEN duplicate_column THEN END;
+                END $$;
             `);
 
             await client.query(`
@@ -1268,6 +1327,12 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         // Generic Filtering
+        // FIX: Unwrap 'filter' object if present (from base44Client)
+        if (req.query.filter && typeof req.query.filter === 'object') {
+            Object.assign(req.query, req.query.filter);
+            delete req.query.filter;
+        }
+
         const reservedParams = ['id', 'limit', 'sort', 'include', 'fields'];
         Object.keys(req.query).forEach(key => {
             if (reservedParams.includes(key)) return;
