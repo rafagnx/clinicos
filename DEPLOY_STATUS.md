@@ -15,6 +15,7 @@
 - ✅ **Contexto Global**: `ChatContext.tsx` gerenciando estado do chat em toda a aplicação.
 - ✅ **Notificações**: Correção do remetente e link direto para o chat.
 - ✅ **Status Interativo**: Usuário pode alterar seu status (Online, Ocupado, Invisível) no menu.
+- ✅ **Exportação de Dados**: Nova aba em Configurações para baixar CSV de pacientes e Backup JSON completo. Using strict segregation logic.
 
 ### Banco de Dados:
 - ✅ `notifications`: Adicionada coluna `link`.

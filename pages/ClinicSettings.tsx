@@ -10,10 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard } from "lucide-react";
+import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard, Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/lib/supabaseClient";
+import { ExportService } from "@/services/ExportService";
+import { Database, FileJson, FileSpreadsheet } from "lucide-react";
 
 export default function ClinicSettings() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
@@ -197,6 +199,26 @@ export default function ClinicSettings() {
     toast.info("Gerenciamento de assinatura em breve.");
   };
 
+  const handleExportPatients = async () => {
+    try {
+      toast.info("Gerando CSV de pacientes...");
+      const res = await ExportService.exportPatients();
+      toast.success(`Exportação concluída! ${res.count} pacientes exportados.`);
+    } catch (e) {
+      toast.error("Erro ao exportar pacientes.");
+    }
+  };
+
+  const handleBackup = async () => {
+    try {
+      toast.info("Gerando backup completo do sistema...");
+      const res = await ExportService.exportFullBackup();
+      toast.success("Backup completo baixado com sucesso!");
+    } catch (e) {
+      toast.error("Erro ao gerar backup.");
+    }
+  };
+
   if (isUnauthorized) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -240,6 +262,7 @@ export default function ClinicSettings() {
           <TabsTrigger value="contact">Contato & Social</TabsTrigger>
           <TabsTrigger value="whatsapp">WhatsApp (Meta)</TabsTrigger>
           <TabsTrigger value="billing">Assinatura</TabsTrigger>
+          <TabsTrigger value="data">Dados</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -428,6 +451,50 @@ export default function ClinicSettings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                  Exportar Pacientes
+                </CardTitle>
+                <CardDescription>Baixe uma lista completa de seus pacientes em formato CSV (Excel).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={handleExportPatients} variant="outline" className="w-full">
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar Lista de Pacientes
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5 text-indigo-600" />
+                  Backup Completo
+                </CardTitle>
+                <CardDescription>Baixe todos os dados da sua clínica (pacientes, prontuários, agendamentos) em JSON.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={handleBackup} variant="outline" className="w-full border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300">
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar Backup do Sistema
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
+            <p className="font-semibold mb-1 flex items-center gap-2">
+              <CheckCircle2 className="w-3 h-3 text-green-500" />
+              Segurança de Dados
+            </p>
+            <p>Seus dados são segregados e protegidos. Apenas administradores desta organização têm permissão para exportar essas informações.</p>
+          </div>
         </TabsContent>
       </Tabs>
 
