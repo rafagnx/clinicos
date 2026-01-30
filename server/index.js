@@ -10,6 +10,8 @@ import { createClient } from '@supabase/supabase-js';
 import { stripeService } from './stripe-service.js';
 import { startCleanupJob } from './jobs/cleanup.js';
 import { createMarketingRoutes } from './marketing-routes.js';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -24,6 +26,28 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const app = express();
+const httpServer = createServer(app); // Wrap Express
+const io = new Server(httpServer, {
+    cors: {
+        origin: [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:5175",
+            "http://localhost:5176",
+            "http://localhost:3001",
+            "https://clinicos.unaux.com",
+            "https://www.clinicos.unaux.com",
+            "http://clinicos.unaux.com",
+            "https://clinicos-ruby.vercel.app",
+            "https://clinicos-black.vercel.app",
+            "https://clinicos-eta.vercel.app",
+            "https://clinicosapp.vercel.app"
+        ],
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
+
 app.set('trust proxy', 1); // Trust first proxy (Render Load Balancer) - Required for Secure Cookies
 const PORT = process.env.PORT || 3001;
 
@@ -42,6 +66,55 @@ const dbConfig = process.env.DATABASE_URL
     };
 
 const pool = new Pool(dbConfig);
+
+// SOCKET.IO LOGIC
+io.on('connection', (socket) => {
+    console.log('[Socket] New connection:', socket.id);
+
+    // User joins their personal room (User UUID)
+    socket.on('join_room', (userId) => {
+        if (userId) {
+            socket.join(userId);
+            console.log(`[Socket] User ${userId} joined room ${userId}`);
+        }
+    });
+
+    // Handle sending messages (Real-time relay)
+    socket.on('send_message', (data) => {
+        const { recipientId, message, senderId, senderName, conversationId } = data;
+
+        // Broadcast to recipient's room
+        io.to(recipientId).emit('receive_message', {
+            id: uuidv4(), // Temp ID for immediate display
+            text: message,
+            sender_id: senderId,
+            conversation_id: conversationId,
+            sender_name: senderName, // For notification
+            created_at: new Date().toISOString()
+        });
+
+        // Also emit back to sender (for other tabs)
+        io.to(senderId).emit('receive_message', {
+            id: uuidv4(),
+            text: message,
+            sender_id: senderId,
+            conversation_id: conversationId,
+            created_at: new Date().toISOString()
+        });
+    });
+
+    // Handle Status Updates (Real-time)
+    socket.on('update_status', (data) => {
+        const { userId, status } = data;
+        // Broadcast to everyone (or specific org rooms if we had them)
+        // For now, broadcast to all since we poll all pros anyway
+        socket.broadcast.emit('status_change', { userId, status });
+    });
+
+    socket.on('disconnect', () => {
+        // console.log('[Socket] Disconnected:', socket.id);
+    });
+});
 
 // SUPABASE AUTH SETUP
 // Using hardcoded keys allowed by user for immediate migration fix
@@ -919,6 +992,18 @@ VALUES($1, $2, $3, $4, $5, $6)`,
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'ClinicOS Server is running' });
 });
+
+
+// ------------------------------------------------------------------
+// START SERVER
+// ------------------------------------------------------------------
+
+httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    startCleanupJob();
+});
+
 
 // Diagnostics Route (Check DB)
 app.get('/api/diagnostics', async (req, res) => {

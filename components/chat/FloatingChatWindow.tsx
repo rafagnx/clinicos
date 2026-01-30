@@ -16,7 +16,7 @@ import { useChat } from "@/context/ChatContext"; // Import Context
 import { supabase } from "@/lib/supabaseClient";
 
 export default function FloatingChatWindow({ recipient, currentUser }: any) {
-    const { closeChat, isMinimized, toggleMinimize, getStatus } = useChat(); // Use Context
+    const { closeChat, isMinimized, toggleMinimize, getStatus, socket } = useChat(); // Use Context
     const onClose = closeChat;
     const onToggleMinimize = toggleMinimize;
 
@@ -97,6 +97,7 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
     };
 
     // 3. Send Mutation
+
     const sendMessageMutation = useMutation<any, Error, string>({
         mutationFn: async (text: string) => {
             let convId = conversation?.id;
@@ -153,10 +154,21 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
 
             return result;
         },
-        onSuccess: () => {
+        onSuccess: (newMessage) => {
             setInputText("");
             queryClient.invalidateQueries({ queryKey: ["messages"] });
             queryClient.invalidateQueries({ queryKey: ["conversation-with"] });
+
+            // Socket Emit
+            if (socket && recipient) {
+                socket.emit('send_message', {
+                    recipientId: recipient.id,
+                    message: newMessage.text,
+                    senderId: currentUser.id,
+                    senderName: currentUser.name || "Usuário",
+                    conversationId: newMessage.conversation_id
+                });
+            }
         },
         onError: (err) => {
             console.error("Failed to send message", err);
