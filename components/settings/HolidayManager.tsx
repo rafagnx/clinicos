@@ -124,15 +124,6 @@ export default function HolidayManager() {
                         </CardDescription>
                     </div>
                     <div className="flex space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => seedMutation.mutate()}
-                            disabled={seedMutation.isPending}
-                        >
-                            <Download className="mr-2 h-4 w-4" />
-                            {seedMutation.isPending ? 'Importando...' : 'Importar Feriados Nacionais'}
-                        </Button>
                         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                             <DialogTrigger asChild>
                                 <Button size="sm">
@@ -209,14 +200,7 @@ export default function HolidayManager() {
                 ) : Object.keys(groupedHolidays).length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                         <p>Nenhum feriado cadastrado para {currentYear}</p>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-4"
-                            onClick={() => seedMutation.mutate()}
-                        >
-                            Importar Feriados Nacionais
-                        </Button>
+                        <p className="text-xs mt-2">Os feriados nacionais são carregados automaticamente.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">

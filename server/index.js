@@ -857,27 +857,27 @@ const initSchema = async () => {
                 }
             }
 
-            // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error)
+            // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
             await client.query(`
                 CREATE TABLE IF NOT EXISTS blocked_days (
                     id SERIAL PRIMARY KEY,
-                    user_id UUID REFERENCES "user"(id) ON DELETE SET NULL, 
+                    user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL, 
                     professional_id INTEGER NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
-                    organization_id UUID NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                    organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
                     start_date DATE NOT NULL,
                     end_date DATE NOT NULL,
                     reason TEXT,
-                    created_by UUID,
+                    created_by TEXT,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
                 CREATE TABLE IF NOT EXISTS holidays (
                     id SERIAL PRIMARY KEY,
-                    organization_id UUID NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                    organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
                     date DATE NOT NULL,
                     name TEXT NOT NULL,
                     type TEXT NOT NULL DEFAULT 'local', 
-                    created_by UUID,
+                    created_by TEXT,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
                 CREATE INDEX IF NOT EXISTS idx_blocked_days_org_date ON blocked_days(organization_id, start_date, end_date);
