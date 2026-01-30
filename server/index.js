@@ -1473,6 +1473,39 @@ SELECT * FROM "pending_invites"
 // ------------------------------------------------------------------
 
 // POST Blocked Days (Create)
+// GET Blocked Days
+app.get('/api/blocked-days', requireAuth, async (req, res) => {
+    const { professionalId, startDate, endDate } = req.query;
+    const { organizationId } = req.auth;
+
+    try {
+        let query = `
+            SELECT * FROM blocked_days
+            WHERE organization_id = $1
+        `;
+        const params = [organizationId];
+        let paramIndex = 2;
+
+        if (professionalId && professionalId !== 'all') {
+            query += ` AND professional_id = $${paramIndex++}`;
+            params.push(professionalId);
+        }
+
+        if (startDate && endDate) {
+            query += ` AND ((start_date <= $${paramIndex + 1} AND end_date >= $${paramIndex}))`;
+            params.push(startDate, endDate);
+        }
+
+        query += ` ORDER BY start_date ASC`;
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('[Blocked Days] Fetch error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/blocked-days', requireAuth, async (req, res) => {
     const { professionalId, startDate, endDate, reason, confirmConflicts } = req.body;
     const { user, organizationId } = req.auth;
@@ -1683,6 +1716,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
 
     const tableMap = {
         'Professional': 'professionals',
+        'professionals': 'professionals',
         'Patient': 'patients',
         'Appointment': 'appointments',
         'MedicalRecord': 'medical_records',
@@ -2253,32 +2287,7 @@ app.post('/api/admin/accept-invite', requireAuth, async (req, res) => {
 // BLOCKED DAYS & HOLIDAYS API
 // ========================================
 
-// GET Blocked Days
-app.get('/api/blocked-days', requireAuth, async (req, res) => {
-    const { professionalId, startDate, endDate } = req.query;
-    const { organizationId } = req.auth;
 
-    if (!professionalId || !startDate || !endDate) {
-        return res.status(400).json({ error: 'professionalId, startDate, and endDate are required' });
-    }
-
-    try {
-        const result = await pool.query(`
-            SELECT * FROM blocked_days
-            WHERE professional_id = $1 
-            AND organization_id = $2
-            AND (
-                (start_date <= $4 AND end_date >= $3)
-            )
-            ORDER BY start_date ASC
-        `, [professionalId, organizationId, startDate, endDate]);
-
-        res.json(result.rows);
-    } catch (error) {
-        console.error('[Blocked Days] Fetch error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
 
 
