@@ -638,7 +638,9 @@ function LayoutContent({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className={cn("w-56", isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "bg-white")}>
 
-                  {/* Status Selector */}
+
+                  {/* Status Selector - DISABLED (Always Green) */}
+                  {/* 
                   <DropdownMenuItem onClick={() => updateStatus("online")} className="cursor-pointer">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2" />
                     <span>Online</span>
@@ -655,6 +657,8 @@ function LayoutContent({
                     {getStatus(user.id) === "offline" && <span className="ml-auto text-xs opacity-50">✓</span>}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className={isDark ? "bg-slate-800" : ""} />
+                  */}
+
 
                   <DropdownMenuItem asChild>
                     <Link to="/Profile" className="cursor-pointer">

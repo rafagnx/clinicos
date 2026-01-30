@@ -171,10 +171,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     const getStatus = (id: any) => {
-        // If we have a specific status in the map, use it. 
-        // Otherwise checks if "id" matches "currentUser.id" to fallback to local pending state
-        if (usersStatus[id]) return usersStatus[id] as "online" | "busy" | "offline";
-        return "offline";
+        // Simplified: Always show online (green)
+        return "online";
     };
 
     // Listen for "open_chat_with" query param
