@@ -388,6 +388,7 @@ export default function Agenda() {
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => date && setSelectedDate(date)}
+                  locale={ptBR}
                   initialFocus
                 />
               </PopoverContent>
