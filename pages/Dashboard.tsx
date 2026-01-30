@@ -117,14 +117,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={cn("p-6 lg:p-10 max-w-7xl mx-auto space-y-10 min-h-screen")}>
+    <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-10 min-h-screen")}>
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          "relative overflow-hidden rounded-3xl p-8 border",
+          "relative overflow-hidden rounded-3xl p-6 md:p-8 border",
           isDark
             ? "bg-gradient-to-br from-slate-900/50 via-indigo-900/20 to-purple-900/20 border-slate-800/50"
             : "bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 border-slate-200/50"
@@ -147,24 +147,24 @@ export default function Dashboard() {
                 {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
               </p>
             </div>
-            <h1 className={cn("text-4xl md:text-5xl font-display font-bold tracking-tight flex items-center flex-wrap gap-x-4 gap-y-2", isDark ? "text-white" : "text-slate-900")}>
+            <h1 className={cn("text-3xl md:text-5xl font-display font-bold tracking-tight flex items-center flex-wrap gap-x-4 gap-y-2", isDark ? "text-white" : "text-slate-900")}>
               {user?.email === 'rafamarketingdb@gmail.com' && (
-                <div className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 shrink-0">
+                <div className="relative inline-flex items-center justify-center w-14 h-14 md:w-20 md:h-20 shrink-0">
                   <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-full opacity-70 blur-md animate-pulse-soft" />
                   <img src="/rafa-avatar.png" alt="Rafa" className="relative w-full h-full object-cover rounded-full border-2 border-white/20 shadow-2xl" />
                 </div>
               )}
               <span>{greeting}, <span className="text-gradient-primary">{user?.email === 'rafamarketingdb@gmail.com' ? 'Rafa' : firstName}</span>! 👋</span>
             </h1>
-            <p className={cn("text-lg", isDark ? "text-slate-400" : "text-slate-600")}>
+            <p className={cn("text-base md:text-lg", isDark ? "text-slate-400" : "text-slate-600")}>
               Aqui está o pulso da sua clínica hoje.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center flex-wrap gap-3">
             <Button
               variant="ghost"
               className={cn(
-                "rounded-xl",
+                "rounded-xl flex-1 md:flex-none",
                 isDark ? "text-slate-400 hover:text-slate-200 hover:bg-white/5" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               )}
               onClick={() => setSelectorOpen(true)}
@@ -174,7 +174,7 @@ export default function Dashboard() {
             </Button>
             <Button
               className={cn(
-                "rounded-xl shadow-lg transition-all hover:scale-105 btn-premium",
+                "rounded-xl shadow-lg transition-all hover:scale-105 btn-premium flex-1 md:flex-none whitespace-nowrap",
                 isDark
                   ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-500/30"
                   : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-indigo-300/50"
@@ -183,7 +183,7 @@ export default function Dashboard() {
             >
               <Link to={createPageUrl("Agenda")}>
                 <Calendar className="w-4 h-4 mr-2" />
-                Ver Agenda Completa
+                Ver Agenda
               </Link>
             </Button>
           </div>
