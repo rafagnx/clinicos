@@ -124,71 +124,7 @@ export default function HolidayManager() {
                         </CardDescription>
                     </div>
                     <div className="flex space-x-2">
-                        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                            <DialogTrigger asChild>
-                                <Button size="sm">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Adicionar Feriado Local
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Novo Feriado Local</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label>Data</Label>
-                                        <Popover open={showCalendar} onOpenChange={setShowCalendar}>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "w-full justify-start text-left font-normal",
-                                                        !newHolidayDate && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {newHolidayDate ? format(newHolidayDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione'}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={newHolidayDate}
-                                                    onSelect={(date) => {
-                                                        if (date) {
-                                                            setNewHolidayDate(date);
-                                                            setShowCalendar(false);
-                                                        }
-                                                    }}
-                                                    locale={ptBR}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="holidayName">Nome do Feriado</Label>
-                                        <Input
-                                            id="holidayName"
-                                            placeholder="Ex: Dia Municipal, Aniversário da Cidade..."
-                                            value={newHolidayName}
-                                            onChange={(e) => setNewHolidayName(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end space-x-2">
-                                    <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                                        Cancelar
-                                    </Button>
-                                    <Button
-                                        onClick={handleCreateHoliday}
-                                        disabled={createMutation.isPending}
-                                    >
-                                        {createMutation.isPending ? 'Criando...' : 'Criar Feriado'}
-                                    </Button>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
+
                     </div>
                 </div>
             </CardHeader>
@@ -242,6 +178,6 @@ export default function HolidayManager() {
                     </div>
                 )}
             </CardContent>
-        </Card>
+        </Card >
     );
 }

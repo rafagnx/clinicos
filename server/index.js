@@ -2192,7 +2192,7 @@ app.get('/api/holidays', requireAuth, async (req, res) => {
         const params = [organizationId];
 
         if (year) {
-            query += ` AND EXTRACT(YEAR FROM date) = $2`;
+            query += ` AND to_char("date", 'YYYY') = $2`;
             params.push(year);
         }
 
