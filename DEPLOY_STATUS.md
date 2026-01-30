@@ -17,6 +17,7 @@
 - ✅ **Status Interativo**: Usuário pode alterar seu status (Online, Ocupado, Invisível) no menu.
 - ✅ **Exportação de Dados**: Nova aba em Configurações para baixar CSV de pacientes e Backup JSON completo. Using strict segregation logic.
 - ✅ **Layout Mobile**: Ajustes de alinhamento e visibilidade no Dashboard mobile.
+- ✅ **Correção de Status**: Correção para garantir que o status Online/Ocupado persista ao navegar entre páginas.
 
 ### Banco de Dados:
 - ✅ `notifications`: Adicionada coluna `link`.
