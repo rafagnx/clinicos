@@ -172,7 +172,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     const getStatus = (id: any) => {
         // Simplified: Always show online (green)
-        return "online";
+        return "online" as "online" | "busy" | "offline";
     };
 
     // Listen for "open_chat_with" query param
