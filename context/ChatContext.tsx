@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/base44Client';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -18,6 +18,7 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
+    const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [activeRecipient, setActiveRecipient] = useState<any | null>(null);
@@ -66,25 +67,33 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const updateStatus = async (newStatus: "online" | "busy" | "offline") => {
         if (!currentUser?.id) return;
 
-        // Optimistic update
+        // Optimistic update for UI responsiveness
         setUsersStatus(prev => ({ ...prev, [currentUser.id]: newStatus }));
 
-        // DB Update (Find professional record linked to user)
-        // Note: Ideally we update via ID, but here we might need to find the pro first or assume currentUser has pro_id
+        // DB Update
         try {
+            // 1. Try to find professional record
             const [pro] = await base44.entities.Professional.list({ user_id: currentUser.id });
+
             if (pro) {
                 await base44.entities.Professional.update(pro.id, { chat_status: newStatus });
-                // Also update map with pro id
                 setUsersStatus(prev => ({ ...prev, [pro.id]: newStatus }));
             }
+
+            // Refetch to ensure consistency
+            queryClient.invalidateQueries({ queryKey: ["all-pros-status"] });
+
         } catch (e) {
-            console.error("Failed to update status", e);
+            console.error("Failed to update status in DB", e);
+            // Revert optimistic update if needed? For now we keep it to not flicker
         }
     };
 
     const getStatus = (id: any) => {
-        return (usersStatus[id] as "online" | "busy" | "offline") || "offline";
+        // If we have a specific status in the map, use it. 
+        // Otherwise checks if "id" matches "currentUser.id" to fallback to local pending state
+        if (usersStatus[id]) return usersStatus[id] as "online" | "busy" | "offline";
+        return "offline";
     };
 
     // Listen for "open_chat_with" query param
