@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/lib/base44Client';
 import { supabase } from '@/lib/supabaseClient';
 import { io, Socket } from 'socket.io-client';
-import { useToast } from 'sonner';
+
 
 interface ChatContextType {
     isOpen: boolean;
