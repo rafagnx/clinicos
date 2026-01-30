@@ -167,7 +167,7 @@ export default function BlockDayModal({
                                 }}
                                 disabled={!!professionalId && professionalId !== 0}
                             />
-                            <Label htmlFor="block-all" className="cursor-pointer">Bloquear para <strong>Toda a Equipe</strong> (Feriados)</Label>
+                            <Label htmlFor="block-all" className="cursor-pointer">Bloquear para <strong>Toda a Equipe</strong></Label>
                         </div>
 
                         <Select

@@ -1414,7 +1414,9 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         'ClinicSettings': 'clinic_settings',
         'NotificationPreference': 'notification_preferences',
         'ProcedureType': 'procedure_types',
-        'FinancialTransaction': 'financial_transactions'
+        'FinancialTransaction': 'financial_transactions',
+        'holidays': 'holidays',
+        'blocked-days': 'blocked_days'
     };
 
     const tableName = tableMap[entity];
@@ -1537,7 +1539,9 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         'Message': 'messages',
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
-        'NotificationPreference': 'notification_preferences'
+        'NotificationPreference': 'notification_preferences',
+        'holidays': 'holidays',
+        'blocked-days': 'blocked_days'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
@@ -1710,7 +1714,9 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
         'NotificationPreference': 'notification_preferences',
-        'ProcedureType': 'procedure_types'
+        'ProcedureType': 'procedure_types',
+        'holidays': 'holidays',
+        'blocked-days': 'blocked_days'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
@@ -1796,7 +1802,9 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
         'NotificationPreference': 'notification_preferences',
-        'ProcedureType': 'procedure_types'
+        'ProcedureType': 'procedure_types',
+        'holidays': 'holidays',
+        'blocked-days': 'blocked_days'
     };
     const tableName = tableMap[entity];
     if (!tableName) return res.status(400).json({ error: 'Invalid entity' });
@@ -2226,7 +2234,7 @@ app.post('/api/holidays/seed', requireAuth, async (req, res) => {
 
         for (const year of years) {
             const yearHolidays = holidaysData[year.toString()] || [];
-            
+
             for (const holiday of yearHolidays) {
                 try {
                     await pool.query(`
@@ -2242,10 +2250,10 @@ app.post('/api/holidays/seed', requireAuth, async (req, res) => {
             }
         }
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: `${imported} feriados nacionais importados para ${years.join(' e ')}`,
-            imported 
+            imported
         });
     } catch (error) {
         console.error('[Holidays] Seed error:', error);
