@@ -683,7 +683,9 @@ const initSchema = async () => {
                 { name: 'council_state', type: 'VARCHAR(10)' },
                 { name: 'phone', type: 'VARCHAR(20)' },
                 { name: 'color', type: 'VARCHAR(100) DEFAULT \'#3B82F6\'' },
-                { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' }
+                { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' },
+                { name: 'user_id', type: 'TEXT' },
+                { name: 'chat_status', type: 'VARCHAR(20) DEFAULT \'offline\'' }
             ];
             for (const col of profCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1;`, [col.name]);
