@@ -140,8 +140,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const updateStatus = async (newStatus: "online" | "busy" | "offline") => {
         if (!currentUser?.id) return;
 
-        // Optimistic update for UI responsiveness
-        setUsersStatus(prev => ({ ...prev, [currentUser.id]: newStatus }));
+        // Optimistic update for UI responsiveness (Update BOTH UserID and ProID)
+        setUsersStatus(prev => {
+            const updates: any = { [currentUser.id]: newStatus };
+            const proId = userToProRef.current[currentUser.id];
+            if (proId) updates[proId] = newStatus;
+            return { ...prev, ...updates };
+        });
 
         // Socket Emit
         socketRef.current?.emit('update_status', { userId: currentUser.id, status: newStatus });
