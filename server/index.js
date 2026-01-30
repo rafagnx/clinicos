@@ -2318,21 +2318,10 @@ async function initSchema() {
         await client.query('COMMIT');
         console.log('[Schema] Tables verified/created.');
 
-        // 4. AUTO-SEED BRAZILIAN HOLIDAYS (2025-2026)
+        // 4. AUTO-SEED BRAZILIAN HOLIDAYS (2026-2027)
         // Hardcoded specifically for this quick fix as user requested "no complications"
         const seedHolidays = [
-            { date: '2025-01-01', name: 'Confraternização Universal' },
-            { date: '2025-03-03', name: 'Carnaval' },
-            { date: '2025-03-04', name: 'Carnaval' },
-            { date: '2025-04-18', name: 'Sexta-feira Santa' },
-            { date: '2025-04-21', name: 'Tiradentes' },
-            { date: '2025-05-01', name: 'Dia do Trabalho' },
-            { date: '2025-06-19', name: 'Corpus Christi' },
-            { date: '2025-09-07', name: 'Independência do Brasil' },
-            { date: '2025-10-12', name: 'Nossa Senhora Aparecida' },
-            { date: '2025-11-02', name: 'Finados' },
-            { date: '2025-11-15', name: 'Proclamação da República' },
-            { date: '2025-12-25', name: 'Natal' },
+            // 2026
             { date: '2026-01-01', name: 'Confraternização Universal' },
             { date: '2026-02-17', name: 'Carnaval' },
             { date: '2026-04-03', name: 'Sexta-feira Santa' },
@@ -2343,7 +2332,19 @@ async function initSchema() {
             { date: '2026-10-12', name: 'Nossa Senhora Aparecida' },
             { date: '2026-11-02', name: 'Finados' },
             { date: '2026-11-15', name: 'Proclamação da República' },
-            { date: '2026-12-25', name: 'Natal' }
+            { date: '2026-12-25', name: 'Natal' },
+            // 2027
+            { date: '2027-01-01', name: 'Confraternização Universal' },
+            { date: '2027-02-09', name: 'Carnaval' },
+            { date: '2027-03-26', name: 'Sexta-feira Santa' },
+            { date: '2027-04-21', name: 'Tiradentes' },
+            { date: '2027-05-01', name: 'Dia do Trabalho' },
+            { date: '2027-05-27', name: 'Corpus Christi' },
+            { date: '2027-09-07', name: 'Independência do Brasil' },
+            { date: '2027-10-12', name: 'Nossa Senhora Aparecida' },
+            { date: '2027-11-02', name: 'Finados' },
+            { date: '2027-11-15', name: 'Proclamação da República' },
+            { date: '2027-12-25', name: 'Natal' }
         ];
 
         // Seed for ALL active organizations
