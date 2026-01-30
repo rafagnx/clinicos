@@ -1961,6 +1961,298 @@ app.post('/api/admin/accept-invite', requireAuth, async (req, res) => {
     }
 });
 
+// ========================================
+// BLOCKED DAYS & HOLIDAYS API
+// ========================================
+
+// GET Blocked Days
+app.get('/api/blocked-days', requireAuth, async (req, res) => {
+    const { professionalId, startDate, endDate } = req.query;
+    const { organizationId } = req.auth;
+
+    if (!professionalId || !startDate || !endDate) {
+        return res.status(400).json({ error: 'professionalId, startDate, and endDate are required' });
+    }
+
+    try {
+        const result = await pool.query(`
+            SELECT * FROM blocked_days
+            WHERE professional_id = $1 
+            AND organization_id = $2
+            AND (
+                (start_date <= $4 AND end_date >= $3)
+            )
+            ORDER BY start_date ASC
+        `, [professionalId, organizationId, startDate, endDate]);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('[Blocked Days] Fetch error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST Blocked Days (Create)
+app.post('/api/blocked-days', requireAuth, async (req, res) => {
+    const { professionalId, startDate, endDate, reason, confirmConflicts } = req.body;
+    const { user, organizationId } = req.auth;
+
+    if (!professionalId || !startDate || !endDate || !reason) {
+        return res.status(400).json({ error: 'professionalId, startDate, endDate, and reason are required' });
+    }
+
+    // Validate dates
+    if (new Date(endDate) < new Date(startDate)) {
+        return res.status(400).json({ error: 'endDate must be after or equal to startDate' });
+    }
+
+    try {
+        // Check for conflicting appointments
+        const conflictsResult = await pool.query(`
+            SELECT id, patient_id, start_time, end_time, status
+            FROM appointments
+            WHERE professional_id = $1
+            AND organization_id = $2
+            AND DATE(start_time) >= $3
+            AND DATE(start_time) <= $4
+            AND status NOT IN ('cancelado', 'faltou')
+        `, [professionalId, organizationId, startDate, endDate]);
+
+        // If conflicts exist and user hasn't confirmed, return conflicts
+        if (conflictsResult.rows.length > 0 && !confirmConflicts) {
+            return res.json({
+                conflicts: conflictsResult.rows,
+                message: 'Existem consultas agendadas neste período. Confirme para bloquear mesmo assim.'
+            });
+        }
+
+        // Create block
+        const insertResult = await pool.query(`
+            INSERT INTO blocked_days 
+            (professional_id, organization_id, start_date, end_date, reason, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [professionalId, organizationId, startDate, endDate, reason, user.id]);
+
+        res.status(201).json(insertResult.rows[0]);
+    } catch (error) {
+        console.error('[Blocked Days] Create error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// PATCH Blocked Days (Update reason)
+app.patch('/api/blocked-days/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const { user, organizationId } = req.auth;
+
+    if (!reason) {
+        return res.status(400).json({ error: 'reason is required' });
+    }
+
+    try {
+        // Verify ownership or admin
+        const checkResult = await pool.query(`
+            SELECT * FROM blocked_days 
+            WHERE id = $1 AND organization_id = $2
+        `, [id, organizationId]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Bloqueio não encontrado' });
+        }
+
+        // Update
+        const updateResult = await pool.query(`
+            UPDATE blocked_days
+            SET reason = $1, updated_at = NOW()
+            WHERE id = $2
+            RETURNING *
+        `, [reason, id]);
+
+        res.json(updateResult.rows[0]);
+    } catch (error) {
+        console.error('[Blocked Days] Update error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE Blocked Days
+app.delete('/api/blocked-days/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { organizationId } = req.auth;
+
+    try {
+        const deleteResult = await pool.query(`
+            DELETE FROM blocked_days
+            WHERE id = $1 AND organization_id = $2
+            RETURNING *
+        `, [id, organizationId]);
+
+        if (deleteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Bloqueio não encontrado' });
+        }
+
+        res.json({ success: true, deleted: deleteResult.rows[0] });
+    } catch (error) {
+        console.error('[Blocked Days] Delete error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET Holidays
+app.get('/api/holidays', requireAuth, async (req, res) => {
+    const { year } = req.query;
+    const { organizationId } = req.auth;
+
+    try {
+        let query = `
+            SELECT * FROM holidays
+            WHERE organization_id = $1
+        `;
+        const params = [organizationId];
+
+        if (year) {
+            query += ` AND EXTRACT(YEAR FROM date) = $2`;
+            params.push(year);
+        }
+
+        query += ` ORDER BY date ASC`;
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('[Holidays] Fetch error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST Holiday (Admin only - Local)
+app.post('/api/holidays', requireAuth, async (req, res) => {
+    const { date, name } = req.body;
+    const { user, organizationId } = req.auth;
+
+    if (!date || !name) {
+        return res.status(400).json({ error: 'date and name are required' });
+    }
+
+    // Check admin permission
+    const adminCheck = await pool.query(`
+        SELECT is_admin FROM professionals 
+        WHERE organization_id = $1 AND email = $2
+    `, [organizationId, user.email]);
+
+    if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+        return res.status(403).json({ error: 'Apenas administradores podem criar feriados' });
+    }
+
+    try {
+        const insertResult = await pool.query(`
+            INSERT INTO holidays (organization_id, date, name, type, created_by)
+            VALUES ($1, $2, $3, 'local', $4)
+            RETURNING *
+        `, [organizationId, date, name, user.id]);
+
+        res.status(201).json(insertResult.rows[0]);
+    } catch (error) {
+        if (error.code === '23505') { // Unique constraint violation
+            return res.status(409).json({ error: 'Feriado já existe nesta data' });
+        }
+        console.error('[Holidays] Create error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE Holiday (Admin only - Local only)
+app.delete('/api/holidays/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+    const { user, organizationId } = req.auth;
+
+    // Check admin permission
+    const adminCheck = await pool.query(`
+        SELECT is_admin FROM professionals 
+        WHERE organization_id = $1 AND email = $2
+    `, [organizationId, user.email]);
+
+    if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+        return res.status(403).json({ error: 'Apenas administradores podem deletar feriados' });
+    }
+
+    try {
+        // Only allow deleting local holidays
+        const deleteResult = await pool.query(`
+            DELETE FROM holidays
+            WHERE id = $1 AND organization_id = $2 AND type = 'local'
+            RETURNING *
+        `, [id, organizationId]);
+
+        if (deleteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Feriado não encontrado ou é nacional (não pode ser deletado)' });
+        }
+
+        res.json({ success: true, deleted: deleteResult.rows[0] });
+    } catch (error) {
+        console.error('[Holidays] Delete error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST Seed National Holidays (Admin only)
+app.post('/api/holidays/seed', requireAuth, async (req, res) => {
+    const { user, organizationId } = req.auth;
+
+    // Check admin permission
+    const adminCheck = await pool.query(`
+        SELECT is_admin FROM professionals 
+        WHERE organization_id = $1 AND email = $2
+    `, [organizationId, user.email]);
+
+    if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
+        return res.status(403).json({ error: 'Apenas administradores podem importar feriados' });
+    }
+
+    try {
+        // Load Brazilian holidays dataset
+        const holidaysData = JSON.parse(
+            await import('fs').then(fs => fs.promises.readFile(
+                path.join(__dirname, 'data', 'brazilian_holidays.json'),
+                'utf-8'
+            ))
+        );
+
+        let imported = 0;
+        const currentYear = new Date().getFullYear();
+        const years = [currentYear, currentYear + 1];
+
+        for (const year of years) {
+            const yearHolidays = holidaysData[year.toString()] || [];
+            
+            for (const holiday of yearHolidays) {
+                try {
+                    await pool.query(`
+                        INSERT INTO holidays (organization_id, date, name, type, created_by)
+                        VALUES ($1, $2, $3, 'national', $4)
+                        ON CONFLICT (organization_id, date, type) DO NOTHING
+                    `, [organizationId, holiday.date, holiday.name, user.id]);
+                    imported++;
+                } catch (err) {
+                    // Skip duplicates
+                    continue;
+                }
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: `${imported} feriados nacionais importados para ${years.join(' e ')}`,
+            imported 
+        });
+    } catch (error) {
+        console.error('[Holidays] Seed error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 // DEBUG ENDPOINT (Remove in final prod)
 app.get('/api/debug-auth-config', (req, res) => {

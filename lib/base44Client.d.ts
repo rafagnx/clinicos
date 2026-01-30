@@ -32,6 +32,20 @@ export interface Base44Client {
         upload: (file: File) => Promise<string>;
     };
 
+    blockedDays: {
+        list: (params: { professionalId: number; startDate: string; endDate: string }) => Promise<any[]>;
+        create: (data: { professionalId: number; startDate: string; endDate: string; reason: string; confirmConflicts?: boolean }) => Promise<any>;
+        update: (id: string, data: { reason: string }) => Promise<any>;
+        delete: (id: string) => Promise<any>;
+    };
+
+    holidays: {
+        list: (params?: { year?: number }) => Promise<any[]>;
+        create: (data: { date: string; name: string }) => Promise<any>;
+        delete: (id: string) => Promise<any>;
+        seed: () => Promise<any>;
+    };
+
     entities: {
         Professional: EntityHandler;
         Patient: EntityHandler;

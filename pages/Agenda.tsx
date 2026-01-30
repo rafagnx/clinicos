@@ -31,6 +31,7 @@ import SendNotificationDialog from "@/components/agenda/SendNotificationDialog";
 import TimeBlockDialog from "@/components/agenda/TimeBlockDialog";
 import RescheduleDialog from "@/components/agenda/RescheduleDialog";
 import AdvancedFilters from "@/components/agenda/AdvancedFilters";
+import BlockDayModal from "@/components/agenda/BlockDayModal";
 
 const statusConfig = {
   agendado: {
@@ -136,6 +137,7 @@ export default function Agenda() {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [isTimeBlockOpen, setIsTimeBlockOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isBlockDayOpen, setIsBlockDayOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     professional_id: "all",
@@ -198,6 +200,70 @@ export default function Agenda() {
       return data;
     },
   });
+
+  // Fetch Blocked Days
+  const { data: blockedDays = [] } = useQuery({
+    queryKey: ["blocked-days", selectedDate, view, filters.professional_id],
+    queryFn: async () => {
+      if (filters.professional_id === "all") return [];
+      const start = view === "day" ? selectedDate : startOfWeek(selectedDate, { weekStartsOn: 0 });
+      const end = addDays(start, view === "day" ? 1 : 7);
+      try {
+        return await base44.blockedDays.list({
+          professionalId: parseInt(filters.professional_id),
+          startDate: format(start, "yyyy-MM-dd"),
+          endDate: format(end, "yyyy-MM-dd")
+        });
+      } catch (err) {
+        console.error('Error fetching blocked days:', err);
+        return [];
+      }
+    },
+    enabled: filters.professional_id !== "all"
+  });
+
+  // Fetch Holidays
+  const { data: holidays = [] } = useQuery({
+    queryKey: ["holidays", selectedDate.getFullYear()],
+    queryFn: async () => {
+      try {
+        return await base44.holidays.list({ year: selectedDate.getFullYear() });
+      } catch (err) {
+        console.error('Error fetching holidays:', err);
+        return [];
+      }
+    }
+  });
+
+  // Helper functions for blocked days and holidays
+  const isDayBlocked = (date: Date) => {
+    if (!blockedDays || blockedDays.length === 0) return false;
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return blockedDays.some((block: any) => {
+      const blockStart = new Date(block.start_date);
+      const blockEnd = new Date(block.end_date);
+      const checkDate = new Date(dateStr);
+      return checkDate >= blockStart && checkDate <= blockEnd;
+    });
+  };
+
+  const getBlockReason = (date: Date) => {
+    if (!blockedDays) return null;
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const block = blockedDays.find((b: any) => {
+      const blockStart = new Date(b.start_date);
+      const blockEnd = new Date(b.end_date);
+      const checkDate = new Date(dateStr);
+      return checkDate >= blockStart && checkDate <= blockEnd;
+    });
+    return block?.reason || 'Bloqueado';
+  };
+
+  const getDayHoliday = (date: Date) => {
+    if (!holidays || holidays.length === 0) return null;
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return holidays.find((h: any) => format(new Date(h.date), 'yyyy-MM-dd') === dateStr);
+  };
 
   // Mutations
   const updateStatusMutation = useMutation({
@@ -359,6 +425,10 @@ export default function Agenda() {
                 <DropdownMenuItem onClick={() => setIsTimeBlockOpen(true)}>
                   Bloqueio de Horário
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                <DropdownMenuItem onClick={() => setIsBlockDayOpen(true)}>
+                  Bloquear Dia/Período
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -433,32 +503,63 @@ export default function Agenda() {
                 {/* Slot Cells */}
                 <div className={cn("grid relative", view === "day" ? "grid-cols-1" : "grid-cols-7")}>
                   {view === "day" ? (
-                    <div
-                      className={cn("relative transition-colors border-l-0", isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50")}
-                      onClick={() => {
-                        setSelectedAppointment({ start_time: time, date: format(selectedDate, "yyyy-MM-dd") });
-                        setIsFormOpen(true);
-                      }}
-                    >
-                      {/* Half-hour guideline */}
-                      <div className={cn("absolute top-1/2 w-full border-t border-dashed pointer-events-none opacity-20", isDark ? "border-slate-700" : "border-slate-300")}></div>
-                    </div>
+                    (() => {
+                      const blocked = isDayBlocked(selectedDate);
+                      return (
+                        <div
+                          className={cn("relative transition-colors border-l-0",
+                            isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50",
+                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : ""
+                          )}
+                          onClick={() => {
+                            if (blocked) return;
+                            setSelectedAppointment({ start_time: time, date: format(selectedDate, "yyyy-MM-dd") });
+                            setIsFormOpen(true);
+                          }}
+                        >
+                          {blocked && getBlockReason(selectedDate) && time === "09:00" && (
+                            <div className="absolute inset-x-0 top-0 p-2 text-center z-10">
+                              <span className="text-xs font-medium text-slate-500 bg-white/80 dark:bg-black/50 px-2 py-1 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
+                                ⛔ {getBlockReason(selectedDate)}
+                              </span>
+                            </div>
+                          )}
+                          {/* Half-hour guideline */}
+                          <div className={cn("absolute top-1/2 w-full border-t border-dashed pointer-events-none opacity-20", isDark ? "border-slate-700" : "border-slate-300")}></div>
+                        </div>
+                      );
+                    })()
                   ) : (
-                    Array.from({ length: 7 }).map((_, j) => (
-                      <div
-                        key={j}
-                        className={cn(
-                          "border-l relative transition-colors cursor-pointer",
-                          isDark ? "border-slate-800/50 hover:bg-slate-800/30" : "border-slate-100 hover:bg-slate-50",
-                          j === 0 && "border-l-0"
-                        )}
-                        onClick={() => {
-                          const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
-                          setSelectedAppointment({ start_time: time, date: format(date, "yyyy-MM-dd") });
-                          setIsFormOpen(true);
-                        }}
-                      />
-                    ))
+                    Array.from({ length: 7 }).map((_, j) => {
+                      const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
+                      const blocked = isDayBlocked(date);
+
+                      return (
+                        <div
+                          key={j}
+                          className={cn(
+                            "border-l relative transition-colors cursor-pointer",
+                            isDark ? "border-slate-800/50 hover:bg-slate-800/30" : "border-slate-100 hover:bg-slate-50",
+                            j === 0 && "border-l-0",
+                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : ""
+                          )}
+                          onClick={() => {
+                            if (blocked) return;
+                            const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
+                            setSelectedAppointment({ start_time: time, date: format(date, "yyyy-MM-dd") });
+                            setIsFormOpen(true);
+                          }}
+                        >
+                          {blocked && getBlockReason(date) && time === "09:00" && (
+                            <div className="absolute inset-x-0 top-0 p-2 text-center z-10 pointer-events-none">
+                              <span className="text-[10px] font-medium text-slate-500 bg-white/80 dark:bg-black/50 px-1.5 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-slate-800 truncate max-w-full inline-block">
+                                ⛔ {getBlockReason(date)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -678,7 +779,17 @@ export default function Agenda() {
         onOpenChange={setIsNotificationOpen}
         appointment={selectedAppointment}
       />
+
+      <BlockDayModal
+        isOpen={isBlockDayOpen}
+        onClose={() => setIsBlockDayOpen(false)}
+        professionalId={filters.professional_id !== "all" ? parseInt(filters.professional_id) : null}
+        initialDate={selectedDate}
+        onBlockCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['blocked-days'] });
+          toast.success('Período bloqueado com sucesso!');
+        }}
+      />
     </div>
   );
 }
-
