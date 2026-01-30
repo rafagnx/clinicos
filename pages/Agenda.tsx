@@ -810,6 +810,7 @@ export default function Agenda() {
           queryClient.invalidateQueries({ queryKey: ['blocked-days'] });
           toast.success('Período bloqueado com sucesso!');
         }}
+        professionals={professionals}
       />
     </div>
   );

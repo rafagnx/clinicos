@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 interface BlockDayModalProps {
     isOpen: boolean;
@@ -157,17 +158,29 @@ export default function BlockDayModal({
                     {/* Professional Selection */}
                     <div className="space-y-2">
                         <Label>Profissional</Label>
+                        <div className="flex items-center space-x-2 mb-2">
+                            <Switch
+                                id="block-all"
+                                checked={selectedProfessionalId === 'all'}
+                                onCheckedChange={(checked) => {
+                                    setSelectedProfessionalId(checked ? 'all' : (professionalId ? String(professionalId) : ''));
+                                }}
+                                disabled={!!professionalId && professionalId !== 0}
+                            />
+                            <Label htmlFor="block-all" className="cursor-pointer">Bloquear para <strong>Toda a Equipe</strong> (Feriados)</Label>
+                        </div>
+
                         <Select
                             value={selectedProfessionalId}
                             onValueChange={setSelectedProfessionalId}
-                            disabled={!!professionalId && professionalId !== 0}
+                            disabled={(!!professionalId && professionalId !== 0) || selectedProfessionalId === 'all'}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecione o profissional" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all" className="font-semibold text-indigo-600">
-                                    Todos os Profissionais (Bloqueio Geral)
+                                    Todos os Profissionais
                                 </SelectItem>
                                 {professionals.map((p) => (
                                     <SelectItem key={p.id} value={String(p.id)}>
