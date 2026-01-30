@@ -59,6 +59,53 @@ export default function BlockDayModal({
         try {
             const { base44 } = await import('@/lib/base44Client');
 
+            // Handle "All Professionals" selection
+            if (selectedProfessionalId === 'all') {
+                const results: any[] = [];
+                const allConflicts: any[] = [];
+
+                // 1. Process all professionals
+                // If checking conflicts (first pass), we collect all conflicts
+                // If confirming (second pass), we force creation
+
+                for (const p of professionals) {
+                    try {
+                        const result = await base44.blockedDays.create({
+                            professionalId: p.id,
+                            startDate: format(startDate, 'yyyy-MM-dd'),
+                            endDate: format(endDate, 'yyyy-MM-dd'),
+                            reason,
+                            confirmConflicts // If true, force create. If false, check conflicts.
+                        });
+
+                        if (result.conflicts) {
+                            allConflicts.push(...result.conflicts.map((c: any) => ({
+                                ...c,
+                                professional_name: p.full_name || p.name // Tag conflict with professional name
+                            })));
+                        }
+                        results.push(result);
+                    } catch (err) {
+                        console.error(`Error blocking for professional ${p.id}:`, err);
+                    }
+                }
+
+                // 2. Check aggregated conflicts
+                if (allConflicts.length > 0 && !confirmConflicts) {
+                    setConflicts(allConflicts);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Success
+                if (onBlockCreated) {
+                    onBlockCreated(results); // Pass array of results
+                }
+                resetAndClose();
+                return;
+            }
+
+            // Normal single professional flow
             const result = await base44.blockedDays.create({
                 professionalId: parseInt(selectedProfessionalId),
                 startDate: format(startDate, 'yyyy-MM-dd'),
@@ -119,6 +166,9 @@ export default function BlockDayModal({
                                 <SelectValue placeholder="Selecione o profissional" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="all" className="font-semibold text-indigo-600">
+                                    Todos os Profissionais (Bloqueio Geral)
+                                </SelectItem>
                                 {professionals.map((p) => (
                                     <SelectItem key={p.id} value={String(p.id)}>
                                         {p.full_name || p.name}
