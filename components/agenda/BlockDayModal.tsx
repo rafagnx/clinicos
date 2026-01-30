@@ -10,11 +10,13 @@ import { Calendar as CalendarIcon, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BlockDayModalProps {
     isOpen: boolean;
     onClose: () => void;
     professionalId: number | null;
+    professionals?: any[];
     initialDate?: Date;
     onBlockCreated?: (result: any) => void;
 }
@@ -28,9 +30,11 @@ export default function BlockDayModal({
     isOpen,
     onClose,
     professionalId,
+    professionals = [],
     initialDate,
     onBlockCreated
 }: BlockDayModalProps) {
+    const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>(professionalId ? String(professionalId) : '');
     const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
     const [endDate, setEndDate] = useState<Date>(initialDate || new Date());
     const [reason, setReason] = useState<string>('');
@@ -40,7 +44,7 @@ export default function BlockDayModal({
     const [showEndCalendar, setShowEndCalendar] = useState<boolean>(false);
 
     const handleSubmit = async (confirmConflicts = false) => {
-        if (!professionalId) {
+        if (!selectedProfessionalId) {
             alert('Por favor, selecione um profissional primeiro');
             return;
         }
@@ -56,7 +60,7 @@ export default function BlockDayModal({
             const { base44 } = await import('@/lib/base44Client');
 
             const result = await base44.blockedDays.create({
-                professionalId,
+                professionalId: parseInt(selectedProfessionalId),
                 startDate: format(startDate, 'yyyy-MM-dd'),
                 endDate: format(endDate, 'yyyy-MM-dd'),
                 reason,
@@ -103,6 +107,27 @@ export default function BlockDayModal({
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
+                    {/* Professional Selection */}
+                    <div className="space-y-2">
+                        <Label>Profissional</Label>
+                        <Select
+                            value={selectedProfessionalId}
+                            onValueChange={setSelectedProfessionalId}
+                            disabled={!!professionalId && professionalId !== 0}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione o profissional" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {professionals.map((p) => (
+                                    <SelectItem key={p.id} value={String(p.id)}>
+                                        {p.full_name || p.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {/* Date Range Selection */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* Start Date */}

@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { Link, useOutletContext } from "react-router-dom"; // Added useOutletContext
 import { cn, createPageUrl } from "@/lib/utils";
+import { supabase } from "@/lib/supabaseClient";
 
 import AppointmentForm from "@/components/agenda/AppointmentForm";
 import SendNotificationDialog from "@/components/agenda/SendNotificationDialog";
@@ -142,6 +143,21 @@ export default function Agenda() {
   const [filters, setFilters] = useState({
     professional_id: "all",
     status: "all",
+  });
+
+  // Fetch current user professional profile to auto-select in block modal
+  const { data: currentProfessional } = useQuery({
+    queryKey: ["me-professional"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) return null;
+
+      const profs = await base44.list("Professional", {
+        filter: { email: user.email, limit: 1 }
+      });
+      return profs?.[0] || null;
+    },
+    staleTime: 1000 * 60 * 30 // 30 mins
   });
 
   // Queries
@@ -783,7 +799,11 @@ export default function Agenda() {
       <BlockDayModal
         isOpen={isBlockDayOpen}
         onClose={() => setIsBlockDayOpen(false)}
-        professionalId={filters.professional_id !== "all" ? parseInt(filters.professional_id) : null}
+        professionalId={
+          filters.professional_id !== "all"
+            ? parseInt(filters.professional_id)
+            : (currentProfessional?.id || null)
+        }
         initialDate={selectedDate}
         onBlockCreated={() => {
           queryClient.invalidateQueries({ queryKey: ['blocked-days'] });
