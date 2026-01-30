@@ -26,6 +26,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const [isMinimized, setIsMinimized] = useState(false);
     const [activeRecipient, setActiveRecipient] = useState<any | null>(null);
     const [usersStatus, setUsersStatus] = useState<Record<string, string>>({});
+    const userToProRef = useRef<Record<string, string>>({});
     const socketRef = useRef<Socket | null>(null);
 
     // Fetch Current User
@@ -69,10 +70,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             // (We could use sonner here if not inside specific chat)
         });
 
-        // Listen for Status Changes
-        socket.on('status_change', ({ userId, status }: any) => {
-            setUsersStatus(prev => ({ ...prev, [userId]: status }));
-        });
+        // Removed: Old socket.on('status_change') from here
 
         return () => {
             socket.disconnect();
@@ -103,7 +101,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             const statusMap: any = {};
             pros.forEach((p: any) => {
                 statusMap[p.id] = p.chat_status || "offline";
-                if (p.user_id) statusMap[p.user_id] = p.chat_status || "offline";
+                if (p.user_id) {
+                    statusMap[p.user_id] = p.chat_status || "offline";
+                    userToProRef.current[p.user_id] = p.id;
+                }
             });
             setUsersStatus(statusMap);
             return statusMap;
@@ -111,6 +112,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         // We still poll as a fallback, but less frequently? Or keep it for redundancy.
         refetchInterval: 30000
     });
+
+    // Listen for Status Changes (Moved and updated)
+    useEffect(() => {
+        if (!socketRef.current) return;
+
+        // Listen for Status Changes
+        const socket = socketRef.current;
+        const handleStatusChange = ({ userId, status }: any) => {
+            setUsersStatus(prev => {
+                const updates: any = { [userId]: status };
+                // Also update the Professional ID if we know it
+                const proId = userToProRef.current[userId];
+                if (proId) updates[proId] = status;
+
+                return { ...prev, ...updates };
+            });
+        };
+
+        socketRef.current.on('status_change', handleStatusChange);
+
+        return () => {
+            socketRef.current?.off('status_change', handleStatusChange);
+        };
+    }, [socketRef.current]); // Re-bind if socket changes
 
     const updateStatus = async (newStatus: "online" | "busy" | "offline") => {
         if (!currentUser?.id) return;
