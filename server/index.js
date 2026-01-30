@@ -1777,29 +1777,34 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             // Skip invalid keys to avoid SQL errors (simple regex to allow alphanum + underscore)
             if (!/^[a-zA-Z0-9_]+$/.test(key)) return;
 
+            // Map virtual columns (e.g., date -> start_time for appointments)
+            let dbColumn = key;
+            if (tableName === 'appointments' && key === 'date') {
+                dbColumn = 'start_time';
+            }
+
             const value = req.query[key];
 
             if (typeof value === 'object' && value !== null) {
                 // Handle Operators
                 if (value._gte) {
-                    whereClauses.push(`"${key}" >= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" >= $${paramIndex++} `);
                     params.push(value._gte);
                 }
                 if (value._gt) {
-                    whereClauses.push(`"${key}" > $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" > $${paramIndex++} `);
                     params.push(value._gt);
                 }
                 if (value._lt) {
-                    whereClauses.push(`"${key}" < $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" < $${paramIndex++} `);
                     params.push(value._lt);
                 }
                 if (value._lte) {
-                    whereClauses.push(`"${key}" <= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" <= $${paramIndex++} `);
                     params.push(value._lte);
                 }
             } else {
-                // Exact Match
-                whereClauses.push(`"${key}" = $${paramIndex++} `);
+                whereClauses.push(`"${dbColumn}" = $${paramIndex++} `);
                 params.push(value);
             }
         });
