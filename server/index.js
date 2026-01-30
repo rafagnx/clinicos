@@ -1977,7 +1977,7 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-import { runOwnershipMigration } from './migration_ownership.js';
+
 
 
 // Trigger Deploy 2
