@@ -48,33 +48,8 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
         enabled: !!conversation
     });
 
-    // 3. Realtime Subscription (Supabase LIVE)
-    useEffect(() => {
-        if (!conversation?.id) return;
-
-        const channel = supabase
-            .channel(`room:${conversation.id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `conversation_id=eq.${conversation.id}`
-                },
-                (payload) => {
-                    // Instant update via Query Cache
-                    queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
-
-                    // Optional: Play sound or visual hint
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [conversation?.id, queryClient]);
+    // 3. Realtime Subscription (Supabase LIVE) - REMOVED (Replaced by Socket.io)
+    // useEffect(() => { ... }, [conversation?.id, queryClient]);
 
     // Scroll to bottom on new messages
     useEffect(() => {

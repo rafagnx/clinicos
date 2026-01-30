@@ -41,7 +41,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         if (!currentUser?.id) return;
 
         // Determine URL (Production vs Local)
-        const socketUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin.replace('5173', '3001'); // Fallback dev port
+        // Strip '/api' if present to ensure we connect to root namespace
+        const baseUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin.replace('5173', '3001');
+        const socketUrl = baseUrl.replace('/api', '');
 
         const socket = io(socketUrl, {
             transports: ['websocket'],
