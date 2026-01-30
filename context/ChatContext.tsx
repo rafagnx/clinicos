@@ -25,6 +25,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [activeRecipient, setActiveRecipient] = useState<any | null>(null);
+    const [usersStatus, setUsersStatus] = useState<Record<string, string>>({});
     const socketRef = useRef<Socket | null>(null);
 
     // Fetch Current User
@@ -93,7 +94,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Fetch Initial Statuses
-    useQuery({
+    useQuery<Record<string, string>>({
         queryKey: ["all-pros-status"],
         queryFn: async () => {
             const pros = await base44.entities.Professional.list();
