@@ -221,21 +221,27 @@ export default function Agenda() {
   const { data: blockedDays = [] } = useQuery({
     queryKey: ["blocked-days", selectedDate, view, filters.professional_id],
     queryFn: async () => {
-      if (filters.professional_id === "all") return [];
-      const start = view === "day" ? selectedDate : startOfWeek(selectedDate, { weekStartsOn: 0 });
-      const end = addDays(start, view === "day" ? 1 : 7);
-      try {
-        return await base44.blockedDays.list({
-          professionalId: parseInt(filters.professional_id),
+      queryFn: async () => {
+        const start = view === "day" ? selectedDate : startOfWeek(selectedDate, { weekStartsOn: 0 });
+        const end = addDays(start, view === "day" ? 1 : 7);
+
+        const params: any = {
           startDate: format(start, "yyyy-MM-dd"),
           endDate: format(end, "yyyy-MM-dd")
-        });
-      } catch (err) {
-        console.error('Error fetching blocked days:', err);
-        return [];
+        };
+
+        if (filters.professional_id !== "all") {
+          params.professionalId = parseInt(filters.professional_id);
+        }
+
+        try {
+          return await base44.blockedDays.list(params);
+        } catch (err) {
+          console.error('Error fetching blocked days:', err);
+          return [];
+        }
       }
     },
-    enabled: filters.professional_id !== "all"
   });
 
   // Fetch Holidays
@@ -256,9 +262,11 @@ export default function Agenda() {
     if (!blockedDays || blockedDays.length === 0) return false;
     const dateStr = format(date, 'yyyy-MM-dd');
     return blockedDays.some((block: any) => {
-      const blockStart = new Date(block.start_date);
-      const blockEnd = new Date(block.end_date);
-      const checkDate = new Date(dateStr);
+      // Fix Timezone: Parse as ISO but ignore time component safely
+      const blockStart = new Date(block.start_date + 'T00:00:00');
+      const blockEnd = new Date(block.end_date + 'T23:59:59');
+      // Normalize checkDate to avoid time issues
+      const checkDate = new Date(dateStr + 'T12:00:00');
       return checkDate >= blockStart && checkDate <= blockEnd;
     });
   };
@@ -267,9 +275,11 @@ export default function Agenda() {
     if (!blockedDays) return null;
     const dateStr = format(date, 'yyyy-MM-dd');
     const block = blockedDays.find((b: any) => {
-      const blockStart = new Date(b.start_date);
-      const blockEnd = new Date(b.end_date);
-      const checkDate = new Date(dateStr);
+      // Fix Timezone: Parse as ISO but ignore time component safely
+      const blockStart = new Date(b.start_date + 'T00:00:00');
+      const blockEnd = new Date(b.end_date + 'T23:59:59');
+      // Normalize checkDate to avoid time issues
+      const checkDate = new Date(dateStr + 'T12:00:00');
       return checkDate >= blockStart && checkDate <= blockEnd;
     });
     return block?.reason || 'Bloqueado';
@@ -278,7 +288,11 @@ export default function Agenda() {
   const getDayHoliday = (date: Date) => {
     if (!holidays || holidays.length === 0) return null;
     const dateStr = format(date, 'yyyy-MM-dd');
-    return holidays.find((h: any) => format(new Date(h.date), 'yyyy-MM-dd') === dateStr);
+    return holidays.find((h: any) => {
+      // Handle potential ISO string or plain date
+      const hDate = h.date.toString().split('T')[0];
+      return hDate === dateStr;
+    });
   };
 
   // Mutations

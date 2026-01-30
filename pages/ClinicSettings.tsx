@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { ExportService } from "@/services/ExportService";
 import { Database, FileJson, FileSpreadsheet } from "lucide-react";
-import HolidayManager from "@/components/settings/HolidayManager";
+
 
 export default function ClinicSettings() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
@@ -262,7 +262,7 @@ export default function ClinicSettings() {
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="contact">Contato & Social</TabsTrigger>
           <TabsTrigger value="whatsapp">WhatsApp (Meta)</TabsTrigger>
-          <TabsTrigger value="holidays">Feriados</TabsTrigger>
+
           <TabsTrigger value="billing">Assinatura</TabsTrigger>
           <TabsTrigger value="data">Dados</TabsTrigger>
         </TabsList>
@@ -416,9 +416,7 @@ export default function ClinicSettings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="holidays" className="space-y-6">
-          <HolidayManager />
-        </TabsContent>
+
 
         <TabsContent value="billing" className="space-y-6">
           <Card>
