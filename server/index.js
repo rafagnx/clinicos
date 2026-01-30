@@ -411,9 +411,9 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
 // MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
 app.post("/api/debug/migrate", async (req, res) => {
     try {
-        console.log("Starting manual migration via initSchema...");
-        await initSchema();
-        res.json({ success: true, message: "Migration completed successfully via initSchema" });
+        console.log("Starting manual migration via initializeDatabaseSchema...");
+        await initializeDatabaseSchema();
+        res.json({ success: true, message: "Migration completed successfully via initializeDatabaseSchema" });
     } catch (error) {
         console.error("Migration failed:", error);
         res.status(500).json({ success: false, error: error.message });
@@ -1005,7 +1005,7 @@ httpServer.listen(PORT, async () => {
     console.log(`Environment: ${process.env.NODE_ENV}`);
     try {
         console.log("Verifying database schema...");
-        await initSchema();
+        await initializeDatabaseSchema();
         await runOwnershipMigration(pool);
     } catch (err) {
         console.error("Schema init failed:", err);
@@ -2273,7 +2273,7 @@ app.get('/api/debug-auth-config', (req, res) => {
 });
 
 // DATABASE MIGRATION & SEEDING
-async function initSchema() {
+async function initializeDatabaseSchema() {
     console.log('[Schema] Checking database schema...');
     const client = await pool.connect();
     try {
@@ -2371,7 +2371,7 @@ async function initSchema() {
 }
 
 // Run Migration on Startup (Async)
-initSchema();
+initializeDatabaseSchema();
 
 // The "catchall" handler
 app.get(/.*/, (req, res) => {
