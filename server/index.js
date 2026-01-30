@@ -998,9 +998,18 @@ app.get('/api/health', (req, res) => {
 // START SERVER
 // ------------------------------------------------------------------
 
-httpServer.listen(PORT, () => {
+import { runOwnershipMigration } from './migration_ownership.js';
+
+httpServer.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV}`);
+    try {
+        console.log("Verifying database schema...");
+        await initSchema();
+        await runOwnershipMigration(pool);
+    } catch (err) {
+        console.error("Schema init failed:", err);
+    }
     startCleanupJob();
 });
 
@@ -1970,15 +1979,5 @@ app.get(/.*/, (req, res) => {
 
 import { runOwnershipMigration } from './migration_ownership.js';
 
-app.listen(PORT, async () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    try {
-        console.log("Verifying database schema...");
-        await initSchema();
-        await runOwnershipMigration(pool); // Run production fix
-    } catch (err) {
-        console.error("Schema init failed:", err);
-    }
-    startCleanupJob(pool);
-});
+
 // Trigger Deploy 2
