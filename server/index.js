@@ -411,9 +411,9 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
 // MANUAL MIGRATION ENDPOINT (Emergency Fix for Database)
 app.post("/api/debug/migrate", async (req, res) => {
     try {
-        console.log("Starting manual migration via initializeDatabaseSchema...");
-        await initializeDatabaseSchema();
-        res.json({ success: true, message: "Migration completed successfully via initializeDatabaseSchema" });
+        console.log("Starting manual migration via initSchema...");
+        await initSchema();
+        res.json({ success: true, message: "Migration completed successfully via initSchema" });
     } catch (error) {
         console.error("Migration failed:", error);
         res.status(500).json({ success: false, error: error.message });
@@ -857,6 +857,77 @@ const initSchema = async () => {
                 }
             }
 
+            // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error)
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS blocked_days (
+                    id SERIAL PRIMARY KEY,
+                    user_id UUID REFERENCES "user"(id) ON DELETE SET NULL, 
+                    professional_id INTEGER NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
+                    organization_id UUID NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                    start_date DATE NOT NULL,
+                    end_date DATE NOT NULL,
+                    reason TEXT,
+                    created_by UUID,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+                CREATE TABLE IF NOT EXISTS holidays (
+                    id SERIAL PRIMARY KEY,
+                    organization_id UUID NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                    date DATE NOT NULL,
+                    name TEXT NOT NULL,
+                    type TEXT NOT NULL DEFAULT 'local', 
+                    created_by UUID,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+                CREATE INDEX IF NOT EXISTS idx_blocked_days_org_date ON blocked_days(organization_id, start_date, end_date);
+                CREATE INDEX IF NOT EXISTS idx_holidays_org_date ON holidays(organization_id, date);
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_holidays_unique ON holidays(organization_id, date, type);
+            `);
+
+            // 10. AUTO-SEED BRAZILIAN HOLIDAYS (2026-2027)
+            const seedHolidays = [
+                // 2026
+                { date: '2026-01-01', name: 'Confraternização Universal' },
+                { date: '2026-02-17', name: 'Carnaval' },
+                { date: '2026-04-03', name: 'Sexta-feira Santa' },
+                { date: '2026-04-21', name: 'Tiradentes' },
+                { date: '2026-05-01', name: 'Dia do Trabalho' },
+                { date: '2026-06-04', name: 'Corpus Christi' },
+                { date: '2026-09-07', name: 'Independência do Brasil' },
+                { date: '2026-10-12', name: 'Nossa Senhora Aparecida' },
+                { date: '2026-11-02', name: 'Finados' },
+                { date: '2026-11-15', name: 'Proclamação da República' },
+                { date: '2026-12-25', name: 'Natal' },
+                // 2027
+                { date: '2027-01-01', name: 'Confraternização Universal' },
+                { date: '2027-02-09', name: 'Carnaval' },
+                { date: '2027-03-26', name: 'Sexta-feira Santa' },
+                { date: '2027-04-21', name: 'Tiradentes' },
+                { date: '2027-05-01', name: 'Dia do Trabalho' },
+                { date: '2027-05-27', name: 'Corpus Christi' },
+                { date: '2027-09-07', name: 'Independência do Brasil' },
+                { date: '2027-10-12', name: 'Nossa Senhora Aparecida' },
+                { date: '2027-11-02', name: 'Finados' },
+                { date: '2027-11-15', name: 'Proclamação da República' },
+                { date: '2027-12-25', name: 'Natal' }
+            ];
+
+            // Use client to query instead of pool (since we are inside transaction block, actually wait, initSchema uses client)
+            // But we need to check orgs. 
+            // Note: We are inside a transaction (BEGIN...COMMIT).
+            const orgs = await client.query('SELECT id FROM "organization"');
+
+            for (const org of orgs.rows) {
+                for (const h of seedHolidays) {
+                    await client.query(`
+                        INSERT INTO holidays (organization_id, date, name, type)
+                        VALUES ($1, $2, $3, 'national')
+                        ON CONFLICT (organization_id, date, type) DO NOTHING
+                    `, [org.id, h.date, h.name]);
+                }
+            }
+
             await client.query('COMMIT');
             console.log('Database schema verified and migrated.');
         } catch (e) {
@@ -1005,7 +1076,7 @@ httpServer.listen(PORT, async () => {
     console.log(`Environment: ${process.env.NODE_ENV}`);
     try {
         console.log("Verifying database schema...");
-        await initializeDatabaseSchema();
+        await initSchema();
         await runOwnershipMigration(pool);
     } catch (err) {
         console.error("Schema init failed:", err);
@@ -2272,106 +2343,10 @@ app.get('/api/debug-auth-config', (req, res) => {
     });
 });
 
-// DATABASE MIGRATION & SEEDING
-async function initializeDatabaseSchema() {
-    console.log('[Schema] Checking database schema...');
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
 
-        // 1. Create blocked_days table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS blocked_days (
-                id SERIAL PRIMARY KEY,
-                user_id UUID REFERENCES "user"(id) ON DELETE SET NULL, 
-                professional_id INTEGER NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
-                organization_id UUID NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
-                start_date DATE NOT NULL,
-                end_date DATE NOT NULL,
-                reason TEXT,
-                created_by UUID,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        `);
-
-        // 2. Create holidays table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS holidays (
-                id SERIAL PRIMARY KEY,
-                organization_id UUID NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
-                date DATE NOT NULL,
-                name TEXT NOT NULL,
-                type TEXT NOT NULL DEFAULT 'local', 
-                created_by UUID,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        `);
-
-        // 3. Create Indexes
-        await client.query(`
-            CREATE INDEX IF NOT EXISTS idx_blocked_days_org_date ON blocked_days(organization_id, start_date, end_date);
-            CREATE INDEX IF NOT EXISTS idx_holidays_org_date ON holidays(organization_id, date);
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_holidays_unique ON holidays(organization_id, date, type);
-        `);
-
-        await client.query('COMMIT');
-        console.log('[Schema] Tables verified/created.');
-
-        // 4. AUTO-SEED BRAZILIAN HOLIDAYS (2026-2027)
-        // Hardcoded specifically for this quick fix as user requested "no complications"
-        const seedHolidays = [
-            // 2026
-            { date: '2026-01-01', name: 'Confraternização Universal' },
-            { date: '2026-02-17', name: 'Carnaval' },
-            { date: '2026-04-03', name: 'Sexta-feira Santa' },
-            { date: '2026-04-21', name: 'Tiradentes' },
-            { date: '2026-05-01', name: 'Dia do Trabalho' },
-            { date: '2026-06-04', name: 'Corpus Christi' },
-            { date: '2026-09-07', name: 'Independência do Brasil' },
-            { date: '2026-10-12', name: 'Nossa Senhora Aparecida' },
-            { date: '2026-11-02', name: 'Finados' },
-            { date: '2026-11-15', name: 'Proclamação da República' },
-            { date: '2026-12-25', name: 'Natal' },
-            // 2027
-            { date: '2027-01-01', name: 'Confraternização Universal' },
-            { date: '2027-02-09', name: 'Carnaval' },
-            { date: '2027-03-26', name: 'Sexta-feira Santa' },
-            { date: '2027-04-21', name: 'Tiradentes' },
-            { date: '2027-05-01', name: 'Dia do Trabalho' },
-            { date: '2027-05-27', name: 'Corpus Christi' },
-            { date: '2027-09-07', name: 'Independência do Brasil' },
-            { date: '2027-10-12', name: 'Nossa Senhora Aparecida' },
-            { date: '2027-11-02', name: 'Finados' },
-            { date: '2027-11-15', name: 'Proclamação da República' },
-            { date: '2027-12-25', name: 'Natal' }
-        ];
-
-        // Seed for ALL active organizations
-        const orgs = await pool.query('SELECT id FROM organization');
-        console.log(`[Schema] Seeding holidays for ${orgs.rows.length} organizations...`);
-
-        for (const org of orgs.rows) {
-            for (const h of seedHolidays) {
-                await pool.query(`
-                    INSERT INTO holidays (organization_id, date, name, type)
-                    VALUES ($1, $2, $3, 'national')
-                    ON CONFLICT (organization_id, date, type) DO NOTHING
-                `, [org.id, h.date, h.name]);
-            }
-        }
-        console.log('[Schema] Auto-seeding complete.');
-
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('[Schema] Error:', err);
-    } finally {
-        client.release();
-    }
-}
 
 // Run Migration on Startup (Async)
-initializeDatabaseSchema();
+
 
 // The "catchall" handler
 app.get(/.*/, (req, res) => {
