@@ -92,8 +92,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setIsMinimized(prev => !prev);
     };
 
-    const [usersStatus, setUsersStatus] = useState<Record<string, string>>({});
-
     // Fetch Initial Statuses
     useQuery({
         queryKey: ["all-pros-status"],
