@@ -501,34 +501,50 @@ export default function Agenda() {
                   <div className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>
                     {format(selectedDate, "EEEE, d", { locale: ptBR })}
                   </div>
+                  {getDayHoliday(selectedDate) && (
+                    <span className="mt-1 text-sm font-semibold text-amber-500">
+                      🎉 {getDayHoliday(selectedDate)?.name}
+                    </span>
+                  )}
                 </div>
               ) : (
                 Array.from({ length: 7 }).map((_, i) => {
                   const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), i);
                   const isToday = isSameDay(date, new Date());
+                  const holiday = getDayHoliday(date);
+
                   return (
                     <div
                       key={i}
                       className={cn(
-                        "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1 transition-colors",
+                        "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1 transition-colors relative overflow-hidden",
                         isDark ? "border-slate-800" : "border-slate-100",
-                        isToday ? (isDark ? "bg-indigo-500/10" : "bg-indigo-50/50") : ""
+                        isToday ? (isDark ? "bg-indigo-500/10" : "bg-indigo-50/50") : "",
+                        holiday ? (isDark ? "bg-amber-900/10" : "bg-amber-50/40") : ""
                       )}
                     >
                       <span className={cn(
                         "text-[10px] font-bold uppercase tracking-wider",
-                        isToday ? "text-indigo-500" : (isDark ? "text-slate-500" : "text-slate-400")
+                        isToday ? "text-indigo-500" : (isDark ? "text-slate-500" : "text-slate-400"),
+                        holiday ? "text-amber-600 dark:text-amber-500" : ""
                       )}>
                         {format(date, "EEE", { locale: ptBR })}
                       </span>
                       <div className={cn(
-                        "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all",
+                        "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all relative z-10",
                         isToday
                           ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110"
-                          : (isDark ? "text-slate-300" : "text-slate-700")
+                          : (isDark ? "text-slate-300" : "text-slate-700"),
+                        holiday && !isToday ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" : ""
                       )}>
                         {format(date, "d")}
                       </div>
+
+                      {holiday && (
+                        <span className="text-[9px] font-medium text-amber-600 dark:text-amber-400 truncate max-w-full px-1" title={holiday.name}>
+                          {holiday.name.split(' ')[0]}
+                        </span>
+                      )}
                     </div>
                   );
                 })
@@ -550,11 +566,13 @@ export default function Agenda() {
                   {view === "day" ? (
                     (() => {
                       const blocked = isDayBlocked(selectedDate);
+                      const holiday = getDayHoliday(selectedDate);
                       return (
                         <div
                           className={cn("relative transition-colors border-l-0",
                             isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50",
-                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : ""
+                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : "",
+                            holiday && !blocked ? (isDark ? "bg-amber-900/5 hover:bg-amber-900/10" : "bg-amber-50/30 hover:bg-amber-50/50") : ""
                           )}
                           onClick={() => {
                             if (blocked) return;
@@ -569,6 +587,13 @@ export default function Agenda() {
                               </span>
                             </div>
                           )}
+                          {holiday && time === "08:00" && !blocked && (
+                            <div className="absolute inset-x-0 top-0 p-1 text-center z-0 pointer-events-none opacity-50">
+                              <span className="text-xs font-medium text-amber-500 uppercase tracking-widest">
+                                🎉 {holiday.name}
+                              </span>
+                            </div>
+                          )}
                           {/* Half-hour guideline */}
                           <div className={cn("absolute top-1/2 w-full border-t border-dashed pointer-events-none opacity-20", isDark ? "border-slate-700" : "border-slate-300")}></div>
                         </div>
@@ -578,6 +603,7 @@ export default function Agenda() {
                     Array.from({ length: 7 }).map((_, j) => {
                       const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
                       const blocked = isDayBlocked(date);
+                      const holiday = getDayHoliday(date);
 
                       return (
                         <div
@@ -586,7 +612,8 @@ export default function Agenda() {
                             "border-l relative transition-colors cursor-pointer",
                             isDark ? "border-slate-800/50 hover:bg-slate-800/30" : "border-slate-100 hover:bg-slate-50",
                             j === 0 && "border-l-0",
-                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : ""
+                            blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : "",
+                            holiday && !blocked ? (isDark ? "bg-amber-900/5 hover:bg-amber-900/10" : "bg-amber-50/30 hover:bg-amber-50/50") : ""
                           )}
                           onClick={() => {
                             if (blocked) return;
@@ -599,6 +626,13 @@ export default function Agenda() {
                             <div className="absolute inset-x-0 top-0 p-2 text-center z-10 pointer-events-none">
                               <span className="text-[10px] font-medium text-slate-500 bg-white/80 dark:bg-black/50 px-1.5 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-slate-800 truncate max-w-full inline-block">
                                 ⛔ {getBlockReason(date)}
+                              </span>
+                            </div>
+                          )}
+                          {holiday && time === "08:00" && !blocked && (
+                            <div className="absolute inset-x-0 top-0 p-1 text-center z-0 pointer-events-none opacity-50">
+                              <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest truncate w-full block">
+                                {holiday.name}
                               </span>
                             </div>
                           )}

@@ -348,33 +348,50 @@ export default function NewMedicalRecord() {
             <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Procedimentos Realizados</h3>
 
             <div className="space-y-6">
-              {/* Custom Procedures */}
-              {customProcedures.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="font-medium text-emerald-700 text-sm uppercase tracking-wide">Meus Procedimentos</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {customProcedures.map((proc: any) => {
-                      const isSelected = formData.selected_procedures.includes(proc.name);
-                      return (
-                        <Button
-                          key={proc.id}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => toggleProcedure(proc.name)}
-                          className={cn(
-                            "transition-all",
-                            isSelected ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent" : "text-emerald-700 border-emerald-200 hover:border-emerald-300 hover:text-emerald-800 bg-emerald-50"
-                          )}
-                        >
-                          {isSelected && <Plus className="w-3 h-3 mr-1" />}
-                          {proc.name}
-                        </Button>
-                      );
-                    })}
+              {/* Custom Procedures (Filtered & Deduped) */}
+              {(() => {
+                // Flatten standard categories for exclusion
+                const standardNames = new Set(
+                  Object.values(PROCEDURE_CATEGORIES).flat().map(n => n.toLowerCase())
+                );
+
+                // Filter DB procedures: Exclude if in standard list, and deduplicate by name
+                const uniqueExtras = customProcedures.filter((proc: any, index, self) =>
+                  // 1. Must not be in standard categories
+                  !standardNames.has(proc.name.toLowerCase()) &&
+                  // 2. Must be unique in this list (first occurrence)
+                  index === self.findIndex((p: any) => p.name.toLowerCase() === proc.name.toLowerCase())
+                );
+
+                if (uniqueExtras.length === 0) return null;
+
+                return (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-emerald-700 text-sm uppercase tracking-wide">Outros Procedimentos</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {uniqueExtras.map((proc: any) => {
+                        const isSelected = formData.selected_procedures.includes(proc.name);
+                        return (
+                          <Button
+                            key={proc.id}
+                            type="button"
+                            variant={isSelected ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => toggleProcedure(proc.name)}
+                            className={cn(
+                              "transition-all",
+                              isSelected ? "bg-emerald-600 hover:bg-emerald-700 text-white border-transparent" : "text-emerald-700 border-emerald-200 hover:border-emerald-300 hover:text-emerald-800 bg-emerald-50"
+                            )}
+                          >
+                            {isSelected && <Plus className="w-3 h-3 mr-1" />}
+                            {proc.name}
+                          </Button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
               {Object.entries(PROCEDURE_CATEGORIES).map(([category, items]) => (
                 <div key={category} className="space-y-3">
                   <h4 className="font-medium text-slate-700 text-sm uppercase tracking-wide">{category}</h4>
