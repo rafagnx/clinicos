@@ -28,6 +28,11 @@ export const useFeatures = () => {
             return true;
         }
 
+        // 1.1 Orofacial Clinic PRO Override
+        if (organization?.name?.toLowerCase()?.includes('orofacial') || organization?.slug?.includes('orofacial')) {
+            return true;
+        }
+
         // Hardcode fallback for Orofacial Clinic (temporary fix for visibility)
         const activeOrgId = localStorage.getItem("active-org-id");
         if (activeOrgId === 'bc550e05-d94f-461e-92da-bd3e3c8e2460' && featureName === 'marketing') {

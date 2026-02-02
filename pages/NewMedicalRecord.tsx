@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon, Upload, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Calendar as CalendarIcon, Upload, Plus, X, Check, ChevronsUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const PROCEDURE_CATEGORIES = {
   "Toxina": ["Toxina Botulínica"],
@@ -157,21 +159,50 @@ export default function NewMedicalRecord() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label>Paciente *</Label>
-                <Select
-                  value={formData.patient_id}
-                  onValueChange={(v) => setFormData(p => ({ ...p, patient_id: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o paciente..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {patients.map((patient: any) => (
-                      <SelectItem key={patient.id} value={patient.id}>
-                        {patient.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !formData.patient_id && "text-muted-foreground"
+                      )}
+                    >
+                      {formData.patient_id
+                        ? patients.find((patient: any) => patient.id === formData.patient_id)?.full_name
+                        : "Selecione o paciente..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar paciente..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {patients.map((patient: any) => (
+                            <CommandItem
+                              value={patient.full_name}
+                              key={patient.id}
+                              onSelect={() => {
+                                setFormData(p => ({ ...p, patient_id: patient.id }));
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  patient.id === formData.patient_id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {patient.full_name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">

@@ -28,7 +28,7 @@ export default function PatientHistory() {
     queryKey: ["patient", patientId],
     queryFn: async () => {
       const patients = await base44.entities.Patient.list();
-      return patients.find(p => p.id === patientId);
+      return patients.find(p => String(p.id) === String(patientId));
     },
     enabled: !!patientId
   });

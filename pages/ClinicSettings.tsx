@@ -127,6 +127,7 @@ export default function ClinicSettings() {
     if (organization?.subscription_status === 'manual_override') return <span className="text-amber-600 font-bold">PRO (Manual)</span>;
     if (user?.email === 'rafamarketingdb@gmail.com') return <span className="text-purple-600 font-bold">MASTER</span>;
     if (user?.email === 'marketingorofacial@gmail.com') return <span className="text-pink-600 font-bold">PRO (Partner)</span>;
+    if (organization?.name?.toLowerCase()?.includes('orofacial')) return <span className="text-pink-600 font-bold">PRO (Partner)</span>;
     return "Aguardando Assinatura";
   };
 
@@ -439,7 +440,7 @@ export default function ClinicSettings() {
                   </div>
                 </div>
 
-                {organization?.subscription_status !== 'active' && organization?.subscription_status !== 'manual_override' && user?.email !== 'rafamarketingdb@gmail.com' && user?.email !== 'marketingorofacial@gmail.com' && (
+                {organization?.subscription_status !== 'active' && organization?.subscription_status !== 'manual_override' && user?.email !== 'rafamarketingdb@gmail.com' && user?.email !== 'marketingorofacial@gmail.com' && !organization?.name?.toLowerCase()?.includes('orofacial') && (
                   <div className="flex flex-col gap-3 w-full md:w-auto">
                     <Button
                       onClick={handleSubscribe}
