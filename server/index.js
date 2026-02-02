@@ -1751,28 +1751,14 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         let whereClauses = [];
         let paramIndex = 1;
 
-        // Special handling for Appointments to include patient and professional data
-        if (tableName === 'appointments') {
-            query = `
-                SELECT 
-                    a.*,
-                    json_build_object('id', p.id, 'full_name', p.name, 'phone', p.phone, 'email', p.email) AS patient,
-                    json_build_object('id', pr.id, 'full_name', pr.name, 'email', pr.email) AS professional
-                FROM appointments a
-                LEFT JOIN patients p ON a.patient_id::text = p.id::text
-                LEFT JOIN professionals pr ON a.professional_id::text = pr.id::text
-            `;
-        } else {
-            query = `SELECT * FROM ${tableName} `;
-        }
+        // Simple query for all entities (no JOINs to avoid type issues)
+        query = `SELECT * FROM ${tableName} `;
 
         if (isUserScoped) {
             whereClauses.push(`user_id = $${paramIndex++} `);
             params.push(user.id);
         } else {
-            // Use alias for appointments JOINed query
-            const colPrefix = tableName === 'appointments' ? 'a.' : '';
-            whereClauses.push(`${colPrefix}organization_id = $${paramIndex++} `);
+            whereClauses.push(`organization_id = $${paramIndex++} `);
             params.push(organizationId);
         }
 
@@ -1805,28 +1791,23 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             if (typeof value === 'object' && value !== null) {
                 // Handle Operators
                 if (value._gte) {
-                    const colRef = tableName === 'appointments' ? `a."${dbColumn}"` : `"${dbColumn}"`;
-                    whereClauses.push(`${colRef} >= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" >= $${paramIndex++} `);
                     params.push(value._gte);
                 }
                 if (value._gt) {
-                    const colRef = tableName === 'appointments' ? `a."${dbColumn}"` : `"${dbColumn}"`;
-                    whereClauses.push(`${colRef} > $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" > $${paramIndex++} `);
                     params.push(value._gt);
                 }
                 if (value._lt) {
-                    const colRef = tableName === 'appointments' ? `a."${dbColumn}"` : `"${dbColumn}"`;
-                    whereClauses.push(`${colRef} < $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" < $${paramIndex++} `);
                     params.push(value._lt);
                 }
                 if (value._lte) {
-                    const colRef = tableName === 'appointments' ? `a."${dbColumn}"` : `"${dbColumn}"`;
-                    whereClauses.push(`${colRef} <= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" <= $${paramIndex++} `);
                     params.push(value._lte);
                 }
             } else {
-                const colRef = tableName === 'appointments' ? `a."${dbColumn}"` : `"${dbColumn}"`;
-                whereClauses.push(`${colRef} = $${paramIndex++} `);
+                whereClauses.push(`"${dbColumn}" = $${paramIndex++} `);
                 params.push(value);
             }
         });
@@ -1836,7 +1817,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         if (tableName === 'appointments') {
-            query += ` ORDER BY a.start_time ASC`;
+            query += ` ORDER BY start_time ASC`;
         } else {
             query += ` ORDER BY created_at DESC`;
         }
