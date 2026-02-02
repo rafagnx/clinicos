@@ -113,8 +113,25 @@ export default function Dashboard() {
     }
   };
 
-  const handleStatusChange = async (id, status) => {
-    console.log("Updating status", id, status);
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await base44.entities.Appointment.update(id, { status });
+      queryClient.invalidateQueries({ queryKey: ["appointments-today"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments-week"] });
+
+      const statusLabels = {
+        confirmado: "confirmada",
+        aguardando: "marcado como aguardando",
+        em_atendimento: "iniciado",
+        finalizado: "finalizado",
+        faltou: "marcado como falta",
+        cancelado: "cancelado"
+      };
+      toast.success(`Consulta ${statusLabels[status] || status}!`);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Erro ao atualizar status");
+    }
   };
 
   // Time-based greeting logic
