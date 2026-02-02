@@ -217,6 +217,20 @@ export default function Agenda() {
     },
   });
 
+  // Enrich appointments with patient/professional data from separate queries
+  const enrichedAppointments = React.useMemo(() => {
+    if (!appointments || appointments.length === 0) return [];
+
+    const patientMap = new Map(patients.map(p => [String(p.id), p]));
+    const professionalMap = new Map(professionals.map(p => [String(p.id), p]));
+
+    return appointments.map(apt => ({
+      ...apt,
+      patient: apt.patient || patientMap.get(String(apt.patient_id)) || { full_name: 'Paciente' },
+      professional: apt.professional || professionalMap.get(String(apt.professional_id)) || { full_name: 'Profissional' }
+    }));
+  }, [appointments, patients, professionals]);
+
   // Fetch Blocked Days
   const { data: blockedDays = [] } = useQuery({
     queryKey: ["blocked-days", selectedDate, view, filters.professional_id],
@@ -319,7 +333,7 @@ export default function Agenda() {
     return `${hour.toString().padStart(2, "0")}:${minutes}`;
   });
 
-  const filteredAppointments = (appointments || []).filter((apt: any) => {
+  const filteredAppointments = (enrichedAppointments || []).filter((apt: any) => {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
