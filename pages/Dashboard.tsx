@@ -107,7 +107,7 @@ export default function Dashboard() {
     switch (id) {
       case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
       case "financial_summary": return <FinancialSummaryWidget appointments={safeAppointments} />;
-      case "chat_activity": return <ChatActivityWidget conversations={safeConversations} currentUserEmail={user?.email} />;
+      case "chat_activity": return <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       default: return null;
     }
