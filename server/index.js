@@ -297,10 +297,11 @@ app.use(cors({
         ];
 
         if (allowedOrigins.indexOf(origin) === -1) {
-            console.log("BLOCKED CORS ORIGIN:", origin); // Debug log
+            console.warn("BLOCKED CORS ORIGIN:", origin); // Debug log
             var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
+        console.log("Allowed CORS:", origin);
         return callback(null, true);
     },
     credentials: true // Required for auth cookies
