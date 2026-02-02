@@ -1370,35 +1370,61 @@ VALUES($1, $2, $3, NOW(), NOW())
 
 // Pending Invites System (Replaces Better Auth Invites)
 app.post('/api/admin/invites', requireAuth, async (req, res) => {
-    const { email, organizationId, role } = req.body;
+    const { email, organizationId, role, whatsapp } = req.body;
     const { user } = req.auth;
 
-    const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
-    if (!authorizedEmails.includes(user.email)) {
-        return res.status(403).json({ error: "Access Denied" });
+    if (!email || !organizationId) {
+        return res.status(400).json({ error: "Email and Organization ID are required" });
     }
 
     try {
-        // Create pending_invites table if not exists
+        // Check if user is admin/owner of the organization (or super admin)
+        const superAdminEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
+        const isSuperAdmin = superAdminEmails.includes(user.email);
+
+        if (!isSuperAdmin) {
+            // Check if user is an admin/owner of this organization
+            const memberCheck = await pool.query(`
+                SELECT role FROM "member" 
+                WHERE "userId" = $1 AND "organizationId" = $2 AND role IN ('admin', 'owner')
+            `, [user.id, organizationId]);
+
+            if (memberCheck.rows.length === 0) {
+                return res.status(403).json({ error: "You must be an admin or owner of this organization to invite members" });
+            }
+        }
+
+        // Ensure pending_invites table exists with all columns
         await pool.query(`
             CREATE TABLE IF NOT EXISTS "pending_invites"(
-        id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-        email TEXT NOT NULL,
-        organization_id TEXT NOT NULL,
-        role TEXT DEFAULT 'admin',
-        created_at TIMESTAMP DEFAULT NOW(),
-        created_by TEXT
-    );
-`);
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                email TEXT NOT NULL,
+                organization_id TEXT NOT NULL,
+                role TEXT DEFAULT 'member',
+                token TEXT,
+                whatsapp TEXT,
+                created_at TIMESTAMP DEFAULT NOW(),
+                created_by TEXT,
+                accepted BOOLEAN DEFAULT FALSE
+            );
+        `);
+
+        // Add missing columns if table already existed
+        try { await pool.query(`ALTER TABLE "pending_invites" ADD COLUMN IF NOT EXISTS "token" TEXT`); } catch (e) { }
+        try { await pool.query(`ALTER TABLE "pending_invites" ADD COLUMN IF NOT EXISTS "whatsapp" TEXT`); } catch (e) { }
+        try { await pool.query(`ALTER TABLE "pending_invites" ADD COLUMN IF NOT EXISTS "accepted" BOOLEAN DEFAULT FALSE`); } catch (e) { }
+
+        // Generate invite token
+        const token = uuidv4();
 
         // Insert invite
         const result = await pool.query(`
-            INSERT INTO "pending_invites"(email, organization_id, role, created_by)
-VALUES($1, $2, $3, $4)
-RETURNING *
-    `, [email, organizationId, role || 'admin', user.id]);
+            INSERT INTO "pending_invites"(email, organization_id, role, token, whatsapp, created_by)
+            VALUES($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [email, organizationId, role || 'member', token, whatsapp || null, user.id]);
 
-        res.json({ success: true, invite: result.rows[0] });
+        res.json({ success: true, invite: result.rows[0], token });
     } catch (err) {
         console.error("Invite Error:", err);
         res.status(500).json({ error: err.message });
@@ -2175,28 +2201,7 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     }
 });
 
-// ADMIN: Create Invite
-app.post('/api/admin/invites', requireAuth, async (req, res) => {
-    const { email, organizationId, role } = req.body;
-    const { user } = req.auth;
-
-    if (!email || !organizationId) return res.status(400).json({ error: "Email and OrgID required" });
-
-    try {
-        const token = uuidv4(); // Generate a unique token for the link
-        const id = uuidv4();
-
-        await pool.query(`
-            INSERT INTO "pending_invites" (id, email, "organization_id", role, token, "created_by", "created_at", accepted)
-            VALUES ($1, $2, $3, $4, $5, $6, NOW(), false)
-        `, [id, email, organizationId, role, token, user.id]);
-
-        res.json({ success: true, message: "Invite created", token });
-    } catch (err) {
-        console.error("Create Invite Error:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
+// NOTE: Duplicate /api/admin/invites route removed - now handled at line 1372
 
 // ADMIN: Get Invite Link (to share via WhatsApp)
 app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
