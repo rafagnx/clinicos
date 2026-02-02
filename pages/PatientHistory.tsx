@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import PatientTimeline from "@/components/patients/PatientTimeline";
 
 export default function PatientHistory() {
   const navigate = useNavigate();
@@ -213,85 +214,7 @@ export default function PatientHistory() {
           {/* Main Content Column */}
           <div className="lg:col-span-2">
             {activeTab === "timeline" && (
-              <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
-
-                {/* Add Entry Connector */}
-                {/* <div className="hidden md:block absolute top-0 left-1/2 -ml-1 mt-0 w-2 h-2 rounded-full bg-slate-300 ring-4 ring-white" /> */}
-
-                {timelineEvents.length > 0 ? (
-                  timelineEvents.map((event, idx) => (
-                    <div key={`${event.type}-${event.data.id}`} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-
-                      {/* Icon */}
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-50 bg-white shadowshrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 shrink-0">
-                        {event.type === 'appointment' ? (
-                          <Calendar className={`w-4 h-4 ${event.data.status === 'concluido' ? 'text-emerald-500' : 'text-indigo-500'}`} />
-                        ) : (
-                          <Stethoscope className="w-4 h-4 text-amber-500" />
-                        )}
-                      </div>
-
-                      {/* Card */}
-                      <Card className={cn(
-                        "w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 border-slate-100 shadow-sm hover:shadow-md transition-all group-hover:border-indigo-100",
-                        event.type === 'record' ? "bg-amber-50/30" : "bg-white"
-                      )}>
-                        <div className="flex justify-between items-start mb-2">
-                          <Badge variant="outline" className={cn(
-                            "font-bold text-[10px] uppercase tracking-wide",
-                            event.type === 'appointment' ? "bg-indigo-50 text-indigo-600 border-indigo-100" : "bg-amber-50 text-amber-600 border-amber-100"
-                          )}>
-                            {event.type === 'appointment' ? 'Agendamento' : 'Evolução'}
-                          </Badge>
-                          <span className="text-xs font-medium text-slate-400">
-                            {format(event.fullDate, "d 'de' MMM, HH:mm", { locale: ptBR })}
-                          </span>
-                        </div>
-
-                        <h3 className="font-bold text-slate-800 mb-1">
-                          {event.type === 'appointment'
-                            ? (event.data.procedure_name || "Consulta Geral")
-                            : "Atendimento Clínico"}
-                        </h3>
-
-                        {event.type === 'appointment' ? (
-                          <div className="space-y-2">
-                            <p className="text-sm text-slate-500 flex items-center gap-2">
-                              Profesional: <span className="font-medium text-slate-700">{event.data.professional_name}</span>
-                            </p>
-                            <div className="flex items-center gap-2 mt-3">
-                              <Badge className={
-                                event.data.status === 'concluido' ? "bg-emerald-100 text-emerald-700" :
-                                  event.data.status === 'cancelado' ? "bg-rose-100 text-rose-700" :
-                                    "bg-slate-100 text-slate-600"
-                              }>
-                                {event.data.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            <p className="text-sm text-slate-600 leading-relaxed bg-white/50 p-2 rounded-md border border-amber-100/50">
-                              {event.data.content}
-                            </p>
-                            <p className="text-xs text-slate-400 italic">
-                              Registrado por {event.data.professional_name}
-                            </p>
-                          </div>
-                        )}
-                      </Card>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-20">
-                    <div className="mx-auto w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                      <Activity className="w-8 h-8 opacity-50" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-700">Nenhum evento registrado</h3>
-                    <p className="text-slate-500">O histórico deste paciente está vazio.</p>
-                  </div>
-                )}
-              </div>
+              <PatientTimeline patientId={patientId} />
             )}
 
             {activeTab === "prontuarios" && (
