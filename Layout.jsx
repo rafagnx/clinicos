@@ -17,8 +17,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
-  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Moon, Sun, Search,
-  ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles, Megaphone
+  ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles, Megaphone, RotateCw
 } from "lucide-react";
 import { useFeatures } from "@/hooks/useFeatures";
 import NotificationList from "@/components/notifications/NotificationList";
@@ -66,6 +65,7 @@ const navigation = [
     items: [
       { name: "Pacientes", href: "Patients", icon: Users, gradient: "from-emerald-500 to-teal-500" },
       { name: "Prontuários", href: "MedicalRecords", icon: FileText, gradient: "from-orange-500 to-red-500" },
+      { name: "Retornos", href: "Retention", icon: RotateCw, gradient: "from-amber-500 to-orange-500" },
       { name: "Planos de Tratamento", href: "TreatmentPlans", icon: Sparkles, gradient: "from-cyan-500 to-blue-500" },
     ]
   },
