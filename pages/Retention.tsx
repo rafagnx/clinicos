@@ -39,7 +39,16 @@ export default function Retention() {
 
     // 2. Process Opportunities
     const opportunities = useMemo(() => {
-        if (!records.length || !procedures.length) return [];
+        console.log("Retention Debug:", {
+            patientsCount: patients.length,
+            recordsCount: records.length,
+            proceduresCount: procedures.length
+        });
+
+        if (!records.length || !procedures.length) {
+            console.log("Retention: Missing records or procedures configuration, skipping processing.");
+            return [];
+        }
 
         const opps = [];
         const processedKeys = new Set(); // To avoid duplicates if needed, but we want latest per proc
