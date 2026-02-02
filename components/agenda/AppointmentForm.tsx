@@ -11,6 +11,7 @@ import { CalendarIcon, User, Check, Loader2, Plus } from "lucide-react";
 import { format, addMinutes, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { getGroupedProcedures } from "@/lib/procedures";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { sendAppointmentNotifications } from "@/functions/sendAppointmentNotifications";
 import { base44 } from "@/lib/base44Client";
@@ -25,103 +26,7 @@ interface AppointmentFormProps {
     onSuccess?: () => void;
 }
 
-const PROCEDURES_OPTIONS = [
-    {
-        category: "Toxina Botulínica",
-        items: ["TOXINA BOTULÍNICA"]
-    },
-    {
-        category: "Preenchimentos",
-        items: [
-            "PREENCHIMENTO 8POINT",
-            "PREENCHIMENTO COMISSURA",
-            "PREENCHIMENTO LÁBIO",
-            "PREENCHIMENTO MALAR",
-            "PREENCHIMENTO MANDÍBULA",
-            "PREENCHIMENTO MENTO",
-            "PREENCHIMENTO PRÉ JOWLS",
-            "PREENCHIMENTO NARIZ",
-            "PREENCHIMENTO OLHEIRA",
-            "PREENCHIMENTO SULCO NASO",
-            "PREENCHIMENTO TÊMPORA",
-            "PREENCHIMENTO GLABELA",
-            "PREENCHIMENTO MARIONETE"
-        ]
-    },
-    {
-        category: "Fios",
-        items: [
-            "FIO PDO LISO",
-            "FIO PDO TRAÇÃO SUSTENTAÇÃO"
-        ]
-    },
-    {
-        category: "Bioestimuladores",
-        items: [
-            "BIOESTIMULADOR"
-        ]
-    },
-    {
-        category: "Tecnologias",
-        items: [
-            "PDRN",
-            "EXOSSOMOS",
-            "LAVIEEN",
-            "HIPRO"
-        ]
-    },
-    {
-        category: "Tratamentos",
-        items: [
-            "MICROAGULHAMENTO",
-            "HIALURONIDASE",
-            "ENDOLASER FULL FACE",
-            "ENDOLASER REGIÃO",
-            "ENDOLASER PESCOÇO E PAPADA"
-        ]
-    },
-    {
-        category: "Transplante",
-        items: [
-            "TRANSP. DE SOBRANCELHA TP1",
-            "TRANSP. DE SOBRANCELHA TP2",
-            "TRANSP. DE SOBRANCELHA TP3"
-        ]
-    },
-    {
-        category: "Cirurgias",
-        items: [
-            "CIRURGIA ALECTOMIA",
-            "CIRURGIA BICHECTOMIA",
-            "CIRURGIA BROW LIFT",
-            "CIRURGIA LIP LIFT CORNER LIFT",
-            "CIRURGIA LIP LIFT INFERIOR",
-            "CIRURGIA LIP LIFT SUPERIOR",
-            "CIRURGIA SLIM TIP",
-            "CIRURGIA LIPOASPIRAÇÃO DE PAPADA",
-            "CIRURGIA LIFT DE TEMPORAL",
-            "CIRURGIA PRÓTESE DEFINITIVA",
-            "CIRURGIA MINI LIFT",
-            "CIRURGIA BLEFARO",
-            "CIRURGIA RINOPLASTIA",
-            "CIRURGIA OTOMODELAÇÃO",
-            "CIRURGIA RINO ESTRUTURADA",
-            "CIRURGIA PLATISMOPLATIA"
-        ]
-    },
-    {
-        category: "Corporal",
-        items: [
-            "GLUTEO MAX",
-            "GORDURA LOCALIZADA",
-            "BIOESTIMULADOR CORPORAL",
-            "BIOESTIMULADOR GLUTEO",
-            "PREENCHIMENTO GLUTEO",
-            "PROTOCOLO 40 DIAS",
-            "HIPERTROFIA"
-        ]
-    }
-];
+
 
 // Mock list removed as requested
 
@@ -651,33 +556,22 @@ export default function AppointmentForm({
                                             </div>
                                         </SelectItem>
                                         <div className="h-px bg-slate-100 my-1" />
-                                        {customProcedures.length > 0 && (
-                                            <SelectGroup>
-                                                <SelectLabel className="font-bold text-slate-900 bg-emerald-50 text-emerald-700 px-2 py-1.5 flex justify-between items-center">
-                                                    <span>Meus Procedimentos</span>
-                                                    <span className="text-[10px] font-normal opacity-70">Personalizados</span>
-                                                </SelectLabel>
-                                                {customProcedures.map((proc) => (
-                                                    <SelectItem key={proc.id} value={proc.name} className="pl-6">
-                                                        <div className="flex items-center justify-between w-full gap-2">
-                                                            <span>{proc.name}</span>
-                                                            <span className="text-xs text-slate-400">({proc.duration_minutes} min)</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        )}
-
-                                        {PROCEDURES_OPTIONS.map((group) => (
-                                            <SelectGroup key={group.category}>
-                                                <SelectLabel className="font-bold text-slate-900 bg-slate-50 px-2 py-1.5">{group.category}</SelectLabel>
-                                                {group.items.map((item) => (
-                                                    <SelectItem key={item} value={item.toUpperCase()} className="pl-6">
-                                                        {item}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        ))}
+                                        {(() => {
+                                            const grouped = getGroupedProcedures(customProcedures);
+                                            return grouped.map((group) => (
+                                                <SelectGroup key={group.title}>
+                                                    <SelectLabel className="font-bold text-slate-900 bg-slate-50 px-2 py-1.5">{group.title}</SelectLabel>
+                                                    {group.items.map((proc: any) => (
+                                                        <SelectItem key={proc.id} value={proc.name} className="pl-6">
+                                                            <div className="flex items-center justify-between w-full gap-2">
+                                                                <span>{proc.name}</span>
+                                                                <span className="text-xs text-slate-400">({proc.duration_minutes} min)</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            ));
+                                        })()}
                                         <SelectGroup>
                                             <SelectLabel className="font-bold text-slate-900 bg-slate-50 px-2 py-1.5">Outros</SelectLabel>
                                             <SelectItem value="outro" className="pl-6">Outro (Digitar)</SelectItem>

@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/lib/base44Client";
 import { useForm } from "react-hook-form";
+import { PROCEDURE_CATEGORIES, getGroupedProcedures } from "@/lib/procedures";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,18 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Stethoscope, Plus, Trash2, Edit2, Clock, DollarSign } from "lucide-react";
 import { toast } from "sonner";
-
-// Centralized Configuration
-const CATEGORIES_CONFIG = {
-    "Toxina": { color: "#3b82f6", items: ["Toxina Botulínica"], duration: 60, interval: 120 },
-    "Preenchimentos": { color: "#ec4899", items: ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"], duration: 60, interval: 365 },
-    "Fios": { color: "#8b5cf6", items: ["Fio PDO Liso", "Fio PDO Tração"], duration: 60, interval: 180 },
-    "Bioestimuladores": { color: "#10b981", items: ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"], duration: 60, interval: 90 },
-    "Corporal": { color: "#f97316", items: ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"], duration: 60, interval: 30 },
-    "Tratamentos": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 60, interval: 30 },
-    "Transplante": { color: "#64748b", items: ["TP1", "TP2", "TP3"], duration: 60, interval: 0 },
-    "Cirurgias": { color: "#ef4444", items: ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"], duration: 60, interval: 0 }
-};
 
 export default function ProcedureTypes() {
     const [procedures, setProcedures] = useState([]);
@@ -113,7 +103,12 @@ export default function ProcedureTypes() {
 
     const handleNew = () => {
         setEditingId(null);
-        reset();
+        reset({
+            duration_minutes: 60,
+            price: 0,
+            return_interval: 0,
+            color: "#3b82f6"
+        });
         setIsOpen(true);
     }
 
@@ -126,12 +121,12 @@ export default function ProcedureTypes() {
         }
 
         const FULL_PROCEDURES = [];
-        Object.entries(CATEGORIES_CONFIG).forEach(([cat, data]: [string, any]) => {
+        Object.entries(PROCEDURE_CATEGORIES).forEach(([cat, data]: [string, any]) => {
             data.items.forEach(item => {
                 let name = item;
                 // Add prefix context if needed
                 if (cat === "Preenchimentos" && !item.toLowerCase().includes("preenchimento") && !item.includes("8point")) {
-                    name = `Preenchimento ${item}`;
+                    name = `Preenchimento ${item} `;
                 }
 
                 FULL_PROCEDURES.push({
@@ -224,14 +219,7 @@ export default function ProcedureTypes() {
                                     list="procedure-suggestions"
                                 />
                                 <datalist id="procedure-suggestions">
-                                    {/* Flattened list from NewMedicalRecord.tsx */}
-                                    {["Toxina Botulínica", "Preenchimentos", "8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete",
-                                        "Fio PDO Liso", "Fio PDO Tração",
-                                        "Bioestimuladores", "Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo",
-                                        "Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia",
-                                        "Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço",
-                                        "Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"
-                                    ].map(proc => (
+                                    {Object.values(PROCEDURE_CATEGORIES).flatMap((cat: any) => cat.items).map(proc => (
                                         <option key={proc} value={proc} />
                                     ))}
                                 </datalist>
@@ -300,61 +288,7 @@ export default function ProcedureTypes() {
             </div>
 
             {(() => {
-                const groupedList = [];
-                const renderedIds = new Set();
-
-                if (loading) {
-                    return (
-                        <Card>
-                            <CardContent className="py-8 text-center text-slate-500">
-                                Carregando procedimentos...
-                            </CardContent>
-                        </Card>
-                    );
-                }
-
-                if (procedures.length === 0) {
-                    return (
-                        <Card>
-                            <CardContent className="py-8 text-center text-slate-500">
-                                Nenhum procedimento cadastrado.
-                            </CardContent>
-                        </Card>
-                    );
-                }
-
-                // 1. UNIQUE PROCEDURES (Deduplicate by name)
-                const uniqueProcedures = procedures.filter((proc, index, self) =>
-                    index === self.findIndex((t) => t.name.toLowerCase().trim() === proc.name.toLowerCase().trim())
-                );
-
-                // 2. Process Defined Categories
-                Object.entries(CATEGORIES_CONFIG).forEach(([catName, data]) => {
-                    const items = uniqueProcedures.filter(p => {
-                        if (renderedIds.has(p.id)) return false;
-
-                        // Strict Match: Use Word Boundaries
-                        return data.items.some(k => {
-                            const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                            const regex = new RegExp(`\\b${escapedKey}\\b`, 'i');
-                            if (k.includes(' ')) {
-                                return p.name.toLowerCase().includes(k.toLowerCase());
-                            }
-                            return regex.test(p.name);
-                        });
-                    });
-
-                    if (items.length > 0) {
-                        items.forEach(p => renderedIds.add(p.id));
-                        groupedList.push({ title: catName, items });
-                    }
-                });
-
-                // 3. Process "Outros"
-                const others = uniqueProcedures.filter(p => !renderedIds.has(p.id));
-                if (others.length > 0) {
-                    groupedList.push({ title: "Outros Procedimentos", items: others });
-                }
+                const groupedList = getGroupedProcedures(procedures);
 
                 return (
                     <div className="space-y-6">

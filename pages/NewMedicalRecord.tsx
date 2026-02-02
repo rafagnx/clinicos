@@ -12,19 +12,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getGroupedProcedures } from "@/lib/procedures";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const PROCEDURE_CATEGORIES = {
-  "Toxina": ["Toxina Botulínica"],
-  "Preenchimentos": ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"],
-  "Fios": ["Fio PDO Liso", "Fio PDO Tração"],
-  "Bioestimuladores": ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"],
-  "Corporal": ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"],
-  "Tratamentos": ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"],
-  "Transplante": ["TP1", "TP2", "TP3"],
-  "Cirurgias": ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"]
-};
+
 
 export default function NewMedicalRecord() {
   const navigate = useNavigate();
@@ -348,28 +340,20 @@ export default function NewMedicalRecord() {
             <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Procedimentos Realizados</h3>
 
             <div className="space-y-6">
-              {/* Custom Procedures (Filtered & Deduped) */}
               {(() => {
-                // Flatten standard categories for exclusion
-                const standardNames = new Set(
-                  Object.values(PROCEDURE_CATEGORIES).flat().map(n => n.toLowerCase())
-                );
+                const grouped = getGroupedProcedures(customProcedures);
 
-                // Filter DB procedures: Exclude if in standard list, and deduplicate by name
-                const uniqueExtras = customProcedures.filter((proc: any, index, self) =>
-                  // 1. Must not be in standard categories
-                  !standardNames.has(proc.name.toLowerCase()) &&
-                  // 2. Must be unique in this list (first occurrence)
-                  index === self.findIndex((p: any) => p.name.toLowerCase() === proc.name.toLowerCase())
-                );
+                if (grouped.length === 0) {
+                  return <div className="text-slate-500 text-sm">Nenhum procedimento disponível. Vá em Configurações para adicionar.</div>;
+                }
 
-                if (uniqueExtras.length === 0) return null;
-
-                return (
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-emerald-700 text-sm uppercase tracking-wide">Outros Procedimentos</h4>
+                return grouped.map(group => (
+                  <div key={group.title} className="space-y-3">
+                    <h4 className="font-medium text-slate-700 text-sm uppercase tracking-wide">
+                      {group.title}
+                    </h4>
                     <div className="flex flex-wrap gap-2">
-                      {uniqueExtras.map((proc: any) => {
+                      {group.items.map((proc: any) => {
                         const isSelected = formData.selected_procedures.includes(proc.name);
                         return (
                           <Button
@@ -390,34 +374,8 @@ export default function NewMedicalRecord() {
                       })}
                     </div>
                   </div>
-                );
+                ));
               })()}
-              {Object.entries(PROCEDURE_CATEGORIES).map(([category, items]) => (
-                <div key={category} className="space-y-3">
-                  <h4 className="font-medium text-slate-700 text-sm uppercase tracking-wide">{category}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map(proc => {
-                      const isSelected = formData.selected_procedures.includes(proc);
-                      return (
-                        <Button
-                          key={proc}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => toggleProcedure(proc)}
-                          className={cn(
-                            "transition-all",
-                            isSelected ? "bg-blue-600 hover:bg-blue-700 text-white border-transparent" : "text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600"
-                          )}
-                        >
-                          {isSelected && <Plus className="w-3 h-3 mr-1" />}
-                          {proc}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
             </div>
 
             {/* Summary of Selection */}
