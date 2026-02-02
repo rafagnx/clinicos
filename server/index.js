@@ -301,7 +301,6 @@ app.use(cors({
             var msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
         }
-        console.log("Allowed CORS:", origin);
         return callback(null, true);
     },
     credentials: true // Required for auth cookies
