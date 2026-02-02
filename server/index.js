@@ -800,6 +800,20 @@ const initSchema = async () => {
                 if (colCheck.rows.length === 0) {
                     await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
+            // 5b. Update ProcedureTypes Columns (Fix 400 Error)
+            const procCols = [
+                { name: 'return_interval', type: 'INTEGER DEFAULT 0' }
+            ];
+            for (const col of procCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'procedure_types' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "procedure_types" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
             }
 
             // 6. Update Appointments Columns

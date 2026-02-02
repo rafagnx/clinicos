@@ -19,11 +19,18 @@ export default function ProcedureTypes() {
 
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
+    const [hasAutoSeeded, setHasAutoSeeded] = useState(false);
+
     const fetchProcedures = async () => {
         try {
             setLoading(true);
             const data = await base44.entities.ProcedureType.list();
             setProcedures(data);
+
+            // AUTO-SEED: If list is empty and haven't seeded yet, do it automatically
+            if (data.length === 0 && !hasAutoSeeded) {
+                handleImportDefaults(true); // true = silent/auto mode
+            }
         } catch (error) {
             console.error("Failed to load procedures", error);
             toast.error("Erro ao carregar procedimentos.");
@@ -92,41 +99,73 @@ export default function ProcedureTypes() {
         setIsOpen(true);
     }
 
-    const handleImportDefaults = async () => {
-        if (!confirm("Isso irá criar vários procedimentos padrão (Toxina, Preenchimentos, etc). Deseja continuar?")) return;
+    const handleImportDefaults = async (isAuto = false) => {
+        if (!isAuto && !confirm("Isso irá criar vários procedimentos padrão (Toxina, Preenchimentos, etc). Deseja continuar?")) return;
 
-        const DEFAULT_PROCEDURES = [
-            { name: "Toxina Botulínica", duration_minutes: 30, price: 0, return_interval: 120, color: "#3b82f6" },
-            { name: "Preenchimento Labial", duration_minutes: 45, price: 0, return_interval: 270, color: "#ec4899" },
-            { name: "Preenchimento Malar", duration_minutes: 60, price: 0, return_interval: 365, color: "#ec4899" },
-            { name: "Preenchimento Olheiras", duration_minutes: 45, price: 0, return_interval: 365, color: "#ec4899" },
-            { name: "Preenchimento Mandíbula", duration_minutes: 60, price: 0, return_interval: 365, color: "#ec4899" },
-            { name: "Preenchimento Mento", duration_minutes: 45, price: 0, return_interval: 365, color: "#ec4899" },
-            { name: "Fios PDO Liso", duration_minutes: 45, price: 0, return_interval: 180, color: "#8b5cf6" },
-            { name: "Fios PDO Tração", duration_minutes: 90, price: 0, return_interval: 240, color: "#8b5cf6" },
-            { name: "Bioestimulador (Sessão)", duration_minutes: 45, price: 0, return_interval: 30, color: "#10b981" },
-            { name: "Bioestimulador (Manutenção)", duration_minutes: 45, price: 0, return_interval: 365, color: "#10b981" },
-            { name: "Microagulhamento", duration_minutes: 45, price: 0, return_interval: 30, color: "#f59e0b" },
-            { name: "Lavieen", duration_minutes: 30, price: 0, return_interval: 30, color: "#f43f5e" },
-            { name: "Endolaser", duration_minutes: 120, price: 0, return_interval: 0, color: "#ef4444" },
-            { name: "Lipo de Papada", duration_minutes: 60, price: 0, return_interval: 0, color: "#ef4444" },
-            { name: "Bichectomia", duration_minutes: 60, price: 0, return_interval: 0, color: "#ef4444" },
-        ];
+        if (isAuto) {
+            setHasAutoSeeded(true); // Prevent loops
+            toast.info("Configurando todos os procedimentos da anamnese...");
+        }
+
+        // FULL LIST FROM ANAMNESIS (NewMedicalRecord.tsx)
+        const categories = {
+            "Toxina": { color: "#3b82f6", items: ["Toxina Botulínica"], duration: 30, interval: 120 }, // 4 months
+            "Preenchimentos": { color: "#ec4899", items: ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"], duration: 45, interval: 365 }, // 1 year approx
+            "Fios": { color: "#8b5cf6", items: ["Fio PDO Liso", "Fio PDO Tração"], duration: 60, interval: 180 }, // 6 months
+            "Bioestimuladores": { color: "#10b981", items: ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"], duration: 45, interval: 90 }, // 3 months
+            "Corporal": { color: "#f97316", items: ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"], duration: 60, interval: 30 },
+            "Tratamentos": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 45, interval: 30 },
+            "Transplante": { color: "#64748b", items: ["TP1", "TP2", "TP3"], duration: 120, interval: 0 },
+            "Cirurgias": { color: "#ef4444", items: ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"], duration: 90, interval: 0 }
+        };
+
+        const FULL_PROCEDURES = [];
+        Object.entries(categories).forEach(([cat, data]: [string, any]) => {
+            data.items.forEach(item => {
+                // Prefix with category if needed, or keep simple? User used "Preenchimento Labial" but list has "Lábio".
+                // Let's use smart naming. If item is "Lábio", make it "Preenchimento Labial" if category is Preenchimentos?
+                // actually the list in NewMedicalRecord has just "Lábio".
+                // To match user expectation, I should probably keep them as is OR prepend category for clarity.
+                // No, let's stick to the exact strings from the list first, or maybe "Preenchimento - Lábio".
+                // Actually, "Preenchimento Labial" is better.
+
+                let name = item;
+                if (cat === "Preenchimentos" && !item.toLowerCase().includes("preenchimento") && !item.includes("8point")) {
+                    name = `Preenchimento ${item}`;
+                }
+
+                FULL_PROCEDURES.push({
+                    name: name,
+                    duration_minutes: data.duration,
+                    price: 0,
+                    color: data.color,
+                    return_interval: data.interval || 0
+                });
+            });
+        });
 
         setLoading(true);
         try {
-            for (const proc of DEFAULT_PROCEDURES) {
-                // Check if already exists to avoid duplicates
-                const exists = procedures.find(p => p.name === proc.name);
+            let createdCount = 0;
+            for (const proc of FULL_PROCEDURES) {
+                // Check if already exists (fuzzy match or exact?)
+                const exists = procedures.find(p => p.name.toLowerCase() === proc.name.toLowerCase());
                 if (!exists) {
                     await base44.entities.ProcedureType.create({ ...proc, active: true });
+                    createdCount++;
                 }
             }
-            toast.success("Procedimentos padrão importados!");
-            fetchProcedures();
+
+            toast.success(`${createdCount} procedimentos configurados!`);
+            if (isAuto) {
+                const newData = await base44.entities.ProcedureType.list();
+                setProcedures(newData);
+            } else {
+                fetchProcedures();
+            }
         } catch (error) {
             console.error(error);
-            toast.error("Erro ao importar.");
+            toast.error("Erro ao configurar padrões.");
         } finally {
             setLoading(false);
         }
@@ -147,7 +186,7 @@ export default function ProcedureTypes() {
                         </Button>
                     </DialogTrigger>
 
-                    <Button variant="outline" onClick={handleImportDefaults} disabled={loading} className="ml-2">
+                    <Button variant="outline" onClick={() => handleImportDefaults(false)} disabled={loading} className="ml-2">
                         <DollarSign className="w-4 h-4 mr-2" />
                         Importar Padrões
                     </Button>
