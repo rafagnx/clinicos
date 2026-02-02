@@ -37,7 +37,7 @@ export default function MedicalRecords() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.MedicalRecord.delete(id),
+    mutationFn: (id: string | number) => base44.entities.MedicalRecord.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medicalRecords"] });
       toast.success("Prontuário excluído!");
@@ -45,7 +45,7 @@ export default function MedicalRecords() {
   });
 
   const filteredRecords = records.filter(r =>
-    r.patient_name?.toLowerCase().includes(search.toLowerCase())
+    (r.patient_name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -100,8 +100,9 @@ export default function MedicalRecords() {
               )}>
                 <div className="flex items-center p-4 sm:p-6 gap-4 sm:gap-6">
                   <Avatar className={cn("w-12 h-12 border-2 shadow-sm", isDark ? "border-slate-700" : "border-white")}>
+                    <AvatarImage src={patients.find(p => String(p.id) === String(record.patient_id))?.photo_url} />
                     <AvatarFallback className={cn("font-bold", isDark ? "bg-indigo-500/10 text-indigo-400" : "bg-primary/10 text-primary")}>
-                      {record.patient_name?.substring(0, 2).toUpperCase()}
+                      {(record.patient_name || "PA").substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
 
@@ -112,13 +113,17 @@ export default function MedicalRecords() {
                         "bg-opacity-50",
                         isDark ? "bg-slate-800 text-slate-400 border-slate-700" : "bg-slate-50 text-slate-500 border-slate-200"
                       )}>
-                        ID: {record.id.substring(0, 8)}
+                        ID: {String(record.id).substring(0, 8)}
                       </Badge>
                     </div>
                     <div className={cn("flex flex-wrap items-center gap-y-1 gap-x-4 text-sm", isDark ? "text-slate-500" : "text-slate-500")}>
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
-                        {format(new Date(record.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                        {(() => {
+                          const dateStr = String(record.date || "").split('T')[0];
+                          const dateObj = new Date(dateStr + 'T12:00:00');
+                          return isNaN(dateObj.getTime()) ? "Data inválida" : format(dateObj, "dd 'de' MMMM, yyyy", { locale: ptBR });
+                        })()}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5" />
@@ -154,11 +159,10 @@ export default function MedicalRecords() {
                   </div>
                 </div>
 
-                {/* Preview of content */}
                 <div className="px-6 pb-6 pt-0">
                   <div className={cn("rounded-lg p-3 border", isDark ? "bg-slate-950/50 border-slate-800" : "bg-slate-50 border-slate-100")}>
                     <p className={cn("text-sm line-clamp-2 italic", isDark ? "text-slate-400" : "text-slate-600")}>
-                      "{record.content || "Sem conteúdo registrado..."}"
+                      {record.procedures_summary || (typeof record.content === 'string' && !record.content.startsWith('{') ? record.content.substring(0, 100) : "Ver detalhes...") || "Sem conteúdo registrado..."}
                     </p>
                   </div>
                 </div>
