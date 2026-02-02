@@ -1902,6 +1902,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         'Conversation': 'conversations',
         'ClinicSettings': 'clinic_settings',
         'NotificationPreference': 'notification_preferences',
+        'ProcedureType': 'procedure_types',
         'holidays': 'holidays',
         'blocked-days': 'blocked_days'
     };
