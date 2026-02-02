@@ -9,6 +9,10 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/lib/utils";
 
 export default function ChatActivityWidget({ conversations, currentUserEmail }) {
+    // Debug: Log conversation data to understand structure
+    console.log("ChatActivityWidget conversations:", conversations);
+    console.log("ChatActivityWidget currentUserEmail:", currentUserEmail);
+
     const recentConversations = conversations
         .filter(c => c.last_message_at)
         .sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime())
