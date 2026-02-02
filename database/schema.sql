@@ -106,6 +106,20 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='trial_ends_at') THEN
         ALTER TABLE "organization" ADD COLUMN "trial_ends_at" TIMESTAMP;
     END IF;
+
+    -- WhatsApp / Evolution API Config
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='evolution_instance_name') THEN
+        ALTER TABLE "organization" ADD COLUMN "evolution_instance_name" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='evolution_token') THEN
+        ALTER TABLE "organization" ADD COLUMN "evolution_token" TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='evolution_base_url') THEN
+        ALTER TABLE "organization" ADD COLUMN "evolution_base_url" TEXT DEFAULT 'https://api.evolution-api.com';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='organization' AND column_name='whatsapp_templates') THEN
+        ALTER TABLE "organization" ADD COLUMN "whatsapp_templates" JSONB;
+    END IF;
     
     -- Fix Default Values for existing tables
     ALTER TABLE "organization" ALTER COLUMN "createdAt" SET DEFAULT NOW();
@@ -320,6 +334,46 @@ CREATE TABLE IF NOT EXISTS "promotions" (
   "end_date" TIMESTAMP,
   "image_url" TEXT,
   "interest_count" INT DEFAULT 0,
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
+-- Treatment Plans
+CREATE TABLE IF NOT EXISTS "treatment_plans" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL REFERENCES "organization"("id") ON DELETE CASCADE,
+  "patient_id" INT NOT NULL REFERENCES "patients"("id") ON DELETE CASCADE,
+  "name" TEXT NOT NULL,
+  "description" TEXT,
+  "total_value" DECIMAL(10, 2),
+  "status" TEXT DEFAULT 'orcamento',
+  "created_at" TIMESTAMP DEFAULT NOW(),
+  "updated_at" TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS "treatment_plan_items" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "plan_id" UUID NOT NULL REFERENCES "treatment_plans"("id") ON DELETE CASCADE,
+  "procedure_name" TEXT NOT NULL,
+  "quantity" INT DEFAULT 1,
+  "unit_price" DECIMAL(10, 2),
+  "total_price" DECIMAL(10, 2),
+  "status" TEXT DEFAULT 'pendente',
+  "performed_at" TIMESTAMP,
+  "professional_id" INT REFERENCES "professionals"("id"),
+  "created_at" TIMESTAMP DEFAULT NOW()
+);
+
+-- Campaigns
+CREATE TABLE IF NOT EXISTS "campaigns" (
+  "id" UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  "organization_id" TEXT NOT NULL REFERENCES "organization"("id") ON DELETE CASCADE,
+  "name" TEXT NOT NULL,
+  "type" TEXT NOT NULL,
+  "trigger_condition" TEXT,
+  "message_template" TEXT NOT NULL,
+  "is_active" BOOLEAN DEFAULT FALSE,
+  "last_run" TIMESTAMP,
+  "stats" JSONB DEFAULT '{}',
   "created_at" TIMESTAMP DEFAULT NOW(),
   "updated_at" TIMESTAMP DEFAULT NOW()
 );

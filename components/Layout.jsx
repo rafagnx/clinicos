@@ -34,6 +34,7 @@ const navigation = [
   { name: "Leads", href: "Leads", icon: Target },
   { name: "Chat", href: "Chat", icon: MessageSquare },
   { name: "Promoções", href: "Promotions", icon: Tag },
+  { name: "Planos", href: "TreatmentPlans", icon: FileText },
   { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
   { name: "Equipe", href: "Professionals", icon: Stethoscope },
   { name: "Prontuários", href: "MedicalRecords", icon: FileText },

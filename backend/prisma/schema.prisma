@@ -51,6 +51,14 @@ model Organization {
   promotions           Promotion[]
   pendingInvites       PendingInvite[]
   notificationPreferences NotificationPreference[]
+  
+  // WhatsApp / Evolution API Config
+  evolutionInstanceName String? @map("evolution_instance_name")
+  evolutionToken        String? @map("evolution_token")
+  evolutionBaseUrl      String? @default("https://api.evolution-api.com") @map("evolution_base_url")
+  whatsappTemplates     Json?   @map("whatsapp_templates")
+  campaigns             Campaign[]
+  treatmentPlans        TreatmentPlan[]
 
   @@map("organization")
 }
@@ -92,6 +100,7 @@ model Patient {
   organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   appointments    Appointment[]
   medicalRecords  MedicalRecord[]
+  treatmentPlans  TreatmentPlan[]
 
   @@map("patients")
 }
@@ -114,6 +123,7 @@ model Professional {
 
   organization        Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   appointments        Appointment[]
+  treatmentPlanItems  TreatmentPlanItem[]
 
   @@map("professionals")
 }
@@ -278,4 +288,58 @@ model NotificationPreference {
   organization          Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("notification_preferences")
+}
+
+model TreatmentPlan {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String   @map("organization_id")
+  patientId       Int      @map("patient_id")
+  name            String
+  description     String?
+  totalValue      Decimal? @map("total_value")
+  status          String?  @default("orcamento") // orcamento, aprovado, concluido, cancelado
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  patient         Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  items           TreatmentPlanItem[]
+  
+  @@map("treatment_plans")
+}
+
+model Campaign {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String   @map("organization_id")
+  name            String
+  type            String   // aniversario, retorno_90d, pos_consulta, custom
+  triggerCondition String? @map("trigger_condition") // JSON or specific condition
+  messageTemplate String   @map("message_template")
+  isActive        Boolean  @default(false) @map("is_active")
+  lastRun         DateTime? @map("last_run")
+  stats           Json?    @default("{}") // {sent: 0, opened: 0}
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  @@map("campaigns")
+}
+
+model TreatmentPlanItem {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId          String   @map("plan_id") @db.Uuid
+  procedureName   String   @map("procedure_name")
+  quantity        Int      @default(1)
+  unitPrice       Decimal? @map("unit_price")
+  totalPrice      Decimal? @map("total_price")
+  status          String?  @default("pendente") // pendente, realizado
+  performedAt     DateTime? @map("performed_at")
+  professionalId  Int?     @map("professional_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  plan            TreatmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  professional    Professional? @relation(fields: [professionalId], references: [id])
+  
+  @@map("treatment_plan_items")
 }

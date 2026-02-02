@@ -1,0 +1,8 @@
+
+// Evolution API Settings in Organization
+// Add these fields to Organization model in schema.prisma
+/*
+  evolutionInstanceName String? @map("evolution_instance_name")
+  evolutionToken        String? @map("evolution_token")
+  evolutionBaseUrl      String? @default("https://api.evolution-api.com") @map("evolution_base_url")
+*/

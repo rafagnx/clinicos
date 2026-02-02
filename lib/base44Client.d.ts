@@ -59,7 +59,11 @@ export interface Base44Client {
         ClinicSettings: EntityHandler;
         NotificationPreference: EntityHandler;
         ProcedureType: EntityHandler;
+        ProcedureType: EntityHandler;
         FinancialTransaction: EntityHandler;
+        TreatmentPlan: EntityHandler;
+        TreatmentPlanItem: EntityHandler;
+        Campaign: EntityHandler;
         [key: string]: EntityHandler;
     };
 }
