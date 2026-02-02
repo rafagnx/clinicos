@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { createPageUrl, cn } from "@/lib/utils";
 import { base44 } from "@/lib/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabaseClient";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -197,6 +198,42 @@ export default function Layout() {
     queryFn: () => base44.entities.Notification.filter({ user_id: user.id }, "-created_date"),
     enabled: !!user,
   });
+
+  const queryClient = useQueryClient();
+
+  // Real-time Notifications Subscription
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`public:notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log("New Notification!", payload);
+          // Play sound?
+          try {
+            new Audio('/notification.mp3').play().catch(() => { });
+          } catch (e) { }
+
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          // Also invalidate unread count if we had a separate query for it
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
+
+
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

@@ -48,8 +48,32 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
         enabled: !!conversation
     });
 
-    // 3. Realtime Subscription (Supabase LIVE) - REMOVED (Replaced by Socket.io)
-    // useEffect(() => { ... }, [conversation?.id, queryClient]);
+    // 3. Realtime Subscription (Supabase LIVE)
+    useEffect(() => {
+        if (!conversation?.id) return;
+
+        const channel = supabase
+            .channel(`public:messages:${conversation.id}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${conversation.id}`
+                },
+                (payload) => {
+                    console.log("New message received via Supabase Realtime:", payload);
+                    queryClient.invalidateQueries({ queryKey: ["messages"] });
+                    queryClient.invalidateQueries({ queryKey: ["conversation-with"] });
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [conversation?.id, queryClient]);
 
     // Scroll to bottom on new messages
     useEffect(() => {

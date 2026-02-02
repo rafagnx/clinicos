@@ -48,8 +48,9 @@ export default function BirthdaysList({ patients }) {
                             <button
                                 onClick={() => {
                                     const firstName = patient.full_name.split(' ')[0];
-                                    // Using unicode escapes for emojis to ensure safe encoding
-                                    const message = `Olá ${firstName}! \uD83C\uDF82\uD83C\uDF89\n\nParabéns pelo seu dia! Desejamos muitas alegrias, saúde e realizações.\n\nCom carinho,\nEquipe Orofacial Clinic`;
+                                    // Using runtime generation for emojis to avoid any file encoding issues
+                                    const emojis = String.fromCodePoint(0x1F382, 0x1F389);
+                                    const message = `Olá ${firstName}! ${emojis}\n\nParabéns pelo seu dia! Desejamos muitas alegrias, saúde e realizações.\n\nCom carinho,\nEquipe Orofacial Clinic`;
 
                                     let phone = patient.phone?.replace(/\D/g, '') || '';
                                     // If number doesn't start with 55 and has valid length (10 or 11 digits), add it
