@@ -11,6 +11,18 @@ import { Badge } from "@/components/ui/badge";
 import { Stethoscope, Plus, Trash2, Edit2, Clock, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 
+// Centralized Configuration
+const CATEGORIES_CONFIG = {
+    "Toxina": { color: "#3b82f6", items: ["Toxina Botulínica"], duration: 60, interval: 120 },
+    "Preenchimentos": { color: "#ec4899", items: ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"], duration: 60, interval: 365 },
+    "Fios": { color: "#8b5cf6", items: ["Fio PDO Liso", "Fio PDO Tração"], duration: 60, interval: 180 },
+    "Bioestimuladores": { color: "#10b981", items: ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"], duration: 60, interval: 90 },
+    "Corporal": { color: "#f97316", items: ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"], duration: 60, interval: 30 },
+    "Tratamentos": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 60, interval: 30 },
+    "Transplante": { color: "#64748b", items: ["TP1", "TP2", "TP3"], duration: 60, interval: 0 },
+    "Cirurgias": { color: "#ef4444", items: ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"], duration: 60, interval: 0 }
+};
+
 export default function ProcedureTypes() {
     const [procedures, setProcedures] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -106,43 +118,25 @@ export default function ProcedureTypes() {
     }
 
     const handleImportDefaults = async (isAuto = false) => {
-        if (!isAuto && !confirm("Isso irá criar vários procedimentos padrão (Toxina, Preenchimentos, etc). Deseja continuar?")) return;
+        if (!isAuto && !confirm("Isso irá verificar os procedimentos padrão e padronizar a duração para 1h (60min). Deseja continuar?")) return;
 
         if (isAuto) {
             setHasAutoSeeded(true); // Prevent loops
-            toast.info("Configurando todos os procedimentos da anamnese...");
+            toast.info("Configurando procedimentos...");
         }
 
-        // FULL LIST FROM ANAMNESIS (NewMedicalRecord.tsx)
-        const categories = {
-            "Toxina": { color: "#3b82f6", items: ["Toxina Botulínica"], duration: 30, interval: 120 }, // 4 months
-            "Preenchimentos": { color: "#ec4899", items: ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"], duration: 45, interval: 365 }, // 1 year approx
-            "Fios": { color: "#8b5cf6", items: ["Fio PDO Liso", "Fio PDO Tração"], duration: 60, interval: 180 }, // 6 months
-            "Bioestimuladores": { color: "#10b981", items: ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"], duration: 45, interval: 90 }, // 3 months
-            "Corporal": { color: "#f97316", items: ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"], duration: 60, interval: 30 },
-            "Tratamentos": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 45, interval: 30 },
-            "Transplante": { color: "#64748b", items: ["TP1", "TP2", "TP3"], duration: 120, interval: 0 },
-            "Cirurgias": { color: "#ef4444", items: ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"], duration: 90, interval: 0 }
-        };
-
         const FULL_PROCEDURES = [];
-        Object.entries(categories).forEach(([cat, data]: [string, any]) => {
+        Object.entries(CATEGORIES_CONFIG).forEach(([cat, data]: [string, any]) => {
             data.items.forEach(item => {
-                // Prefix with category if needed, or keep simple? User used "Preenchimento Labial" but list has "Lábio".
-                // Let's use smart naming. If item is "Lábio", make it "Preenchimento Labial" if category is Preenchimentos?
-                // actually the list in NewMedicalRecord has just "Lábio".
-                // To match user expectation, I should probably keep them as is OR prepend category for clarity.
-                // No, let's stick to the exact strings from the list first, or maybe "Preenchimento - Lábio".
-                // Actually, "Preenchimento Labial" is better.
-
                 let name = item;
+                // Add prefix context if needed
                 if (cat === "Preenchimentos" && !item.toLowerCase().includes("preenchimento") && !item.includes("8point")) {
                     name = `Preenchimento ${item}`;
                 }
 
                 FULL_PROCEDURES.push({
                     name: name,
-                    duration_minutes: data.duration,
+                    duration_minutes: data.duration, // 60 from config
                     price: 0,
                     color: data.color,
                     return_interval: data.interval || 0
@@ -153,29 +147,40 @@ export default function ProcedureTypes() {
         setLoading(true);
         try {
             let createdCount = 0;
+            let updatedCount = 0;
+
             for (const proc of FULL_PROCEDURES) {
                 // Check if already exists (fuzzy match or exact?)
                 const exists = procedures.find(p => p.name.toLowerCase() === proc.name.toLowerCase());
-                if (!exists) {
+
+                if (exists) {
+                    // UPDATE: Standardize duration if different
+                    if (exists.duration_minutes !== proc.duration_minutes) {
+                        await base44.entities.ProcedureType.update(exists.id, { duration_minutes: proc.duration_minutes });
+                        updatedCount++;
+                    }
+                } else {
+                    // CREATE
                     try {
                         await base44.entities.ProcedureType.create({ ...proc, active: true });
+                        createdCount++;
                     } catch (err) {
-                        console.warn(`Failed to create ${proc.name} with full fields, retrying without return_interval...`);
-                        // Fallback: Try without return_interval (DB migration might be pending)
+                        console.warn(`Retry create ${proc.name} without interval...`);
+                        // Fallback for missing column
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const { return_interval, ...safeProc } = proc;
                         await base44.entities.ProcedureType.create({ ...safeProc, active: true });
+                        createdCount++;
                     }
-                    createdCount++;
                 }
             }
 
-            toast.success(`${createdCount} procedimentos configurados!`);
-            if (isAuto) {
+            if (createdCount > 0 || updatedCount > 0) {
+                toast.success(`${createdCount} criados, ${updatedCount} atualizados para 60min!`);
                 const newData = await base44.entities.ProcedureType.list();
                 setProcedures(newData);
             } else {
-                fetchProcedures();
+                if (!isAuto) toast.info("Todos procedimentos já estão atualizados.");
             }
         } catch (error) {
             console.error(error);
@@ -241,7 +246,7 @@ export default function ProcedureTypes() {
                                             id="duration"
                                             type="number"
                                             className="pl-9"
-                                            placeholder="30"
+                                            placeholder="60"
                                             {...register("duration_minutes", { required: true, min: 5 })}
                                         />
                                     </div>
@@ -295,20 +300,8 @@ export default function ProcedureTypes() {
             </div>
 
             {(() => {
-                // CATEGORY DEFINITIONS (Matching NewMedicalRecord.tsx)
-                const CATEGORIES = {
-                    "Toxina": ["Toxina Botulínica"],
-                    "Preenchimentos": ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"],
-                    "Fios": ["Fio PDO Liso", "Fio PDO Tração"],
-                    "Bioestimuladores": ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"],
-                    "Corporal": ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"],
-                    "Tratamentos": ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"],
-                    "Transplante": ["TP1", "TP2", "TP3"],
-                    "Cirurgias": ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"]
-                };
-
-                const renderedIds = new Set();
                 const groupedList = [];
+                const renderedIds = new Set();
 
                 if (loading) {
                     return (
@@ -336,15 +329,14 @@ export default function ProcedureTypes() {
                 );
 
                 // 2. Process Defined Categories
-                Object.entries(CATEGORIES).forEach(([catName, keywords]) => {
+                Object.entries(CATEGORIES_CONFIG).forEach(([catName, data]) => {
                     const items = uniqueProcedures.filter(p => {
                         if (renderedIds.has(p.id)) return false;
 
-                        // Strict Match: Use Word Boundaries to avoid "Mento" matching "Microagulhamento"
-                        return keywords.some(k => {
-                            const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape regex chars
-                            const regex = new RegExp(`\\b${escapedKey}\\b`, 'i'); // Word boundary, case insensitive
-                            // Fallback: If keyword has spaces, check simple includes, but for single words use regex
+                        // Strict Match: Use Word Boundaries
+                        return data.items.some(k => {
+                            const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const regex = new RegExp(`\\b${escapedKey}\\b`, 'i');
                             if (k.includes(' ')) {
                                 return p.name.toLowerCase().includes(k.toLowerCase());
                             }
@@ -358,7 +350,7 @@ export default function ProcedureTypes() {
                     }
                 });
 
-                // 3. Process "Outros" (Remaining from Unique list)
+                // 3. Process "Outros"
                 const others = uniqueProcedures.filter(p => !renderedIds.has(p.id));
                 if (others.length > 0) {
                     groupedList.push({ title: "Outros Procedimentos", items: others });
