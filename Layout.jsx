@@ -65,6 +65,7 @@ const navigation = [
     items: [
       { name: "Pacientes", href: "Patients", icon: Users, gradient: "from-emerald-500 to-teal-500" },
       { name: "Prontuários", href: "MedicalRecords", icon: FileText, gradient: "from-orange-500 to-red-500" },
+      { name: "Planos de Tratamento", href: "TreatmentPlans", icon: Sparkles, gradient: "from-cyan-500 to-blue-500" },
     ]
   },
   {

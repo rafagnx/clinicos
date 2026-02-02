@@ -175,11 +175,18 @@ export default function PatientHistory() {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-2 w-full md:w-auto">
-                <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20">
+                <Button
+                  className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20"
+                  onClick={() => navigate(`/agenda?newAppointment=true&patientId=${patientId}`)}
+                >
                   <Calendar className="w-4 h-4 mr-2" />
                   Novo Agendamento
                 </Button>
-                <Button variant="outline" className="border-slate-200">
+                <Button
+                  variant="outline"
+                  className="border-slate-200"
+                  onClick={() => navigate(`/NewMedicalRecord?patientId=${patientId}`)}
+                >
                   <FileText className="w-4 h-4 mr-2" />
                   Nova Evolução
                 </Button>
@@ -281,7 +288,10 @@ export default function PatientHistory() {
                   </div>
                 </div>
               </div>
-              <div className="bg-white/10 p-3 text-center cursor-pointer hover:bg-white/20 transition-colors">
+              <div
+                className="bg-white/10 p-3 text-center cursor-pointer hover:bg-white/20 transition-colors"
+                onClick={() => navigate(`/MedicalRecords`)}
+              >
                 <span className="text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-1">
                   Ver Anamnese <ChevronRight className="w-3 h-3" />
                 </span>
