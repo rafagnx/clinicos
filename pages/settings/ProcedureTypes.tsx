@@ -330,20 +330,36 @@ export default function ProcedureTypes() {
                     );
                 }
 
-                // 1. Process Defined Categories
+                // 1. UNIQUE PROCEDURES (Deduplicate by name)
+                const uniqueProcedures = procedures.filter((proc, index, self) =>
+                    index === self.findIndex((t) => t.name.toLowerCase().trim() === proc.name.toLowerCase().trim())
+                );
+
+                // 2. Process Defined Categories
                 Object.entries(CATEGORIES).forEach(([catName, keywords]) => {
-                    const items = procedures.filter(p =>
-                        !renderedIds.has(p.id) &&
-                        keywords.some(k => p.name.toLowerCase().includes(k.toLowerCase()))
-                    );
+                    const items = uniqueProcedures.filter(p => {
+                        if (renderedIds.has(p.id)) return false;
+
+                        // Strict Match: Use Word Boundaries to avoid "Mento" matching "Microagulhamento"
+                        return keywords.some(k => {
+                            const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape regex chars
+                            const regex = new RegExp(`\\b${escapedKey}\\b`, 'i'); // Word boundary, case insensitive
+                            // Fallback: If keyword has spaces, check simple includes, but for single words use regex
+                            if (k.includes(' ')) {
+                                return p.name.toLowerCase().includes(k.toLowerCase());
+                            }
+                            return regex.test(p.name);
+                        });
+                    });
+
                     if (items.length > 0) {
                         items.forEach(p => renderedIds.add(p.id));
                         groupedList.push({ title: catName, items });
                     }
                 });
 
-                // 2. Process "Outros" (Remaining)
-                const others = procedures.filter(p => !renderedIds.has(p.id));
+                // 3. Process "Outros" (Remaining from Unique list)
+                const others = uniqueProcedures.filter(p => !renderedIds.has(p.id));
                 if (others.length > 0) {
                     groupedList.push({ title: "Outros Procedimentos", items: others });
                 }
