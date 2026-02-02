@@ -15,11 +15,35 @@ export default function ChatActivityWidget({ conversations, currentUserEmail }) 
         .slice(0, 4);
 
     const getConversationName = (conv) => {
+        // Group conversations
         if (conv.type === "group") return conv.name || "Grupo";
-        const otherNames = conv.participant_names?.filter((_, idx) =>
-            conv.participants[idx] !== currentUserEmail
-        );
-        return otherNames?.[0] || "Conversa";
+
+        // Try participant_names array (filter out current user)
+        if (conv.participant_names?.length > 0) {
+            const otherNames = conv.participant_names.filter((name, idx) => {
+                // Try to exclude current user by email or by comparing name
+                const participantEmail = conv.participants?.[idx];
+                return participantEmail !== currentUserEmail && name;
+            });
+            if (otherNames.length > 0) return otherNames[0];
+
+            // If all filtered out, just return first name that's not empty
+            const firstValidName = conv.participant_names.find(n => n && n.trim());
+            if (firstValidName) return firstValidName;
+        }
+
+        // Try other fields that might contain names
+        if (conv.recipient_name) return conv.recipient_name;
+        if (conv.title) return conv.title;
+        if (conv.name) return conv.name;
+
+        // Last resort: show part of participant email if available
+        const otherParticipant = conv.participants?.find(p => p !== currentUserEmail);
+        if (otherParticipant && typeof otherParticipant === 'string') {
+            return otherParticipant.split('@')[0]; // Show username part of email
+        }
+
+        return "Conversa";
     };
 
     const getUnread = (conv) => conv.unread_count?.[currentUserEmail] || 0;
