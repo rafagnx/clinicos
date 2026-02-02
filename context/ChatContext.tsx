@@ -41,6 +41,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!currentUser?.id) return;
 
+        // Request notification permission on mount
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
         // Determine URL (Production vs Local)
         // Strip '/api' if present to ensure we connect to root namespace
         const baseUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin.replace('5173', '3001');
@@ -63,11 +68,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             console.log("New Real-time Message:", message);
 
             // Invalidate/Refetch messages key if we know it
-            // Ideally we insert into cache directly for speed
             queryClient.invalidateQueries({ queryKey: ["messages"] });
+            queryClient.invalidateQueries({ queryKey: ["conversations"] });
 
-            // If the chat with this user is NOT open, show a global notification or badge
-            // (We could use sonner here if not inside specific chat)
+            // Show browser notification if chat is not open with this sender
+            if (message.sender_id !== currentUser?.id) {
+                const isChatOpenWithSender = activeRecipient?.id === message.sender_id ||
+                    activeRecipient?.user_id === message.sender_id;
+
+                if (!isChatOpenWithSender && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                    new Notification(message.sender_name || 'Nova Mensagem 💬', {
+                        body: message.content?.substring(0, 100) || 'Você recebeu uma nova mensagem',
+                        icon: '/favicon.ico',
+                        tag: `chat-${message.sender_id}` // Prevents duplicate notifications from same sender
+                    });
+                }
+            }
         });
 
         // Removed: Old socket.on('status_change') from here
@@ -75,7 +91,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         return () => {
             socket.disconnect();
         };
-    }, [currentUser]);
+    }, [currentUser, activeRecipient]);
 
 
     const openChat = (recipient: any) => {

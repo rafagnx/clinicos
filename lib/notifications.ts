@@ -82,6 +82,12 @@ export const NotificationTemplates = {
         title: '👥 Novo Membro',
         message: `${memberName} foi adicionado à equipe`,
         type: 'info' as NotificationType
+    }),
+
+    chatMessage: (senderName: string, preview: string) => ({
+        title: `💬 ${senderName}`,
+        message: preview.length > 100 ? preview.substring(0, 100) + '...' : preview,
+        type: 'info' as NotificationType
     })
 };
 
