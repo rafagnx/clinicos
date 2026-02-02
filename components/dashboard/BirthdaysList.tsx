@@ -47,8 +47,17 @@ export default function BirthdaysList({ patients }) {
                             <Gift className="w-4 h-4 text-pink-400 opacity-50 group-hover:hidden transition-opacity" />
                             <button
                                 onClick={() => {
-                                    const msg = encodeURIComponent(`Olá ${patient.full_name.split(' ')[0]}! 🎂🎉\n\nParabéns pelo seu dia! Desejamos muitas alegrias, saúde e realizações.\n\nCom carinho,\nEquipe ClinicOS`);
-                                    window.open(`https://wa.me/${patient.phone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
+                                    const firstName = patient.full_name.split(' ')[0];
+                                    const message = `Olá ${firstName}! 🎂🎉\n\nParabéns pelo seu dia! Desejamos muitas alegrias, saúde e realizações.\n\nCom carinho,\nEquipe Orofacial Clinic`;
+
+                                    let phone = patient.phone?.replace(/\D/g, '') || '';
+                                    // If number doesn't start with 55 and has valid length (10 or 11 digits), add it
+                                    if (phone && !phone.startsWith('55') && (phone.length === 10 || phone.length === 11)) {
+                                        phone = `55${phone}`;
+                                    }
+
+                                    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                                    window.open(url, '_blank');
                                 }}
                                 className="hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-xs font-bold hover:bg-pink-100 transition-all shadow-sm"
                             >
