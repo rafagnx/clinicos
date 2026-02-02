@@ -90,9 +90,9 @@ export default function NewMedicalRecord() {
 
       const payload = {
         patient_id: data.patient_id,
-        patient_name: patients.find((p: any) => p.id === data.patient_id)?.full_name || "Desconhecido",
+        patient_name: patients.find((p: any) => String(p.id) === String(data.patient_id))?.full_name || "Desconhecido",
         professional_id: data.professional_id,
-        professional_name: professionals.find((p: any) => p.id === data.professional_id)?.full_name || "Profissional",
+        professional_name: professionals.find((p: any) => String(p.id) === String(data.professional_id))?.full_name || "Profissional",
         date: data.date,
         content: content, // Storing full structured data in content
         procedures_summary: data.selected_procedures.join(", ") // Optional summary field if schema supports
@@ -162,7 +162,7 @@ export default function NewMedicalRecord() {
                       )}
                     >
                       {formData.patient_id
-                        ? patients.find((patient: any) => patient.id === formData.patient_id)?.full_name
+                        ? patients.find((patient: any) => String(patient.id) === String(formData.patient_id))?.full_name
                         : "Selecione o paciente..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -178,13 +178,13 @@ export default function NewMedicalRecord() {
                               value={patient.full_name}
                               key={patient.id}
                               onSelect={() => {
-                                setFormData(p => ({ ...p, patient_id: patient.id }));
+                                setFormData(p => ({ ...p, patient_id: String(patient.id) }));
                               }}
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  patient.id === formData.patient_id ? "opacity-100" : "opacity-0"
+                                  String(patient.id) === String(formData.patient_id) ? "opacity-100" : "opacity-0"
                                 )}
                               />
                               {patient.full_name}
@@ -226,7 +226,7 @@ export default function NewMedicalRecord() {
                         ['hof', 'biomedico', 'profissional'].includes(prof.role_type || 'profissional')
                       )
                       .map((prof: any) => (
-                        <SelectItem key={prof.id} value={prof.id}>
+                        <SelectItem key={prof.id} value={String(prof.id)}>
                           {prof.full_name}
                         </SelectItem>
                       ))}
