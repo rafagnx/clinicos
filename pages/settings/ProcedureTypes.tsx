@@ -58,7 +58,13 @@ export default function ProcedureTypes() {
                 await base44.entities.ProcedureType.update(editingId, payload);
                 toast.success("Procedimento atualizado!");
             } else {
-                await base44.entities.ProcedureType.create(payload);
+                try {
+                    await base44.entities.ProcedureType.create(payload);
+                } catch (err) {
+                    // Fallback for missing column
+                    const { return_interval, ...safePayload } = payload;
+                    await base44.entities.ProcedureType.create(safePayload);
+                }
                 toast.success("Procedimento criado!");
             }
 
@@ -151,7 +157,15 @@ export default function ProcedureTypes() {
                 // Check if already exists (fuzzy match or exact?)
                 const exists = procedures.find(p => p.name.toLowerCase() === proc.name.toLowerCase());
                 if (!exists) {
-                    await base44.entities.ProcedureType.create({ ...proc, active: true });
+                    try {
+                        await base44.entities.ProcedureType.create({ ...proc, active: true });
+                    } catch (err) {
+                        console.warn(`Failed to create ${proc.name} with full fields, retrying without return_interval...`);
+                        // Fallback: Try without return_interval (DB migration might be pending)
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { return_interval, ...safeProc } = proc;
+                        await base44.entities.ProcedureType.create({ ...safeProc, active: true });
+                    }
                     createdCount++;
                 }
             }
