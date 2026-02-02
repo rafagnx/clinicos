@@ -28,12 +28,34 @@ export default function Dashboard() {
   const today = format(new Date(), "yyyy-MM-dd");
   const [user, setUser] = useState(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
-  const [widgets, setWidgets] = useState([
+
+  // Widget preferences with localStorage persistence
+  const defaultWidgets = [
     { id: "upcoming_appointments", enabled: true, order: 0 },
     { id: "financial_summary", enabled: true, order: 1 },
     { id: "chat_activity", enabled: true, order: 2 },
     { id: "urgent_reminders", enabled: true, order: 3 }
-  ]);
+  ];
+
+  const [widgets, setWidgets] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dashboard-widgets');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Merge with defaults in case new widgets were added
+        return defaultWidgets.map(def => {
+          const saved = parsed.find(w => w.id === def.id);
+          return saved || def;
+        });
+      }
+    } catch (e) { }
+    return defaultWidgets;
+  });
+
+  // Save widgets to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('dashboard-widgets', JSON.stringify(widgets));
+  }, [widgets]);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => { });
@@ -54,10 +76,17 @@ export default function Dashboard() {
     queryFn: () => (base44.entities.Professional as any).filter({ status: "ativo" })
   });
 
+  // Fetch conversations for chat widget
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: () => base44.list("Conversation", { sort: [{ field: "last_message_at", direction: "desc" }] })
+  });
+
   // Stats calculation
   const safeAppointments = Array.isArray(appointments) ? appointments : [];
   const safePatients = Array.isArray(patients) ? patients : [];
   const safeProfessionals = Array.isArray(professionals) ? professionals : [];
+  const safeConversations = Array.isArray(conversations) ? conversations : [];
 
   const stats = {
     todayAppointments: safeAppointments.filter(a => a?.date === today && a?.type !== 'compromisso').length,
@@ -78,7 +107,7 @@ export default function Dashboard() {
     switch (id) {
       case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
       case "financial_summary": return <FinancialSummaryWidget appointments={safeAppointments} />;
-      case "chat_activity": return <ChatActivityWidget conversations={[]} currentUserEmail={user?.email} />;
+      case "chat_activity": return <ChatActivityWidget conversations={safeConversations} currentUserEmail={user?.email} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       default: return null;
     }
