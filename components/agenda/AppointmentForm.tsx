@@ -201,15 +201,21 @@ export default function AppointmentForm({
                 let initialTime = "09:00";
 
                 if (appointment.date) {
-                    // If date is provided (string or Date), use it
-                    const d = new Date(appointment.date);
-                    if (isValid(d)) initialDate = d;
-
                     // Specific handling for YYYY-MM-DD strings to avoid timezone issues
-                    if (typeof appointment.date === 'string' && appointment.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                        const [y, m, d] = appointment.date.split('-').map(Number);
-                        const cleanDate = new Date(y, m - 1, d);
+                    if (typeof appointment.date === 'string' && appointment.date.match(/^\d{4}-\d{2}-\d{2}/)) {
+                        const datePart = appointment.date.split('T')[0]; // Handle both "YYYY-MM-DD" and "YYYY-MM-DDTHH:MM:SS"
+                        const [y, m, d] = datePart.split('-').map(Number);
+                        const cleanDate = new Date(y, m - 1, d); // LOCAL timezone
                         if (isValid(cleanDate)) initialDate = cleanDate;
+                    } else if (appointment.date instanceof Date) {
+                        // Already a Date object - extract local components
+                        initialDate = new Date(appointment.date.getFullYear(), appointment.date.getMonth(), appointment.date.getDate());
+                    } else {
+                        // Fallback: try parsing and extract local components
+                        const d = new Date(appointment.date);
+                        if (isValid(d)) {
+                            initialDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                        }
                     }
                 } else if (appointment.start_time && appointment.start_time.includes('T')) {
                     // Parse ISO string to Date, then extract LOCAL date/time
