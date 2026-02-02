@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Calendar, DollarSign, MessageSquare, AlertCircle, BarChart3 } from "lucide-react";
+import { Calendar, DollarSign, MessageSquare, AlertCircle, BarChart3, RefreshCcw } from "lucide-react";
 
 const AVAILABLE_WIDGETS = [
     {
@@ -26,6 +26,13 @@ const AVAILABLE_WIDGETS = [
         description: "Veja as conversas mais recentes",
         icon: MessageSquare,
         color: "text-indigo-600"
+    },
+    {
+        id: "returns_alert",
+        name: "Alertas de Retorno (Recall)",
+        description: "Alertas sobre retornos e recalls de produtos/serviços",
+        icon: RefreshCcw,
+        color: "text-orange-600"
     },
     {
         id: "urgent_reminders",

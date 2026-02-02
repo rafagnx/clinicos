@@ -43,6 +43,7 @@ export default function ProcedureTypes() {
                 ...data,
                 duration_minutes: parseInt(data.duration_minutes),
                 price: parseFloat(data.price),
+                return_interval: parseInt(data.return_interval || 0),
                 active: true
             };
 
@@ -70,6 +71,7 @@ export default function ProcedureTypes() {
         setValue("duration_minutes", proc.duration_minutes);
         setValue("price", proc.price);
         setValue("color", proc.color);
+        setValue("return_interval", proc.return_interval);
         setIsOpen(true);
     };
 
@@ -149,6 +151,21 @@ export default function ProcedureTypes() {
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="return_interval">Alerta de Retorno (dias)</Label>
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                                    <Input
+                                        id="return_interval"
+                                        type="number"
+                                        className="pl-9"
+                                        placeholder="Ex: 90 para 3 meses"
+                                        {...register("return_interval")}
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">Deixe 0 ou vazio para não alertar.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="color">Cor na Agenda</Label>
                                 <Input
                                     id="color"
@@ -178,6 +195,7 @@ export default function ProcedureTypes() {
                                 <TableHead>Nome</TableHead>
                                 <TableHead>Duração</TableHead>
                                 <TableHead>Preço</TableHead>
+                                <TableHead>Retorno</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -209,6 +227,13 @@ export default function ProcedureTypes() {
                                         <TableCell>{proc.duration_minutes} min</TableCell>
                                         <TableCell>
                                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proc.price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {proc.return_interval > 0 ? (
+                                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                                    {proc.return_interval} dias
+                                                </Badge>
+                                            ) : <span className="text-slate-400 text-xs">-</span>}
                                         </TableCell>
                                         <TableCell className="text-right space-x-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleEdit(proc)}>

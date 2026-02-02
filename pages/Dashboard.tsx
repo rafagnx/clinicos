@@ -21,6 +21,7 @@ import FinancialSummaryWidget from "@/components/dashboard/FinancialSummaryWidge
 import ChatActivityWidget from "@/components/dashboard/ChatActivityWidget";
 import UrgentRemindersWidget from "@/components/dashboard/UrgentRemindersWidget";
 import FinancialReportsWidget from "@/components/dashboard/FinancialReportsWidget";
+import ReturnsAlertWidget from "@/components/dashboard/ReturnsAlertWidget";
 import WidgetSelector from "@/components/dashboard/WidgetSelector";
 
 export default function Dashboard() {
@@ -35,7 +36,8 @@ export default function Dashboard() {
     { id: "upcoming_appointments", enabled: true, order: 0 },
     { id: "financial_reports", enabled: true, order: 1 },
     { id: "chat_activity", enabled: true, order: 2 },
-    { id: "urgent_reminders", enabled: true, order: 3 }
+    { id: "urgent_reminders", enabled: true, order: 3 },
+    { id: "returns_alert", enabled: true, order: 4 }
   ];
 
   const [widgets, setWidgets] = useState(() => {
@@ -110,6 +112,7 @@ export default function Dashboard() {
       case "financial_reports": return <FinancialReportsWidget appointments={safeAppointments} />;
       case "chat_activity": return <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
+      case "returns_alert": return <ReturnsAlertWidget />;
       default: return null;
     }
   };

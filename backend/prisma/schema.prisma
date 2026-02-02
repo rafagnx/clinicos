@@ -256,6 +256,11 @@ model ProcedureType {
   id             Int      @id @default(autoincrement())
   organizationId String?  @map("organization_id")
   name           String?
+  durationMinutes Int?    @map("duration_minutes")
+  price          Decimal?
+  color          String?
+  returnInterval Int?     @map("return_interval") // Logic: days to recall (e.g., 90 for 3 months)
+  active         Boolean  @default(true)
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
