@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
-  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft
+  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Building2, ArrowLeft, RotateCw
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
@@ -38,6 +38,7 @@ const navigation = [
   { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare },
   { name: "Equipe", href: "Professionals", icon: Stethoscope },
   { name: "Prontuários", href: "MedicalRecords", icon: FileText },
+  { name: "Retornos", href: "Retention", icon: RotateCw },
   { name: "Relatórios", href: "Reports", icon: BarChart3 },
   { name: "Configurações", href: "ClinicSettings", icon: Settings },
 ];

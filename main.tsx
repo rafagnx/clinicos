@@ -36,6 +36,7 @@ import ProcedureTypes from './pages/settings/ProcedureTypes'
 import Marketing from './pages/Marketing'
 import TreatmentPlans from './pages/TreatmentPlans'
 import TreatmentPlanDetails from './pages/TreatmentPlanDetails'
+import Retention from './pages/Retention'
 
 import AdminDashboard from './pages/AdminDashboard'
 import AdminOrganizations from './pages/admin/AdminOrganizations'
@@ -120,6 +121,7 @@ const App = () => {
                     <Route path="/ImportPatients" element={<ImportPatients />} />
                     <Route path="/TreatmentPlans" element={<TreatmentPlans />} />
                     <Route path="/TreatmentPlanDetails" element={<TreatmentPlanDetails />} />
+                    <Route path="/Retention" element={<Retention />} />
                 </Route>
             </Routes >
             <Toaster />
