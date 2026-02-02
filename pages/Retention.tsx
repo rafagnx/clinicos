@@ -39,22 +39,14 @@ export default function Retention() {
 
     // 2. Process Opportunities
     const opportunities = useMemo(() => {
-        console.log("Retention Debug:", {
-            patientsCount: patients.length,
-            recordsCount: records.length,
-            proceduresCount: procedures.length
-        });
+        console.log("Retention: Records found:", records.length);
+        console.log("Retention: DB Procedures found:", procedures.length);
 
-        if (!records.length || !procedures.length) {
-            console.log("Retention: Missing records or procedures configuration, skipping processing.");
-            return [];
-        }
+        if (!records.length) return [];
 
         const opps = [];
-        const processedKeys = new Set(); // To avoid duplicates if needed, but we want latest per proc
+        const processedKeys = new Set();
 
-        // Group records by Patient + Procedure to find the LATEST date
-        // Map: "patientId_procName" -> { date, patientId, procName }
         const latestProcedures = new Map();
 
         records.forEach(record => {
@@ -62,6 +54,10 @@ export default function Retention() {
             try {
                 const content = typeof record.content === 'string' ? JSON.parse(record.content) : record.content;
                 const procList = content.selected_procedures || [];
+
+                if (procList.length > 0) {
+                    console.log(`Processing record ${record.id} for patient ${record.patient_id} with procedures:`, procList);
+                }
 
                 procList.forEach(procName => {
                     const key = `${record.patient_id}_${procName}`;
@@ -109,14 +105,10 @@ export default function Retention() {
                 const dueDate = addDays(item.date, interval);
                 const daysUntilDue = differenceInDays(dueDate, new Date());
 
-                // Logic: Show if Overdue OR Due within next 45 days
-                // If daysUntilDue is negative, it's overdue.
-                // If daysUntilDue < 45, it's upcoming.
-                // Ignore if it's very old? (e.g. overdue by 365 days? maybe patient is lost)
-                // Let's show all overdue for now.
+                console.log(`Interval for ${item.procName}: ${interval} days. Due: ${format(dueDate, "dd/MM/yyyy")}. Days left: ${daysUntilDue}`);
 
                 if (daysUntilDue < 45) {
-                    const patient = patients.find(p => p.id === item.patientId);
+                    const patient = patients.find(p => String(p.id) === String(item.patientId));
                     if (patient) {
                         opps.push({
                             id: `${item.recordId}_${item.procName}`,
