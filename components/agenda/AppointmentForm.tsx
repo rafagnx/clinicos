@@ -465,7 +465,7 @@ export default function AppointmentForm({
         setFormData(prev => ({
             ...prev,
             patient_id: patient.id,
-            patient_name: patient.full_name
+            patient_name: patient.full_name || patient.name
         }));
         setStep(2);
     };
@@ -503,10 +503,10 @@ export default function AppointmentForm({
                                         >
                                             <Avatar>
                                                 <AvatarImage src={patient.photo_url} />
-                                                <AvatarFallback>{patient.full_name?.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback>{(patient.full_name || patient.name || "?").charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <div>
-                                                <p className="font-medium">{patient.full_name}</p>
+                                                <p className="font-medium">{patient.full_name || patient.name}</p>
                                                 <p className="text-xs text-slate-500">{patient.phone || "Sem telefone"}</p>
                                             </div>
                                         </div>
@@ -537,7 +537,7 @@ export default function AppointmentForm({
                                 {selectedPatient ? (
                                     <div className="flex items-center gap-3 p-2 border rounded-md bg-slate-50">
                                         <User className="w-4 h-4 text-slate-500" />
-                                        <span className="text-sm font-medium flex-1">{selectedPatient.full_name}</span>
+                                        <span className="text-sm font-medium flex-1">{selectedPatient.full_name || selectedPatient.name}</span>
                                         {!appointment && (
                                             <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setStep(1)}><Check className="w-3 h-3" /></Button> // Using Check as placeholder for "change" or just X
                                         )}

@@ -323,7 +323,7 @@ export default function Agenda() {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
     return (
-      (apt.patient?.full_name || "").toLowerCase().includes(search) ||
+      (apt.patient?.full_name || apt.patient?.name || "").toLowerCase().includes(search) ||
       (apt.procedure_name || "").toLowerCase().includes(search) ||
       (apt.professional?.full_name || "").toLowerCase().includes(search)
     );
@@ -601,7 +601,17 @@ export default function Agenda() {
               if (!apt.start_time) return null;
 
               const { h, m, str: timeDisplay } = parseTime(apt.start_time);
-              const startDateTime = new Date(`${apt.date}T${timeDisplay}`);
+
+              // Correct Strategy: Calculate dateStr from start_time in LOCAL context if missing or invalid
+              let dateStr = apt.date;
+              if (!dateStr || dateStr.includes('T')) {
+                // Convert UTC string to Date object (Browser handles conversion to Local)
+                const localDate = new Date(apt.start_time);
+                // Format as YYYY-MM-DD in Local time
+                dateStr = format(localDate, 'yyyy-MM-dd');
+              }
+
+              const startDateTime = new Date(`${dateStr}T${timeDisplay}`);
 
               // Determine end time
               let durationMinutes = 30; // default
@@ -630,12 +640,6 @@ export default function Agenda() {
               let width = "100%";
 
               if (view === "week") {
-                // Fix: Handle cases where date is ISO or missing. extracting from start_time if needed.
-                let dateStr = apt.date;
-                if (!dateStr && apt.start_time) {
-                  dateStr = apt.start_time.split("T")[0];
-                }
-
                 if (dateStr) {
                   // Handle "2026-01-29T..." vs "2026-01-29"
                   const cleanDate = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
@@ -699,7 +703,7 @@ export default function Agenda() {
                             "text-xs font-bold truncate leading-none",
                             isDark ? "text-slate-100" : "text-slate-800"
                           )}>
-                            {apt.patient?.full_name?.split(" ")[0] || "Paciente"}
+                            {apt.patient?.full_name || apt.patient?.name || "Paciente"}
                             {professional && (
                               <span className={cn("text-[10px] ml-1 opacity-75 font-normal", isDark ? "text-slate-300" : "text-slate-600")}>
                                 - {professional.name || professional.full_name || "Dr(a)."}
