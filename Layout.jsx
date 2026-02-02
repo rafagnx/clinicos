@@ -17,6 +17,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   LayoutDashboard, Calendar, Users, Stethoscope, FileText, BarChart3,
+  Menu, X, LogOut, Settings, ChevronDown, Bell, Tag, MessageSquare, Target, Moon, Sun, Search,
   ChevronLeft, ChevronRight, Activity, DollarSign, Sparkles, Megaphone, RotateCw
 } from "lucide-react";
 import { useFeatures } from "@/hooks/useFeatures";
