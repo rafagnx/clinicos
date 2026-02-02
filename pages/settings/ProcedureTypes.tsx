@@ -92,6 +92,46 @@ export default function ProcedureTypes() {
         setIsOpen(true);
     }
 
+    const handleImportDefaults = async () => {
+        if (!confirm("Isso irá criar vários procedimentos padrão (Toxina, Preenchimentos, etc). Deseja continuar?")) return;
+
+        const DEFAULT_PROCEDURES = [
+            { name: "Toxina Botulínica", duration_minutes: 30, price: 0, return_interval: 120, color: "#3b82f6" },
+            { name: "Preenchimento Labial", duration_minutes: 45, price: 0, return_interval: 270, color: "#ec4899" },
+            { name: "Preenchimento Malar", duration_minutes: 60, price: 0, return_interval: 365, color: "#ec4899" },
+            { name: "Preenchimento Olheiras", duration_minutes: 45, price: 0, return_interval: 365, color: "#ec4899" },
+            { name: "Preenchimento Mandíbula", duration_minutes: 60, price: 0, return_interval: 365, color: "#ec4899" },
+            { name: "Preenchimento Mento", duration_minutes: 45, price: 0, return_interval: 365, color: "#ec4899" },
+            { name: "Fios PDO Liso", duration_minutes: 45, price: 0, return_interval: 180, color: "#8b5cf6" },
+            { name: "Fios PDO Tração", duration_minutes: 90, price: 0, return_interval: 240, color: "#8b5cf6" },
+            { name: "Bioestimulador (Sessão)", duration_minutes: 45, price: 0, return_interval: 30, color: "#10b981" },
+            { name: "Bioestimulador (Manutenção)", duration_minutes: 45, price: 0, return_interval: 365, color: "#10b981" },
+            { name: "Microagulhamento", duration_minutes: 45, price: 0, return_interval: 30, color: "#f59e0b" },
+            { name: "Lavieen", duration_minutes: 30, price: 0, return_interval: 30, color: "#f43f5e" },
+            { name: "Endolaser", duration_minutes: 120, price: 0, return_interval: 0, color: "#ef4444" },
+            { name: "Lipo de Papada", duration_minutes: 60, price: 0, return_interval: 0, color: "#ef4444" },
+            { name: "Bichectomia", duration_minutes: 60, price: 0, return_interval: 0, color: "#ef4444" },
+        ];
+
+        setLoading(true);
+        try {
+            for (const proc of DEFAULT_PROCEDURES) {
+                // Check if already exists to avoid duplicates
+                const exists = procedures.find(p => p.name === proc.name);
+                if (!exists) {
+                    await base44.entities.ProcedureType.create({ ...proc, active: true });
+                }
+            }
+            toast.success("Procedimentos padrão importados!");
+            fetchProcedures();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao importar.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
@@ -106,6 +146,12 @@ export default function ProcedureTypes() {
                             Novo Procedimento
                         </Button>
                     </DialogTrigger>
+
+                    <Button variant="outline" onClick={handleImportDefaults} disabled={loading} className="ml-2">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Importar Padrões
+                    </Button>
+
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>{editingId ? "Editar Procedimento" : "Nova Procedimento"}</DialogTitle>
@@ -117,7 +163,20 @@ export default function ProcedureTypes() {
                                     id="name"
                                     placeholder="Ex: Consulta Inicial"
                                     {...register("name", { required: "Nome é obrigatório" })}
+                                    list="procedure-suggestions"
                                 />
+                                <datalist id="procedure-suggestions">
+                                    {/* Flattened list from NewMedicalRecord.tsx */}
+                                    {["Toxina Botulínica", "Preenchimentos", "8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete",
+                                        "Fio PDO Liso", "Fio PDO Tração",
+                                        "Bioestimuladores", "Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo",
+                                        "Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia",
+                                        "Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço",
+                                        "Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"
+                                    ].map(proc => (
+                                        <option key={proc} value={proc} />
+                                    ))}
+                                </datalist>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
