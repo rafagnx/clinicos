@@ -11,7 +11,7 @@ import { createPageUrl } from "@/lib/utils";
 export default function ChatActivityWidget({ conversations, currentUserEmail }) {
     const recentConversations = conversations
         .filter(c => c.last_message_at)
-        .sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at))
+        .sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime())
         .slice(0, 4);
 
     const getConversationName = (conv) => {
