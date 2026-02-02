@@ -856,6 +856,19 @@ const initSchema = async () => {
                 }
             }
 
+            // 5c. Update MedicalRecords Columns
+            const medCols = [
+                { name: 'patient_name', type: 'TEXT' },
+                { name: 'professional_name', type: 'TEXT' },
+                { name: 'procedures_summary', type: 'TEXT' }
+            ];
+            for (const col of medCols) {
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'medical_records' AND column_name = $1;`, [col.name]);
+                if (colCheck.rows.length === 0) {
+                    await client.query(`ALTER TABLE "medical_records" ADD COLUMN "${col.name}" ${col.type}; `);
+                }
+            }
+
             // 6. Update Appointments Columns
             const aptCols = [
                 { name: 'patient_id', type: 'INTEGER' },
