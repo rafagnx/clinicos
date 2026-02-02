@@ -90,6 +90,7 @@ const navigation = [
     group: "Sistema",
     items: [
       { name: "Configurações", href: "ClinicSettings", icon: Settings, gradient: "from-slate-500 to-gray-500" },
+      { name: "Procedimentos", href: "Settings/Procedures", icon: Activity, gradient: "from-pink-500 to-rose-500" },
     ]
   }
 ];

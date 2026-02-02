@@ -228,11 +228,16 @@ export default function NewMedicalRecord() {
                     <SelectValue placeholder="Selecione o profissional" />
                   </SelectTrigger>
                   <SelectContent>
-                    {professionals.map((prof: any) => (
-                      <SelectItem key={prof.id} value={prof.id}>
-                        {prof.full_name}
-                      </SelectItem>
-                    ))}
+                    {professionals
+                      .filter((prof: any) =>
+                        prof.status === 'ativo' &&
+                        ['hof', 'biomedico', 'profissional'].includes(prof.role_type || 'profissional')
+                      )
+                      .map((prof: any) => (
+                        <SelectItem key={prof.id} value={prof.id}>
+                          {prof.full_name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
