@@ -61,11 +61,18 @@ export default function UpcomingAppointmentsWidget({ appointments, patients, pro
                                     </p>
                                     <div className={cn("flex items-center gap-2 text-xs mt-0.5", isDark ? "text-slate-500" : "text-slate-500")}>
                                         <Clock className="w-3 h-3" />
-                                        {format(new Date(apt.date), "dd/MM", { locale: ptBR })} às {
-                                            apt.start_time.includes('T') && isValid(parseISO(apt.start_time))
+                                        {(() => {
+                                            // Extract just the date part to avoid timezone issues
+                                            const datePart = apt.date.includes('T') ? apt.date.split('T')[0] : apt.date;
+                                            const [year, month, day] = datePart.split('-').map(Number);
+                                            const displayDate = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`;
+
+                                            const timeDisplay = apt.start_time.includes('T') && isValid(parseISO(apt.start_time))
                                                 ? format(parseISO(apt.start_time), "HH:mm")
-                                                : (apt.start_time || "--:--").substring(0, 5)
-                                        }
+                                                : (apt.start_time || "--:--").substring(0, 5);
+
+                                            return `${displayDate} às ${timeDisplay}`;
+                                        })()}
                                     </div>
                                 </div>
                                 <Badge variant="outline" className={cn("text-xs", isDark ? "border-slate-700 text-slate-400" : "")}>
