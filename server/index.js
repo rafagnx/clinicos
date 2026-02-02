@@ -309,6 +309,30 @@ app.use(cors({
 // --- DEBUG & HEALTH CHECK ENDPOINTS (Top Priority) ---
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', time: new Date().toISOString() }));
 
+app.get('/api/debug-stats', async (req, res) => {
+    const orgId = req.headers['x-organization-id'];
+    try {
+        const patients = await pool.query('SELECT count(*) FROM patients WHERE organization_id = $1', [orgId]);
+        const records = await pool.query('SELECT count(*) FROM medical_records WHERE organization_id = $1', [orgId]);
+        const allRecords = await pool.query('SELECT count(*) FROM medical_records');
+        const orgs = await pool.query('SELECT count(*), json_agg(json_build_object(\'id\', id, \'name\', name)) as list FROM organization');
+
+        res.json({
+            currentOrgId: orgId,
+            countsForThisOrg: {
+                patients: patients.rows[0].count,
+                medical_records: records.rows[0].count
+            },
+            totalInDatabase: {
+                medical_records: allRecords.rows[0].count
+            },
+            organizations: orgs.rows[0]
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/api/debug-auth-config', (req, res) => {
     // DIAGNOSTIC ENDPOINT for Auth Configuration
     const sbUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'MISSING';
