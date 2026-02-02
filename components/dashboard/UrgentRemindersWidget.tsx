@@ -1,17 +1,21 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Calendar, Users, Tag } from "lucide-react";
-import { format, addDays, differenceInDays } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Calendar, Users, Tag, Cake, Clock, UserX, Phone } from "lucide-react";
+import { format, addDays, differenceInDays, differenceInMonths, isToday, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/lib/utils";
 
 export default function UrgentRemindersWidget({ appointments, patients, promotions }) {
     const today = format(new Date(), "yyyy-MM-dd");
     const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+    const now = new Date();
 
     const reminders = [];
 
-    // Consultas não confirmadas para amanhã
+    // 1. Consultas não confirmadas para amanhã
     const tomorrowUnconfirmed = appointments.filter(apt =>
         apt.date === tomorrow && apt.status === "agendado"
     );
@@ -20,29 +24,113 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
             icon: Calendar,
             color: "text-amber-600",
             bgColor: "bg-amber-50",
-            title: `${tomorrowUnconfirmed.length} consultas não confirmadas para amanhã`,
-            action: "Enviar confirmações"
+            title: `${tomorrowUnconfirmed.length} consulta${tomorrowUnconfirmed.length > 1 ? 's' : ''} não confirmada${tomorrowUnconfirmed.length > 1 ? 's' : ''} para amanhã`,
+            action: "Enviar confirmações",
+            link: "/Agenda",
+            priority: 1
         });
     }
 
-    // Pacientes que faltaram hoje
+    // 2. Pacientes que faltaram hoje
     const todayNoShows = appointments.filter(apt =>
         apt.date === today && apt.status === "faltou"
     );
     if (todayNoShows.length > 0) {
         reminders.push({
-            icon: Users,
+            icon: UserX,
             color: "text-rose-600",
             bgColor: "bg-rose-50",
-            title: `${todayNoShows.length} pacientes faltaram hoje`,
-            action: "Entrar em contato"
+            title: `${todayNoShows.length} paciente${todayNoShows.length > 1 ? 's' : ''} faltou hoje`,
+            action: "Entrar em contato",
+            link: "/Patients",
+            priority: 2
         });
     }
 
-    // Promoções expirando em breve
-    const expiringPromos = promotions.filter(promo => {
+    // 3. Pacientes aguardando atendimento
+    const todayWaiting = appointments.filter(apt =>
+        apt.date === today && apt.status === "aguardando"
+    );
+    if (todayWaiting.length > 0) {
+        reminders.push({
+            icon: Clock,
+            color: "text-blue-600",
+            bgColor: "bg-blue-50",
+            title: `${todayWaiting.length} paciente${todayWaiting.length > 1 ? 's' : ''} aguardando atendimento`,
+            action: "Verificar agenda",
+            link: "/Agenda",
+            priority: 1
+        });
+    }
+
+    // 4. 🎂 Aniversariantes de hoje
+    const todayBirthdays = patients.filter(patient => {
+        if (!patient.birth_date) return false;
+        try {
+            let birthMonth, birthDay;
+            if (patient.birth_date.includes('T')) {
+                const date = new Date(patient.birth_date);
+                birthMonth = date.getUTCMonth();
+                birthDay = date.getUTCDate();
+            } else if (patient.birth_date.includes('-')) {
+                const part = patient.birth_date.split('T')[0];
+                const [y, m, d] = part.split('-').map(Number);
+                birthMonth = m - 1;
+                birthDay = d;
+            } else {
+                return false;
+            }
+            return birthMonth === now.getMonth() && birthDay === now.getDate();
+        } catch (e) {
+            return false;
+        }
+    });
+    if (todayBirthdays.length > 0) {
+        reminders.push({
+            icon: Cake,
+            color: "text-pink-600",
+            bgColor: "bg-pink-50",
+            title: `🎂 ${todayBirthdays.length} aniversariante${todayBirthdays.length > 1 ? 's' : ''} hoje!`,
+            action: "Enviar parabéns",
+            link: "/Patients",
+            priority: 3
+        });
+    }
+
+    // 5. 📞 Pacientes sem retorno há mais de 3 meses
+    const patientLastVisit = {};
+    appointments.forEach(apt => {
+        if (apt.patient_id && apt.status === "concluido") {
+            const aptDate = new Date(apt.date);
+            if (!patientLastVisit[apt.patient_id] || aptDate > patientLastVisit[apt.patient_id]) {
+                patientLastVisit[apt.patient_id] = aptDate;
+            }
+        }
+    });
+
+    const patientsWithoutReturn = patients.filter(patient => {
+        const lastVisit = patientLastVisit[patient.id];
+        if (!lastVisit) return false; // Never had a completed appointment
+        const monthsAgo = differenceInMonths(now, lastVisit);
+        return monthsAgo >= 3;
+    });
+
+    if (patientsWithoutReturn.length > 0) {
+        reminders.push({
+            icon: Phone,
+            color: "text-orange-600",
+            bgColor: "bg-orange-50",
+            title: `${patientsWithoutReturn.length} paciente${patientsWithoutReturn.length > 1 ? 's' : ''} sem retorno há +3 meses`,
+            action: "Agendar retorno",
+            link: "/Patients",
+            priority: 4
+        });
+    }
+
+    // 6. Promoções expirando em breve
+    const expiringPromos = (promotions || []).filter(promo => {
         if (promo.status !== "ativa" || !promo.end_date) return false;
-        const daysUntilEnd = differenceInDays(new Date(promo.end_date), new Date());
+        const daysUntilEnd = differenceInDays(new Date(promo.end_date), now);
         return daysUntilEnd >= 0 && daysUntilEnd <= 7;
     });
     if (expiringPromos.length > 0) {
@@ -50,30 +138,38 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
             icon: Tag,
             color: "text-purple-600",
             bgColor: "bg-purple-50",
-            title: `${expiringPromos.length} promoções expirando em 7 dias`,
-            action: "Revisar promoções"
+            title: `${expiringPromos.length} promoção${expiringPromos.length > 1 ? 'ões' : ''} expirando em 7 dias`,
+            action: "Revisar promoções",
+            link: "/Promotions",
+            priority: 5
         });
     }
 
-    // Consultas de hoje aguardando
-    const todayWaiting = appointments.filter(apt =>
-        apt.date === today && apt.status === "aguardando"
-    );
-    if (todayWaiting.length > 0) {
+    // 7. Pacientes sem telefone cadastrado
+    const patientsNoPhone = patients.filter(p => !p.phone && !p.whatsapp);
+    if (patientsNoPhone.length > 0 && patientsNoPhone.length <= 10) {
         reminders.push({
-            icon: AlertCircle,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50",
-            title: `${todayWaiting.length} pacientes aguardando atendimento`,
-            action: "Verificar agenda"
+            icon: Users,
+            color: "text-slate-600",
+            bgColor: "bg-slate-50",
+            title: `${patientsNoPhone.length} paciente${patientsNoPhone.length > 1 ? 's' : ''} sem telefone cadastrado`,
+            action: "Atualizar cadastro",
+            link: "/Patients",
+            priority: 6
         });
     }
+
+    // Sort by priority
+    reminders.sort((a, b) => a.priority - b.priority);
 
     return (
         <Card className="p-5 bg-white/90 backdrop-blur-sm border-0 shadow-lg h-full">
             <div className="flex items-center gap-2 mb-4">
                 <AlertCircle className="w-5 h-5 text-rose-600" />
                 <h3 className="font-semibold text-slate-800">Lembretes Urgentes</h3>
+                {reminders.length > 0 && (
+                    <Badge className="bg-rose-600 text-white ml-auto">{reminders.length}</Badge>
+                )}
             </div>
 
             {reminders.length === 0 ? (
@@ -82,20 +178,31 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
                     <p className="text-xs text-slate-300">Tudo está em dia! 🎉</p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    {reminders.map((reminder, idx) => (
-                        <div key={idx} className={`p-4 rounded-xl ${reminder.bgColor} border border-current/10`}>
-                            <div className="flex items-start gap-3">
-                                <reminder.icon className={`w-5 h-5 shrink-0 ${reminder.color}`} />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-slate-800 mb-1">{reminder.title}</p>
-                                    <Badge variant="outline" className="text-xs">
-                                        {reminder.action}
-                                    </Badge>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {reminders.slice(0, 5).map((reminder, idx) => (
+                        <Link
+                            key={idx}
+                            to={createPageUrl(reminder.link?.replace('/', '') || 'Dashboard')}
+                            className="block"
+                        >
+                            <div className={`p-4 rounded-xl ${reminder.bgColor} border border-current/10 hover:shadow-md transition-all cursor-pointer`}>
+                                <div className="flex items-start gap-3">
+                                    <reminder.icon className={`w-5 h-5 shrink-0 ${reminder.color}`} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-slate-800 mb-1">{reminder.title}</p>
+                                        <Badge variant="outline" className="text-xs">
+                                            {reminder.action}
+                                        </Badge>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
+                    {reminders.length > 5 && (
+                        <p className="text-xs text-center text-slate-400">
+                            +{reminders.length - 5} lembretes adicionais
+                        </p>
+                    )}
                 </div>
             )}
         </Card>
