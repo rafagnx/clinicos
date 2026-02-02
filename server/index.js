@@ -307,6 +307,22 @@ app.use(cors({
 }));
 
 // --- DEBUG & HEALTH CHECK ENDPOINTS (Top Priority) ---
+app.get('/debug-database-counts', async (req, res) => {
+    try {
+        const stats = await pool.query(`
+            SELECT 
+                (SELECT count(*) FROM medical_records) as total_medical_records,
+                (SELECT count(*) FROM patients) as total_patients,
+                (SELECT count(*) FROM organization) as total_orgs,
+                (SELECT count(*) FROM procedure_types) as total_procedures
+        `);
+        const orgs = await pool.query('SELECT id, name, slug FROM organization');
+        res.json({ stats: stats.rows[0], organizations: orgs.rows, env: process.env.NODE_ENV });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', time: new Date().toISOString() }));
 
 app.get('/api/debug-stats', async (req, res) => {
