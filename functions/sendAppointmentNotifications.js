@@ -30,14 +30,25 @@ export async function sendAppointmentNotifications(appointment, eventType = "cre
 
     const messageData = messages[eventType] || messages.created;
 
-    // Obtém todos os tokens de dispositivo do profissional
-    const tokens = await base44.entities.UserDeviceToken.filter({
-      user_email: appointment.professional_email,
-      enabled: true
-    });
+    // GUARD: Safely get tokens, skip if API method unavailable
+    let tokens = [];
+    try {
+      // The `filter` method may not exist on all clients. Use `list` as fallback.
+      if (base44.entities.UserDeviceToken?.filter) {
+        tokens = await base44.entities.UserDeviceToken.filter({
+          user_email: appointment.professional_email,
+          enabled: true
+        });
+      } else if (base44.entities.UserDeviceToken?.list) {
+        const all = await base44.entities.UserDeviceToken.list();
+        tokens = (all || []).filter(t => t.user_email === appointment.professional_email && t.enabled);
+      }
+    } catch (filterError) {
+      console.warn("Falha ao buscar tokens de dispositivo, pulando notificação push:", filterError.message);
+    }
 
     if (!tokens || tokens.length === 0) {
-      console.log("Nenhum dispositivo registrado para notificações");
+      console.log("Nenhum dispositivo registrado para notificações (ou erro de busca)");
       return;
     }
 
