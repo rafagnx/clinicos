@@ -212,14 +212,18 @@ export default function AppointmentForm({
                         if (isValid(cleanDate)) initialDate = cleanDate;
                     }
                 } else if (appointment.start_time && appointment.start_time.includes('T')) {
-                    const d = new Date(appointment.start_time);
-                    if (isValid(d)) initialDate = d;
+                    // Parse ISO string to Date, then extract LOCAL date/time
+                    const utcDate = new Date(appointment.start_time);
+                    if (isValid(utcDate)) {
+                        // Create a NEW Date using LOCAL year/month/day from the parsed date
+                        initialDate = new Date(utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate());
+                    }
                 }
 
                 if (appointment.start_time) {
                     if (appointment.start_time.includes('T')) {
                         const d = new Date(appointment.start_time);
-                        if (isValid(d)) initialTime = format(d, "HH:mm");
+                        if (isValid(d)) initialTime = format(d, "HH:mm"); // format uses local time
                     } else if (appointment.start_time.includes(':')) {
                         initialTime = appointment.start_time;
                     }
