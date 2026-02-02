@@ -12,7 +12,12 @@ export default function UpcomingAppointmentsWidget({ appointments, patients, pro
     const { isDark } = useOutletContext<{ isDark: boolean }>();
     const today = format(new Date(), "yyyy-MM-dd");
     const upcoming = appointments
-        .filter(apt => apt.date >= today && apt.status !== "cancelado")
+        .filter(apt => {
+            if (!apt.date || apt.status === "cancelado") return false;
+            // Handle both "2026-02-02" and "2026-02-02T00:00:00Z" formats
+            const aptDate = apt.date.includes('T') ? apt.date.split('T')[0] : apt.date;
+            return aptDate >= today;
+        })
         .slice(0, 5);
 
     return (

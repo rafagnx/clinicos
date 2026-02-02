@@ -385,7 +385,12 @@ export default function Dashboard() {
         {/* Sidebar Content */}
         <div className="space-y-8">
           <TodayAppointments
-            appointments={safeAppointments.filter(a => a?.date === today)}
+            appointments={safeAppointments.filter(a => {
+              if (!a?.date) return false;
+              // Handle both "2026-02-02" and "2026-02-02T00:00:00Z" formats
+              const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+              return aptDate === today;
+            })}
             patients={safePatients}
             professionals={safeProfessionals}
             onStatusChange={handleStatusChange}
