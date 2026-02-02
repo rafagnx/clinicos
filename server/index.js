@@ -1756,11 +1756,11 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             query = `
                 SELECT 
                     a.*,
-                    json_build_object('id', p.id, 'full_name', COALESCE(p.name, p.full_name), 'phone', p.phone, 'email', p.email) AS patient,
-                    json_build_object('id', pr.id, 'full_name', COALESCE(pr.name, pr.full_name), 'color', pr.color) AS professional
+                    json_build_object('id', p.id, 'full_name', p.name, 'phone', p.phone, 'email', p.email) AS patient,
+                    json_build_object('id', pr.id, 'full_name', pr.name, 'email', pr.email) AS professional
                 FROM appointments a
-                LEFT JOIN patients p ON a.patient_id = p.id
-                LEFT JOIN professionals pr ON a.professional_id = pr.id
+                LEFT JOIN patients p ON a.patient_id::text = p.id::text
+                LEFT JOIN professionals pr ON a.professional_id::text = pr.id::text
             `;
         } else {
             query = `SELECT * FROM ${tableName} `;
