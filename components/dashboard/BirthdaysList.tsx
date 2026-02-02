@@ -29,18 +29,32 @@ export default function BirthdaysList({ patients }) {
             </div>
             <div className="space-y-3">
                 {patients.map((patient) => (
-                    <div key={patient.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <Avatar className="h-9 w-9">
-                            <AvatarImage src={patient.photo_url} />
-                            <AvatarFallback className="bg-pink-100 text-pink-600 text-sm">
-                                {patient.full_name?.charAt(0)}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-700 truncate">{patient.full_name}</p>
-                            <p className="text-xs text-slate-400">{patient.phone}</p>
+                    <div key={patient.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors group">
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9">
+                                <AvatarImage src={patient.photo_url} />
+                                <AvatarFallback className="bg-pink-100 text-pink-600 text-sm">
+                                    {patient.full_name?.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-slate-700 truncate">{patient.full_name}</p>
+                                <p className="text-xs text-slate-400">{patient.phone}</p>
+                            </div>
                         </div>
-                        <Gift className="w-4 h-4 text-pink-400" />
+
+                        <div className="flex items-center gap-2">
+                            <Gift className="w-4 h-4 text-pink-400 opacity-50 group-hover:hidden transition-opacity" />
+                            <button
+                                onClick={() => {
+                                    const msg = encodeURIComponent(`Olá ${patient.full_name.split(' ')[0]}! 🎂🎉\n\nParabéns pelo seu dia! Desejamos muitas alegrias, saúde e realizações.\n\nCom carinho,\nEquipe ClinicOS`);
+                                    window.open(`https://wa.me/${patient.phone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
+                                }}
+                                className="hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-xs font-bold hover:bg-pink-100 transition-all shadow-sm"
+                            >
+                                Enviar Parabéns
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>

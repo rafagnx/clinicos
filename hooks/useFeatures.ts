@@ -24,7 +24,7 @@ export const useFeatures = () => {
 
     const hasFeature = (featureName: string) => {
         // 1. System Admin / Specific Email Override (Dev/Demo)
-        if (user?.email === 'marketingorofacial@gmail.com' || user?.email === 'rafamarketingdb@gmail.com') {
+        if (user?.email === 'marketingorofacial@gmail.com' || user?.email === 'rafamarketingdb@gmail.com' || user?.email === 'kriscilainemiranda@gmail.com') {
             return true;
         }
 

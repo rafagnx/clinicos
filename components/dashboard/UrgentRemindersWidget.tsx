@@ -63,39 +63,7 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
         });
     }
 
-    // 4. 🎂 Aniversariantes de hoje
-    const todayBirthdays = patients.filter(patient => {
-        if (!patient.birth_date) return false;
-        try {
-            let birthMonth, birthDay;
-            if (patient.birth_date.includes('T')) {
-                const date = new Date(patient.birth_date);
-                birthMonth = date.getUTCMonth();
-                birthDay = date.getUTCDate();
-            } else if (patient.birth_date.includes('-')) {
-                const part = patient.birth_date.split('T')[0];
-                const [y, m, d] = part.split('-').map(Number);
-                birthMonth = m - 1;
-                birthDay = d;
-            } else {
-                return false;
-            }
-            return birthMonth === now.getMonth() && birthDay === now.getDate();
-        } catch (e) {
-            return false;
-        }
-    });
-    if (todayBirthdays.length > 0) {
-        reminders.push({
-            icon: Cake,
-            color: "text-pink-600",
-            bgColor: "bg-pink-50",
-            title: `🎂 ${todayBirthdays.length} aniversariante${todayBirthdays.length > 1 ? 's' : ''} hoje!`,
-            action: "Enviar parabéns",
-            link: "/Patients",
-            priority: 3
-        });
-    }
+
 
     // 5. 📞 Pacientes sem retorno há mais de 3 meses
     const patientLastVisit = {};
