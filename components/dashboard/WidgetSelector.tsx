@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Calendar, DollarSign, MessageSquare, AlertCircle } from "lucide-react";
+import { Calendar, DollarSign, MessageSquare, AlertCircle, BarChart3 } from "lucide-react";
 
 const AVAILABLE_WIDGETS = [
     {
@@ -14,10 +14,10 @@ const AVAILABLE_WIDGETS = [
         color: "text-blue-600"
     },
     {
-        id: "financial_summary",
-        name: "Resumo Financeiro",
-        description: "Acompanhe o faturamento do dia e do mês",
-        icon: DollarSign,
+        id: "financial_reports",
+        name: "Relatórios Financeiros",
+        description: "Gráficos de faturamento, ranking e métricas",
+        icon: BarChart3,
         color: "text-emerald-600"
     },
     {

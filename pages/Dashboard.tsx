@@ -20,6 +20,7 @@ import UpcomingAppointmentsWidget from "@/components/dashboard/UpcomingAppointme
 import FinancialSummaryWidget from "@/components/dashboard/FinancialSummaryWidget";
 import ChatActivityWidget from "@/components/dashboard/ChatActivityWidget";
 import UrgentRemindersWidget from "@/components/dashboard/UrgentRemindersWidget";
+import FinancialReportsWidget from "@/components/dashboard/FinancialReportsWidget";
 import WidgetSelector from "@/components/dashboard/WidgetSelector";
 
 export default function Dashboard() {
@@ -32,7 +33,7 @@ export default function Dashboard() {
   // Widget preferences with localStorage persistence
   const defaultWidgets = [
     { id: "upcoming_appointments", enabled: true, order: 0 },
-    { id: "financial_summary", enabled: true, order: 1 },
+    { id: "financial_reports", enabled: true, order: 1 },
     { id: "chat_activity", enabled: true, order: 2 },
     { id: "urgent_reminders", enabled: true, order: 3 }
   ];
@@ -106,7 +107,7 @@ export default function Dashboard() {
   const renderWidget = (id) => {
     switch (id) {
       case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
-      case "financial_summary": return <FinancialSummaryWidget appointments={safeAppointments} />;
+      case "financial_reports": return <FinancialReportsWidget appointments={safeAppointments} />;
       case "chat_activity": return <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       default: return null;
