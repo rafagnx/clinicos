@@ -217,10 +217,10 @@ export default function Professionals() {
               <Button
                 onClick={() => setIsInviteOpen(true)}
                 variant="outline"
-                className="gap-2"
+                className="gap-2 border-[#25D366] text-[#25D366] hover:bg-[#25D366]/10"
               >
-                <Mail className="w-4 h-4" />
-                Convidar por Email
+                <Phone className="w-4 h-4" />
+                Convidar via WhatsApp
               </Button>
               <Button
                 onClick={() => {
@@ -539,58 +539,57 @@ function InviteMemberDialog({ open, onOpenChange }) {
   const [role, setRole] = React.useState("member");
   const [loading, setLoading] = React.useState(false);
   const [inviteLink, setInviteLink] = React.useState("");
+  const [step, setStep] = React.useState(1); // 1 = form, 2 = success
 
   const handleInvite = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const apiUrl = import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api` : "/api";
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || 'https://clinicos-it4q.onrender.com';
       const orgId = localStorage.getItem('active-org-id');
 
-      // 1. Create Invite
-      const res = await fetch(`${apiUrl}/admin/invites`, {
+      // Create Invite on backend
+      const res = await fetch(`${apiUrl}/api/admin/invites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`,
           'x-organization-id': orgId
         },
-        body: JSON.stringify({ email, role, organizationId: orgId })
+        body: JSON.stringify({
+          email,
+          role,
+          organizationId: orgId,
+          whatsapp: phone.replace(/\D/g, '')
+        })
       });
 
-      if (!res.ok) throw new Error("Erro ao criar convite");
+      const result = await res.json();
 
-      // 2. Get WhatsApp Link
-      const linkRes = await fetch(`${apiUrl}/admin/get-invite-link?email=${email}`, {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'x-organization-id': orgId
-        }
-      });
-
-      if (linkRes.ok) {
-        const data = await linkRes.json();
-        if (data.link) {
-          setInviteLink(data.link);
-          // Auto-open WhatsApp if phone provided
-          if (phone) {
-            const cleanPhone = phone.replace(/\D/g, '');
-            const waLink = `https://wa.me/${cleanPhone}?text=Olá! Você foi convidado para o ClinicOS. Finalize seu cadastro aqui: ${data.link}`;
-            setTimeout(() => window.open(waLink, '_blank'), 500);
-          }
-          return; // Keep dialog open with link
-        }
+      if (!res.ok) {
+        throw new Error(result.error || "Erro ao criar convite");
       }
-      toast.success("Convite enviado!");
-      onOpenChange(false);
+
+      // Build invite link
+      const frontendUrl = window.location.origin;
+      const link = `${frontendUrl}/register?token=${result.token}`;
+      setInviteLink(link);
+      setStep(2);
+      toast.success("Convite criado!");
 
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao enviar convite");
+      toast.error(err.message || "Erro ao enviar convite");
     } finally {
       setLoading(false);
     }
+  };
+
+  const openWhatsApp = () => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = encodeURIComponent(`Olá! 👋\n\nVocê foi convidado para fazer parte da nossa equipe no ClinicOS.\n\nClique no link abaixo para criar sua conta:\n${inviteLink}`);
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
   const copyToClipboard = () => {
@@ -604,7 +603,9 @@ function InviteMemberDialog({ open, onOpenChange }) {
       setInviteLink("");
       setEmail("");
       setPhone("");
+      setRole("member");
       setLoading(false);
+      setStep(1);
     }
   }, [open]);
 
@@ -612,32 +613,34 @@ function InviteMemberDialog({ open, onOpenChange }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Convidar Membro</DialogTitle>
-          <DialogDescription>
-            Envie um convite para um novo membro da equipe.
-          </DialogDescription>
+          <DialogTitle>{step === 1 ? "Convidar Membro" : "🎉 Convite Pronto!"}</DialogTitle>
+          {step === 1 && (
+            <DialogDescription>
+              Crie um link de convite para enviar via WhatsApp.
+            </DialogDescription>
+          )}
         </DialogHeader>
 
-        {!inviteLink ? (
+        {step === 1 ? (
           <form onSubmit={handleInvite} className="space-y-4">
             <div>
-              <Label>E-mail do Convidado</Label>
+              <Label>WhatsApp do Convidado *</Label>
+              <Input
+                required
+                placeholder="55 22 99999-9999"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+              />
+              <p className="text-xs text-slate-500 mt-1">Número com DDD (código do país é opcional)</p>
+            </div>
+            <div>
+              <Label>E-mail (Opcional)</Label>
               <Input
                 type="email"
-                required
                 placeholder="email@exemplo.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
-            </div>
-            <div>
-              <Label>WhatsApp (Opcional)</Label>
-              <Input
-                placeholder="+55 11 99999-9999"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-              />
-              <p className="text-xs text-slate-500 mt-1">Se preenchido, abrirá o WhatsApp com o link.</p>
             </div>
             <div>
               <Label>Nível de Acesso</Label>
@@ -653,37 +656,43 @@ function InviteMemberDialog({ open, onOpenChange }) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                Enviar Convite
+              <Button
+                type="submit"
+                className="bg-[#25D366] hover:bg-[#128C7E] text-white"
+                disabled={loading || !phone}
+              >
+                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Phone className="w-4 h-4 mr-2" />}
+                Gerar Convite
               </Button>
             </DialogFooter>
           </form>
         ) : (
           <div className="space-y-4">
             <div className="bg-green-50 text-green-800 p-4 rounded-lg flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+              <CheckCircle className="w-6 h-6 text-green-600" />
               <div>
-                <p className="font-bold">Convite Criado!</p>
-                <p className="text-xs">Se o WhatsApp não abriu, use o link abaixo.</p>
+                <p className="font-bold">Convite gerado com sucesso!</p>
+                <p className="text-sm">Clique abaixo para enviar via WhatsApp.</p>
               </div>
             </div>
+
             <div className="bg-slate-100 p-3 rounded border text-xs break-all text-slate-600 font-mono">
               {inviteLink}
             </div>
+
             <div className="flex flex-col gap-2">
               <Button
-                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white"
-                onClick={() => {
-                  const cleanPhone = phone.replace(/\D/g, '');
-                  window.open(`https://wa.me/${cleanPhone}?text=Olá! Você foi convidado para o ClinicOS. Finalize seu cadastro aqui: ${inviteLink}`, '_blank');
-                }}
+                className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white text-lg py-6"
+                onClick={openWhatsApp}
               >
-                <Phone className="w-4 h-4 mr-2" />
-                Abrir WhatsApp
+                <Phone className="w-5 h-5 mr-2" />
+                Enviar pelo WhatsApp
               </Button>
               <Button variant="outline" onClick={copyToClipboard} className="w-full">
                 Copiar Link
+              </Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full text-slate-500">
+                Fechar
               </Button>
             </div>
           </div>
