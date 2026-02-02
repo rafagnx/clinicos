@@ -294,74 +294,122 @@ export default function ProcedureTypes() {
                 </Dialog>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Lista de Procedimentos</CardTitle>
-                    <CardDescription>Procedimentos personalizados da sua clínica.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Cor</TableHead>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Duração</TableHead>
-                                <TableHead>Preço</TableHead>
-                                <TableHead>Retorno</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-slate-500">
-                                        Carregando...
-                                    </TableCell>
-                                </TableRow>
-                            ) : procedures.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-slate-500">
-                                        Nenhum procedimento cadastrado.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                procedures.map((proc) => (
-                                    <TableRow key={proc.id}>
-                                        <TableCell>
-                                            <div
-                                                className="w-6 h-6 rounded-full border border-slate-200 shadow-sm"
-                                                style={{ backgroundColor: proc.color }}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                            {proc.name}
-                                        </TableCell>
-                                        <TableCell>{proc.duration_minutes} min</TableCell>
-                                        <TableCell>
-                                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proc.price)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {proc.return_interval > 0 ? (
-                                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                                    {proc.return_interval} dias
-                                                </Badge>
-                                            ) : <span className="text-slate-400 text-xs">-</span>}
-                                        </TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEdit(proc)}>
-                                                <Edit2 className="w-4 h-4 text-slate-500" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(proc.id)}>
-                                                <Trash2 className="w-4 h-4 text-red-500" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+            {(() => {
+                // CATEGORY DEFINITIONS (Matching NewMedicalRecord.tsx)
+                const CATEGORIES = {
+                    "Toxina": ["Toxina Botulínica"],
+                    "Preenchimentos": ["8point", "Comissura", "Lábio", "Malar", "Mandíbula", "Mento", "Pré Jowls", "Nariz", "Olheira", "Sulco Naso", "Têmpora", "Glabela", "Marionete"],
+                    "Fios": ["Fio PDO Liso", "Fio PDO Tração"],
+                    "Bioestimuladores": ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"],
+                    "Corporal": ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"],
+                    "Tratamentos": ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"],
+                    "Transplante": ["TP1", "TP2", "TP3"],
+                    "Cirurgias": ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"]
+                };
+
+                const renderedIds = new Set();
+                const groupedList = [];
+
+                if (loading) {
+                    return (
+                        <Card>
+                            <CardContent className="py-8 text-center text-slate-500">
+                                Carregando procedimentos...
+                            </CardContent>
+                        </Card>
+                    );
+                }
+
+                if (procedures.length === 0) {
+                    return (
+                        <Card>
+                            <CardContent className="py-8 text-center text-slate-500">
+                                Nenhum procedimento cadastrado.
+                            </CardContent>
+                        </Card>
+                    );
+                }
+
+                // 1. Process Defined Categories
+                Object.entries(CATEGORIES).forEach(([catName, keywords]) => {
+                    const items = procedures.filter(p =>
+                        !renderedIds.has(p.id) &&
+                        keywords.some(k => p.name.toLowerCase().includes(k.toLowerCase()))
+                    );
+                    if (items.length > 0) {
+                        items.forEach(p => renderedIds.add(p.id));
+                        groupedList.push({ title: catName, items });
+                    }
+                });
+
+                // 2. Process "Outros" (Remaining)
+                const others = procedures.filter(p => !renderedIds.has(p.id));
+                if (others.length > 0) {
+                    groupedList.push({ title: "Outros Procedimentos", items: others });
+                }
+
+                return (
+                    <div className="space-y-6">
+                        {groupedList.map((group) => (
+                            <Card key={group.title} className="shadow-sm overflow-hidden">
+                                <CardHeader className="bg-slate-50/50 border-b pb-3">
+                                    <CardTitle className="text-base font-semibold uppercase tracking-wider text-slate-700">
+                                        {group.title}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="hover:bg-transparent">
+                                                <TableHead className="w-[50px] pl-4">Cor</TableHead>
+                                                <TableHead>Nome</TableHead>
+                                                <TableHead>Duração</TableHead>
+                                                <TableHead>Preço</TableHead>
+                                                <TableHead>Retorno</TableHead>
+                                                <TableHead className="text-right pr-4">Ações</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {group.items.map((proc) => (
+                                                <TableRow key={proc.id}>
+                                                    <TableCell className="pl-4">
+                                                        <div
+                                                            className="w-5 h-5 rounded-full border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: proc.color }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="font-medium text-slate-900">
+                                                        {proc.name}
+                                                    </TableCell>
+                                                    <TableCell>{proc.duration_minutes} min</TableCell>
+                                                    <TableCell>
+                                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(proc.price)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {proc.return_interval > 0 ? (
+                                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 font-normal">
+                                                                {proc.return_interval} dias
+                                                            </Badge>
+                                                        ) : <span className="text-slate-400 text-xs">-</span>}
+                                                    </TableCell>
+                                                    <TableCell className="text-right pr-4 space-x-1">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-blue-600" onClick={() => handleEdit(proc)}>
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500" onClick={() => handleDelete(proc.id)}>
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                );
+            })()}
         </div>
     );
 }
