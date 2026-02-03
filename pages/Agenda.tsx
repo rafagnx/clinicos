@@ -354,20 +354,19 @@ export default function Agenda() {
       isDark ? "bg-[#151A25] border-slate-800" : "bg-white border-slate-200"
     )}>
       {/* Header Premium */}
+      {/* Header Premium Reorganizado */}
       <div className={cn(
-        "flex flex-col gap-4 p-5 border-b md:flex-row md:items-center md:justify-between sticky top-0 z-20",
+        "flex flex-col gap-4 p-5 border-b md:flex-row md:items-center md:justify-between sticky top-0 z-20 transition-colors",
         isDark ? "bg-[#0B0E14] border-slate-800" : "bg-white border-slate-100"
       )}>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+        {/* Esquerda: Título + Visualização */}
+        <div className="flex items-center gap-4 lg:gap-6">
+          <div className="flex items-center gap-3">
             <h1 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Agenda</h1>
-            <Badge variant="secondary" className={cn("ml-2 font-medium", isDark ? "bg-indigo-500/20 text-indigo-300" : "bg-indigo-50 text-indigo-600")}>
-              {view === "day" ? "Diária" : "Semanal"}
-            </Badge>
           </div>
 
           <div className={cn(
-            "flex items-center p-1 rounded-xl border shadow-sm hidden md:flex",
+            "flex items-center p-1 rounded-lg border shadow-sm hidden md:flex",
             isDark ? "bg-[#1C2333] border-slate-700" : "bg-slate-50 border-slate-200"
           )}>
             <Button
@@ -375,13 +374,12 @@ export default function Agenda() {
               size="sm"
               onClick={() => setView("day")}
               className={cn(
-                "rounded-lg px-4 text-xs font-medium transition-all",
+                "rounded-md px-3 h-8 text-xs font-medium transition-all",
                 view === "day"
-                  ? (isDark ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-white text-indigo-600 shadow-sm")
+                  ? (isDark ? "bg-indigo-600 text-white shadow-md" : "bg-white text-indigo-600 shadow-sm")
                   : (isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900")
               )}
             >
-              <LayoutList className="w-3.5 h-3.5 mr-2" />
               Dia
             </Button>
             <Button
@@ -389,26 +387,41 @@ export default function Agenda() {
               size="sm"
               onClick={() => setView("week")}
               className={cn(
-                "rounded-lg px-4 text-xs font-medium transition-all",
+                "rounded-md px-3 h-8 text-xs font-medium transition-all",
                 view === "week"
-                  ? (isDark ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" : "bg-white text-indigo-600 shadow-sm")
+                  ? (isDark ? "bg-indigo-600 text-white shadow-md" : "bg-white text-indigo-600 shadow-sm")
                   : (isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900")
               )}
             >
-              <CalendarLucide className="w-3.5 h-3.5 mr-2" />
               Semana
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className={cn("flex items-center gap-1 p-1 rounded-lg border", isDark ? "border-slate-700 bg-[#1C2333]" : "border-slate-200 bg-white")}>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDateChange(-1)}>
-              <ChevronLeft className="w-4 h-4" />
+        {/* Direita: Controles e Ações */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
+
+          {/* Grupo Navegação Data */}
+          <div className={cn(
+            "flex items-center p-1 rounded-lg border w-full md:w-auto",
+            isDark ? "border-slate-700 bg-[#1C2333]" : "border-slate-200 bg-white"
+          )}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-transparent"
+              onClick={() => handleDateChange(-1)}
+              title="Dia Anterior"
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-500" />
             </Button>
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" className={cn("h-8 min-w-[160px] justify-center font-medium", isDark ? "text-slate-200" : "text-slate-700")}>
+                <Button variant="ghost" className={cn("h-8 min-w-[140px] justify-center font-medium text-sm hover:bg-transparent", isDark ? "text-slate-200" : "text-slate-700")}>
+                  <CalendarIcon className="w-3.5 h-3.5 mr-2 opacity-70" />
                   {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
                 </Button>
               </PopoverTrigger>
@@ -422,25 +435,43 @@ export default function Agenda() {
                 />
               </PopoverContent>
             </Popover>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDateChange(1)}>
-              <ChevronRight className="w-4 h-4" />
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-transparent"
+              onClick={() => handleDateChange(1)}
+              title="Próximo Dia"
+            >
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+            </Button>
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDate(new Date())}
+              className={cn("h-7 px-2 text-xs font-medium uppercase tracking-wider rounded text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20")}
+              title="Ir para Hoje"
+            >
+              Hoje
             </Button>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedDate(new Date())}
-            className={cn("h-10 border-dashed", isDark ? "border-slate-700 hover:bg-slate-800" : "border-slate-300")}
-          >
-            Hoje
-          </Button>
+          {/* Separador Mobile Hidden */}
+          <div className="hidden md:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
 
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden md:block"></div>
+          {/* Grupo Filtros e Ações */}
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
 
-          <AgendaLegend />
+            {/* Legenda Colapsável */}
+            <div className="hidden lg:block">
+              <AgendaLegend />
+            </div>
 
-          <div className="flex items-center gap-2">
             <AdvancedFilters
               professionals={professionals}
               filters={filters}
@@ -448,34 +479,34 @@ export default function Agenda() {
             />
 
             <Link to={createPageUrl("AgendaReports")}>
-              <Button variant="ghost" size="icon" title="Relatórios" className={cn("h-10 w-10", isDark ? "text-slate-400 hover:text-white hover:bg-slate-800" : "text-slate-500 hover:text-indigo-600 hover:bg-indigo-50")}>
-                <BarChart3 className="w-5 h-5" />
+              <Button variant="outline" size="icon" title="Relatórios" className={cn("h-10 w-10 border-dashed", isDark ? "border-slate-700 hover:bg-slate-800" : "border-slate-300 hover:bg-slate-50")}>
+                <BarChart3 className="w-4 h-4 text-slate-500" />
               </Button>
             </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className={cn(
-                  "gap-2 shadow-lg transition-all hover:scale-105 active:scale-95",
+                  "gap-2 shadow-lg transition-all hover:scale-105 active:scale-95 h-10 px-6",
                   isDark ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20" : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-300"
                 )}>
                   <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Novo</span>
+                  <span className="font-medium">Novo</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className={isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : ""}>
                 <DropdownMenuItem onClick={() => {
                   setSelectedAppointment(null);
                   setIsFormOpen(true);
-                }}>
-                  Agendamento
+                }} className="gap-2 cursor-pointer">
+                  <CalendarLucide className="w-4 h-4" /> Agendamento
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsTimeBlockOpen(true)}>
-                  Bloqueio de Horário
+                <DropdownMenuItem onClick={() => setIsTimeBlockOpen(true)} className="gap-2 cursor-pointer">
+                  <Clock className="w-4 h-4" /> Bloqueio de Horário
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                <DropdownMenuItem onClick={() => setIsBlockDayOpen(true)}>
-                  Bloquear Dia/Período
+                <DropdownMenuItem onClick={() => setIsBlockDayOpen(true)} className="gap-2 text-rose-500 focus:text-rose-600 cursor-pointer">
+                  <Ban className="w-4 h-4" /> Bloquear Dia/Período
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
