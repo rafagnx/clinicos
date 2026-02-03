@@ -254,7 +254,7 @@ export default function RetentionConfig() {
 
                                     {/* Quick Presets */}
                                     <div className="flex gap-2 flex-wrap">
-                                        {[30, 60, 90, 120, 180, 270, 365, 545, 730].map(days => (
+                                        {[30, 60, 90, 120, 180, 270, 365, 540, 730].map(days => (
                                             <Badge
                                                 key={days}
                                                 variant={interval === days ? "default" : "outline"}
