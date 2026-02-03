@@ -168,9 +168,9 @@ export default function Retention() {
                     </h1>
                     <p className="text-slate-500 mt-2">
                         Oportunidades de retorno baseadas no ciclo dos procedimentos.
-                        <a href="/#/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold ml-2 underline">
+                        <Link to="/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold ml-2 underline">
                             Configurar intervalos →
-                        </a>
+                        </Link>
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -233,9 +233,9 @@ export default function Retention() {
                             <p className="text-sm text-slate-500 max-w-md mx-auto">
                                 Verifique se os procedimentos têm <strong>intervalos de retorno configurados</strong>.
                                 {' '}
-                                <a href="/#/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">
+                                <Link to="/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">
                                     Configurar agora
-                                </a>
+                                </Link>
                             </p>
                         </div>
                     ) : (
