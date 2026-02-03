@@ -105,9 +105,9 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-[1.1] mb-8"
                 >
-                    Escale sua Clínica com <br />
+                    Sua Clínica <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 animate-gradient-x">
-                        Inteligência Real
+                        High Ticket
                     </span>
                 </motion.h1>
 
@@ -117,7 +117,7 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light"
                 >
-                    Agenda, Prontuário, Financeiro e Marketing automatizado. O único sistema que transforma pacientes em fãs e <span className="text-white font-medium border-b border-blue-500/30">clínicas em impérios</span>.
+                    O único sistema com <strong>CRM Comportamental</strong> integrado. Identifique o perfil do paciente, rastreie o ROI dos Ads e transforme consultas em <span className="text-white font-medium border-b border-blue-500/30">experiências premium</span>.
                 </motion.p>
 
                 <motion.div
@@ -167,12 +167,12 @@ const Hero = () => {
 
 const Features = () => {
     const features = [
-        { icon: Calendar, title: "Agenda Inteligente", desc: "Confirmação automática via WhatsApp, lista de espera e prevenção de faltas." },
-        { icon: FileText, title: "Prontuário Personalizável", desc: "Anamnese facial, corporal e capilar. Mantenha o histórico clínico organizado." },
-        { icon: BarChart3, title: "Gestão Financeira", desc: "Fluxo de caixa, DRE automática, comissões complexas e controle de estoque." },
-        { icon: Users, title: "CRM de Vendas", desc: "Funil de vendas integrado para converter leads em pacientes e recuperar inativos." },
-        { icon: Zap, title: "Automações de Marketing", desc: "Campanhas de aniversário, retorno e pós-venda automáticas." },
-        { icon: ShieldCheck, title: "Segurança Total", desc: "Backups automáticos e acesso níveis para proteger os dados da sua clínica." }
+        { icon: Calendar, title: "Agenda Raio-X", desc: "Veja a origem (Ads/Indicação) e o perfil do paciente (Analítico/Emocional) direto no agendamento." },
+        { icon: Users, title: "CRM Comportamental", desc: "Mapeie temperamentos e dores emocionais. Venda a transformação, não o procedimento." },
+        { icon: BarChart3, title: "Gestão Financeira & ROI", desc: "Saiba exatamente quanto retorna de cada campanha de tráfego pago." },
+        { icon: Zap, title: "Automação de Vendas", desc: "Recuperação automática de leads e follow-up inteligente via WhatsApp." },
+        { icon: FileText, title: "Prontuário High Ticket", desc: "Anamnese que foca nos sonhos e na consciência de compra do paciente." },
+        { icon: ShieldCheck, title: "Segurança Total", desc: "Seus dados blindados com backups diários e acesso hierárquico." }
     ];
 
     return (
@@ -269,15 +269,16 @@ const MockupSection = () => {
                                 initial={{ x: -30, opacity: 0 }}
                                 whileInView={{ x: 0, opacity: 1 }}
                                 transition={{ delay: 0.3, duration: 0.6 }}
-                                className="hidden md:block absolute top-8 -left-6 md:-left-16 bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-3 rounded-2xl border border-green-500/20 shadow-2xl shadow-green-500/20 max-w-[180px]"
+                                className="hidden md:block absolute top-8 -left-6 md:-left-16 bg-gradient-to-br from-violet-500/10 to-purple-500/10 backdrop-blur-xl p-3 rounded-2xl border border-violet-500/20 shadow-2xl shadow-violet-500/20 max-w-[200px]"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                                        <Check className="w-6 h-6 text-green-400" strokeWidth={3} />
+                                    <div className="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center text-2xl">
+                                        🧠
                                     </div>
                                     <div>
-                                        <div className="text-xs text-green-400 font-semibold">Confirmado</div>
-                                        <div className="text-sm font-bold text-white">Consulta 14:30</div>
+                                        <div className="text-[10px] text-violet-300 font-bold uppercase tracking-wider">Novo Lead</div>
+                                        <div className="text-sm font-bold text-white">Perfil Analítico</div>
+                                        <div className="text-[10px] text-slate-400">Veio do Google Ads</div>
                                     </div>
                                 </div>
                             </motion.div>
