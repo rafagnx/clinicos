@@ -37,24 +37,14 @@ export default function RetentionConfig() {
         queryFn: () => base44.entities.ProcedureType.list()
     });
 
-    // Initialize intervals from current database values
+    // Initialize intervals from DEFAULT values (not database)
     useEffect(() => {
-        if (procedures.length > 0) {
-            const intervals: Record<string, number> = {};
-            Object.keys(PROCEDURE_CATEGORIES).forEach(catName => {
-                // Find a procedure in this category to get its current interval
-                const catData = PROCEDURE_CATEGORIES[catName];
-                const sampleProc = procedures.find(p =>
-                    catData.items.some(item =>
-                        p.name.toLowerCase().includes(item.toLowerCase())
-                    )
-                );
-
-                intervals[catName] = sampleProc?.return_interval || catData.interval || 0;
-            });
-            setCategoryIntervals(intervals);
-        }
-    }, [procedures]);
+        const intervals: Record<string, number> = {};
+        Object.entries(PROCEDURE_CATEGORIES).forEach(([catName, data]) => {
+            intervals[catName] = data.interval || 0;
+        });
+        setCategoryIntervals(intervals);
+    }, []);
 
     const updateMutation = useMutation<void, Error, UpdateItem[]>({
         mutationFn: async (updates: UpdateItem[]) => {
@@ -91,7 +81,7 @@ export default function RetentionConfig() {
                     proc.name.toLowerCase().includes(item.toLowerCase())
                 );
 
-                if (matches && proc.return_interval !== interval) {
+                if (matches) {
                     updates.push({ id: proc.id, return_interval: interval });
                 }
             });
@@ -105,12 +95,38 @@ export default function RetentionConfig() {
     };
 
     const handleReset = () => {
+        if (!confirm("Isso irá restaurar TODOS os intervalos para os valores padrão recomendados e aplicar imediatamente. Continuar?")) return;
+
         const defaults: Record<string, number> = {};
+        const updates: UpdateItem[] = [];
+
+        // Build defaults and updates list
         Object.entries(PROCEDURE_CATEGORIES).forEach(([catName, data]) => {
-            defaults[catName] = data.interval || 0;
+            const defaultInterval = data.interval || 0;
+            defaults[catName] = defaultInterval;
+
+            // Find all procedures in this category
+            procedures.forEach(proc => {
+                const matches = data.items.some(item =>
+                    proc.name.toLowerCase().includes(item.toLowerCase())
+                );
+
+                if (matches) {
+                    updates.push({ id: proc.id, return_interval: defaultInterval });
+                }
+            });
         });
+
+        // Update local state
         setCategoryIntervals(defaults);
-        setHasChanges(true);
+
+        // Apply to database immediately
+        if (updates.length > 0) {
+            toast.info(`Aplicando valores padrão em ${updates.length} procedimentos...`);
+            updateMutation.mutate(updates);
+        } else {
+            toast.warning("Nenhum procedimento encontrado para atualizar.");
+        }
     };
 
     const formatDuration = (days: number): string => {
