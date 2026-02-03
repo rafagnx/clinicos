@@ -154,11 +154,11 @@ const Hero = () => {
                         </div>
                         <div>
                             <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Faturamento Hoje</div>
-                            <div className="text-2xl font-black text-white tracking-tight">R$ 12.450,00</div>
+                            <div className="text-2xl font-black text-white tracking-tight">R$ 18.250,00</div>
                         </div>
                         <div className="ml-4 flex flex-col items-end">
                             <div className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <Activity className="w-3 h-3" /> +12%
+                                <Activity className="w-3 h-3" /> +24%
                             </div>
                         </div>
                     </div>
