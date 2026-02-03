@@ -247,13 +247,13 @@ export default function RetentionConfig() {
                                         <Slider
                                             value={[interval]}
                                             onValueChange={(value: number[]) => handleIntervalChange(catName, value[0])}
-                                            max={730}
+                                            max={1095}
                                             step={15}
                                             className="cursor-pointer"
                                         />
                                         <div className="flex justify-between text-[10px] text-slate-400 font-medium">
                                             <span>0 dias</span>
-                                            <span>2 anos</span>
+                                            <span>3 anos</span>
                                         </div>
                                     </div>
 
@@ -297,7 +297,7 @@ export default function RetentionConfig() {
                                         <Input
                                             type="number"
                                             min="0"
-                                            max={730}
+                                            max={1095}
                                             value={interval}
                                             onChange={(e) => handleIntervalChange(catName, parseInt(e.target.value) || 0)}
                                             className="text-center font-bold"
