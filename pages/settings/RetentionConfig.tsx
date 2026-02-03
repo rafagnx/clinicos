@@ -226,26 +226,24 @@ export default function RetentionConfig() {
                                         <Slider
                                             value={[interval]}
                                             onValueChange={(value: number[]) => handleIntervalChange(catName, value[0])}
-                                            max={catName === "Preenchimentos" ? 730 : 365}
+                                            max={730}
                                             step={15}
                                             className="cursor-pointer"
                                         />
                                         <div className="flex justify-between text-[10px] text-slate-400 font-medium">
                                             <span>0 dias</span>
-                                            <span>{catName === "Preenchimentos" ? "2 anos" : "1 ano"}</span>
+                                            <span>2 anos</span>
                                         </div>
                                     </div>
 
                                     {/* Quick Presets */}
                                     <div className="flex gap-2 flex-wrap">
-                                        {[30, 60, 90, 120, 180, 365].filter(d =>
-                                            d <= (catName === "Preenchimentos" ? 730 : 365)
-                                        ).map(days => (
+                                        {[30, 60, 90, 120, 180, 270, 365, 545, 730].map(days => (
                                             <Badge
                                                 key={days}
                                                 variant={interval === days ? "default" : "outline"}
                                                 className={cn(
-                                                    "cursor-pointer hover:bg-slate-100 transition-all",
+                                                    "cursor-pointer hover:bg-slate-100 transition-all text-xs",
                                                     interval === days && "shadow-md"
                                                 )}
                                                 style={interval === days ? {
@@ -278,7 +276,7 @@ export default function RetentionConfig() {
                                         <Input
                                             type="number"
                                             min="0"
-                                            max={catName === "Preenchimentos" ? 730 : 365}
+                                            max={730}
                                             value={interval}
                                             onChange={(e) => handleIntervalChange(catName, parseInt(e.target.value) || 0)}
                                             className="text-center font-bold"
