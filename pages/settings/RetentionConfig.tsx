@@ -27,7 +27,7 @@ const CATEGORY_ICONS = {
 
 export default function RetentionConfig() {
     const queryClient = useQueryClient();
-    const [categoryIntervals, setCategoryIntervals] = useState({});
+    const [categoryIntervals, setCategoryIntervals] = useState<Record<string, number>>({});
     const [hasChanges, setHasChanges] = useState(false);
 
     const { data: procedures = [], isLoading } = useQuery({
@@ -38,7 +38,7 @@ export default function RetentionConfig() {
     // Initialize intervals from current database values
     useEffect(() => {
         if (procedures.length > 0) {
-            const intervals = {};
+            const intervals: Record<string, number> = {};
             Object.keys(PROCEDURE_CATEGORIES).forEach(catName => {
                 // Find a procedure in this category to get its current interval
                 const catData = PROCEDURE_CATEGORIES[catName];
@@ -72,13 +72,13 @@ export default function RetentionConfig() {
         }
     });
 
-    const handleIntervalChange = (category, value) => {
+    const handleIntervalChange = (category: string, value: number) => {
         setCategoryIntervals(prev => ({ ...prev, [category]: value }));
         setHasChanges(true);
     };
 
     const handleSave = () => {
-        const updates = [];
+        const updates: Array<{ id: number | string, return_interval: number }> = [];
 
         Object.entries(categoryIntervals).forEach(([catName, interval]) => {
             const catData = PROCEDURE_CATEGORIES[catName];
@@ -103,7 +103,7 @@ export default function RetentionConfig() {
     };
 
     const handleReset = () => {
-        const defaults = {};
+        const defaults: Record<string, number> = {};
         Object.entries(PROCEDURE_CATEGORIES).forEach(([catName, data]) => {
             defaults[catName] = data.interval || 0;
         });
@@ -111,7 +111,7 @@ export default function RetentionConfig() {
         setHasChanges(true);
     };
 
-    const formatDuration = (days) => {
+    const formatDuration = (days: number): string => {
         if (days === 0) return "Sem retorno";
         if (days < 30) return `${days} dias`;
         if (days === 30) return "1 mês";
