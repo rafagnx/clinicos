@@ -139,16 +139,16 @@ const Hero = () => {
                 </motion.div>
             </div>
 
-            {/* Floating High Ticket Cards - "Algo Novo e Diferenciado" */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {/* 1. Card Faturamento (Center Bottom) */}
+            {/* Floating High Ticket Cards - "Nuvem de Inteligência" */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+                {/* 1. Card Faturamento (Center Bottom - Lowered base) */}
                 <motion.div
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20"
+                    className="absolute -bottom-6 left-1/2 -translate-x-1/2"
                 >
-                    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 pl-6 pr-8 rounded-2xl shadow-2xl shadow-blue-500/20 flex items-center gap-4 hover:scale-105 transition-transform cursor-default">
+                    <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-4 pl-6 pr-8 rounded-2xl shadow-2xl shadow-blue-500/30 flex items-center gap-4 hover:scale-105 transition-transform cursor-default ring-1 ring-white/20">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
                             <DollarSign className="w-6 h-6 text-white" />
                         </div>
@@ -164,13 +164,13 @@ const Hero = () => {
                     </div>
                 </motion.div>
 
-                {/* 2. Card Behavioral (Floating Left) */}
+                {/* 2. Card Behavioral (Lower Left) */}
                 <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
-                    className="absolute bottom-40 left-[10%] lg:left-[20%] z-10 hidden md:block"
+                    className="absolute bottom-20 left-[5%] lg:left-[10%] hidden md:block"
                 >
-                    <div className="bg-slate-800/40 backdrop-blur-md border border-white/5 p-3 rounded-xl shadow-xl shadow-purple-500/10 flex items-center gap-3 -rotate-6 hover:rotate-0 transition-transform">
+                    <div className="bg-slate-800/60 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-xl shadow-purple-500/10 flex items-center gap-3 -rotate-6 hover:rotate-0 transition-transform">
                         <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-xl">🧠</div>
                         <div>
                             <div className="text-[10px] text-purple-300 font-bold">Perfil Identificado</div>
@@ -179,13 +179,13 @@ const Hero = () => {
                     </div>
                 </motion.div>
 
-                {/* 3. Card ADS (Floating Right) */}
+                {/* 3. Card ADS (Lower Right) */}
                 <motion.div
                     animate={{ y: [0, -15, 0] }}
                     transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 }}
-                    className="absolute bottom-32 right-[10%] lg:right-[20%] z-10 hidden md:block"
+                    className="absolute bottom-16 right-[5%] lg:right-[10%] hidden md:block"
                 >
-                    <div className="bg-slate-800/40 backdrop-blur-md border border-white/5 p-3 rounded-xl shadow-xl shadow-emerald-500/10 flex items-center gap-3 rotate-3 hover:rotate-0 transition-transform">
+                    <div className="bg-slate-800/60 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-xl shadow-emerald-500/10 flex items-center gap-3 rotate-3 hover:rotate-0 transition-transform">
                         <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
                             <Zap className="w-5 h-5 text-emerald-400" />
                         </div>
@@ -196,8 +196,36 @@ const Hero = () => {
                     </div>
                 </motion.div>
 
+                {/* 4. WOW FACTOR: Card WhatsApp (Upper Left - Floating High) */}
+                <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ repeat: Infinity, duration: 7, ease: "easeInOut", delay: 0.5 }}
+                    className="absolute top-32 left-[5%] lg:left-[15%] hidden lg:block opacity-60 hover:opacity-100 transition-opacity"
+                >
+                    <div className="bg-slate-800/40 backdrop-blur-sm border border-white/5 p-2 rounded-lg flex items-center gap-2 rotate-12">
+                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <MessageCircle className="w-4 h-4 text-green-400" />
+                        </div>
+                        <div className="text-[10px] text-slate-300 max-w-[80px] leading-tight">Confirmado via WhatsApp</div>
+                    </div>
+                </motion.div>
+
+                {/* 5. WOW FACTOR: Security (Upper Right - Floating High) */}
+                <motion.div
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{ repeat: Infinity, duration: 8, ease: "easeInOut", delay: 1.5 }}
+                    className="absolute top-40 right-[5%] lg:right-[15%] hidden lg:block opacity-60 hover:opacity-100 transition-opacity"
+                >
+                    <div className="bg-slate-800/40 backdrop-blur-sm border border-white/5 p-2 rounded-lg flex items-center gap-2 -rotate-12">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <ShieldCheck className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div className="text-[10px] text-slate-300 max-w-[80px] leading-tight">Backup Realizado</div>
+                    </div>
+                </motion.div>
+
                 {/* Ambient Glows */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[200px] bg-blue-600/10 blur-[80px] rounded-full pointer-events-none"></div>
             </div>
         </section>
     );
