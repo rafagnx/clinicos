@@ -773,6 +773,25 @@ export default function Agenda() {
                               </span>
                             )}
                           </div>
+
+                          {/* PRO INDICATORS: High Ticket Context */}
+                        <div className="flex flex-wrap gap-1 mt-0.5 pl-0.5">
+                          {apt.source && (apt.source.toLowerCase().includes("tráfego") || apt.source.toLowerCase().includes("ads")) && (
+                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-emerald-100 text-emerald-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-emerald-200">
+                              📢 Ads
+                            </Badge>
+                          )}
+                          {apt.patient?.temperament && (
+                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-violet-100 text-violet-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-violet-200" title={`Temperamento: ${apt.patient.temperament}`}>
+                              🧠 {apt.patient.temperament}
+                            </Badge>
+                          )}
+                          {apt.patient?.conscience_level === "Pronto para Compra" && (
+                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-amber-100 text-amber-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-amber-200" title="Pronto para Compra">
+                              💡 Hot
+                            </Badge>
+                          )}
+                        </div>
                         )}
 
                         {/* Hover Actions */}
