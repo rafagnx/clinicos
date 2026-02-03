@@ -12,6 +12,7 @@ import {
     Bell, TrendingUp, Zap, Settings
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -28,6 +29,7 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
 type UpdateItem = { id: number | string; return_interval: number };
 
 export default function RetentionConfig() {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [categoryIntervals, setCategoryIntervals] = useState<Record<string, number>>({});
     const [hasChanges, setHasChanges] = useState(false);
@@ -163,7 +165,7 @@ export default function RetentionConfig() {
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        onClick={() => window.location.href = '/#/Settings/ProcedureTypes'}
+                        onClick={() => navigate('/Settings/ProcedureTypes')}
                     >
                         <Settings className="w-4 h-4 mr-2" />
                         Gerenciar Procedimentos

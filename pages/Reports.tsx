@@ -148,7 +148,7 @@ export default function Reports() {
               </Card>
 
               <Card className="p-6 border-none shadow-sm lg:col-span-2">
-                <h3 className="font-bold text-slate-800 mb-6">Origem dos Pacientes (Leads)</h3>
+                <h3 className="font-bold text-slate-800 mb-6">Origem dos Pacientes</h3>
                 <LeadSourceChart patients={patients} />
               </Card>
             </div>
