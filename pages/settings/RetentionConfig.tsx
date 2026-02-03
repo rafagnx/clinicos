@@ -20,7 +20,7 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
     "Fios": TrendingUp,
     "Bioestimuladores": Bell,
     "Corporal": TrendingUp,
-    "Tratamentos": Bell,
+    "Tecnologias": Bell,
     "Transplante": Calendar,
     "Cirurgias": Calendar
 };
@@ -130,12 +130,17 @@ export default function RetentionConfig() {
     };
 
     const formatDuration = (days: number): string => {
-        if (days === 0) return "Sem retorno";
+        if (days === 0) return "Sem reaplicação";
         if (days < 30) return `${days} dias`;
         if (days === 30) return "1 mês";
         if (days < 365) {
             const months = Math.round(days / 30);
             return `${months} ${months === 1 ? 'mês' : 'meses'}`;
+        }
+        if (days === 365) return "1 ano";
+        if (days < 730) {
+            const months = Math.round(days / 30);
+            return `${months} meses`;
         }
         const years = Math.round(days / 365);
         return `${years} ${years === 1 ? 'ano' : 'anos'}`;
@@ -148,10 +153,10 @@ export default function RetentionConfig() {
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
                         <Clock className="w-8 h-8 text-indigo-600" />
-                        Configuração de Retornos
+                        Configuração de Reaplicação
                     </h1>
                     <p className="text-slate-500 mt-2">
-                        Defina o tempo ideal de retorno para cada categoria de procedimento.
+                        Defina o tempo ideal de reaplicação para cada categoria de procedimento.
                         Isso alimenta o <strong>Smart Retention</strong> com alertas personalizados.
                     </p>
                 </div>
@@ -226,7 +231,7 @@ export default function RetentionConfig() {
                                     {/* Display Current Interval */}
                                     <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-100">
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                                            Intervalo de Retorno
+                                            Intervalo de Reaplicação
                                         </p>
                                         <p className="text-3xl font-black text-slate-900">
                                             {interval}
@@ -254,7 +259,7 @@ export default function RetentionConfig() {
 
                                     {/* Quick Presets */}
                                     <div className="flex gap-2 flex-wrap">
-                                        {[30, 60, 90, 120, 180, 270, 365, 540, 730].map(days => (
+                                        {[30, 60, 90, 120, 180, 270, 365, 730, 1095].map(days => (
                                             <Badge
                                                 key={days}
                                                 variant={interval === days ? "default" : "outline"}
@@ -280,7 +285,7 @@ export default function RetentionConfig() {
                                             )}
                                             onClick={() => handleIntervalChange(catName, 0)}
                                         >
-                                            Sem retorno
+                                            Sem reaplicação
                                         </Badge>
                                     </div>
 

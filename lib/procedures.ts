@@ -5,7 +5,7 @@ export const PROCEDURE_CATEGORIES = {
     "Fios": { color: "#8b5cf6", items: ["Fio PDO Liso", "Fio PDO Tração"], duration: 60, interval: 180 },
     "Bioestimuladores": { color: "#10b981", items: ["Bioestimulador", "PDRN", "Exossomos", "Lavieen", "Hipro", "Bioestimulador Corporal", "Bioestimulador Glúteo"], duration: 60, interval: 90 },
     "Corporal": { color: "#f97316", items: ["Glúteo Max", "Gordura Localizada", "Preenchimento Glúteo", "Protocolo 40 dias", "Protocolo Hipertrofia"], duration: 60, interval: 30 },
-    "Tratamentos": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 60, interval: 30 },
+    "Tecnologias": { color: "#06b6d4", items: ["Microagulhamento", "Hialuronidase", "Endolaser Full Face", "Endolaser Região", "Endolaser Pescoço"], duration: 60, interval: 30 },
     "Transplante": { color: "#64748b", items: ["TP1", "TP2", "TP3"], duration: 60, interval: 0 },
     "Cirurgias": { color: "#ef4444", items: ["Alectomia", "Bichectomia", "Brow Lift", "Lip Lift", "Slim Tip", "Lipo de Papada", "Blefaro", "Rinoplastia"], duration: 60, interval: 0 }
 };
