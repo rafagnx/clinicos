@@ -251,9 +251,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="hot">🔥 Hot (Quente)</SelectItem>
-                                <SelectItem value="warm">🌡️ Warm (Morno)</SelectItem>
-                                <SelectItem value="cold">❄️ Cold (Frio)</SelectItem>
+                                <SelectItem value="hot">🔥 Quente (Hot)</SelectItem>
+                                <SelectItem value="warm">🌡️ Morno (Warm)</SelectItem>
+                                <SelectItem value="cold">❄️ Frio (Cold)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

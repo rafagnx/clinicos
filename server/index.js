@@ -936,6 +936,15 @@ const initSchema = async () => {
                 await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
             }
 
+            // 8.6. Ensure PATIENTS Columns (Fix 500 Error - Missing columns)
+            const newPatientCols = [
+                { name: 'temperature', type: 'VARCHAR(50)' },
+                { name: 'behavioral_profile', type: 'VARCHAR(50)' }
+            ];
+            for (const col of newPatientCols) {
+                await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+            }
+
             // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
             await client.query(`
                 CREATE TABLE IF NOT EXISTS blocked_days (

@@ -806,8 +806,8 @@ export default function Agenda() {
                                     apt.patient.temperature === 'warm' ? "bg-orange-400 text-white shadow-orange-400/20 hover:bg-orange-500" :
                                       "bg-cyan-500 text-white shadow-cyan-500/20 hover:bg-cyan-600"
                                 )}>
-                                  {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? '🔥 Hot' :
-                                    apt.patient.temperature === 'warm' ? '🌡️ Warm' : '❄️ Cold'}
+                                  {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? '🔥 Quente' :
+                                    apt.patient.temperature === 'warm' ? '🌡️ Morno' : '❄️ Frio'}
                                 </Badge>
                               )}
 
