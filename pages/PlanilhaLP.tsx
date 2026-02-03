@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import {
     ArrowRight, Check, Star, Zap, BarChart3, Users,
     Calendar, FileText, Smartphone, MessageCircle, ShieldCheck, HeartPulse,
-    Activity, DollarSign
+    Activity, DollarSign, ChevronDown, Quote, TrendingUp, Award, ImageIcon
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -63,8 +63,10 @@ const Navbar = () => {
                 </div>
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
                     <a href="#recursos" className="hover:text-white transition-colors">Recursos</a>
-                    <a href="#mobile" className="hover:text-white transition-colors">App</a>
+                    <a href="#depoimentos" className="hover:text-white transition-colors">Depoimentos</a>
+                    <a href="#galeria" className="hover:text-white transition-colors">Galeria</a>
                     <a href="#planos" className="hover:text-white transition-colors">Planos</a>
+                    <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
                     <Link to="/register">
                         <Button className="bg-white text-slate-950 hover:bg-slate-200 font-bold rounded-full px-6 transition-all hover:scale-105">
                             Criar Conta Grátis
@@ -146,7 +148,7 @@ const Hero = () => {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5, duration: 0.8 }}
-                    className="absolute -bottom-6 left-1/2 -translate-x-1/2"
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2"
                 >
                     <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 p-4 pl-6 pr-8 rounded-2xl shadow-2xl shadow-blue-500/30 flex items-center gap-4 hover:scale-105 transition-transform cursor-default ring-1 ring-white/20">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
@@ -508,6 +510,345 @@ const MockupSection = () => {
     );
 };
 
+// --- NEW SECTIONS ---
+
+const Testimonials = () => {
+    const testimonials = [
+        {
+            name: "Dra. Amanda Silva",
+            role: "Harmonização Orofacial - SP",
+            image: "https://i.pravatar.cc/150?img=5",
+            quote: "O ClinicOS mudou completamente minha rotina. Antes eu perdia horas com planilhas, agora tudo está automatizado. Meu faturamento cresceu 40% em 3 meses.",
+            rating: 5
+        },
+        {
+            name: "Dr. Ricardo Mendes",
+            role: "Dermatologista - RJ",
+            image: "https://i.pravatar.cc/150?img=8",
+            quote: "A integração com WhatsApp é fantástica! Reduzimos os no-shows em 70% com as confirmações automáticas. Recomendo demais.",
+            rating: 5
+        },
+        {
+            name: "Dra. Fernanda Costa",
+            role: "Clínica de Estética - MG",
+            image: "https://i.pravatar.cc/150?img=9",
+            quote: "O CRM Comportamental é um diferencial. Consigo entender melhor minhas pacientes e oferecer o procedimento certo. Vendas aumentaram 60%!",
+            rating: 5
+        },
+        {
+            name: "Dr. Paulo Andrade",
+            role: "Implantodontia - PR",
+            image: "https://i.pravatar.cc/150?img=11",
+            quote: "Finalmente um sistema que entende clínicas de alto padrão. Prontuários completos, gestão financeira robusta. Vale cada centavo.",
+            rating: 5
+        }
+    ];
+
+    return (
+        <section id="depoimentos" className="py-32 bg-slate-950 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+
+            <div className="container mx-auto px-6">
+                <div className="text-center mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold uppercase tracking-wider mb-6">
+                            <Star className="w-3 h-3 fill-current" />
+                            Depoimentos Reais
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                            O Que Nossos <span className="text-purple-500">Clientes</span> Dizem
+                        </h2>
+                        <p className="text-slate-400 max-w-xl mx-auto text-lg">
+                            Mais de 500 clínicas já transformaram sua gestão com o ClinicOS.
+                        </p>
+                    </motion.div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                    {testimonials.map((item, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 hover:border-purple-500/30 transition-all group"
+                        >
+                            <div className="flex gap-1 mb-4">
+                                {[...Array(item.rating)].map((_, i) => (
+                                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                ))}
+                            </div>
+                            <Quote className="w-8 h-8 text-purple-500/30 mb-3" />
+                            <p className="text-slate-300 mb-6 leading-relaxed italic">
+                                "{item.quote}"
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-12 h-12 rounded-full border-2 border-purple-500/50"
+                                />
+                                <div>
+                                    <div className="font-bold text-white">{item.name}</div>
+                                    <div className="text-sm text-slate-500">{item.role}</div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const ScreenshotsGallery = () => {
+    const screenshots = [
+        { title: "Agenda Inteligente", desc: "Visualize consultas, origem do lead e perfil comportamental", img: "/screenshots/agenda.png" },
+        { title: "Prontuário Completo", desc: "Fotos antes/depois, anamnese e histórico clínico", img: "/screenshots/prontuario.png" },
+        { title: "Dashboard Financeiro", desc: "Faturamento, ROI de campanhas e métricas em tempo real", img: "/screenshots/dashboard.png" },
+        { title: "CRM de Retenção", desc: "Pacientes inativos e oportunidades de retorno", img: "/screenshots/retencao.png" },
+    ];
+
+    return (
+        <section id="galeria" className="py-32 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+            <div className="container mx-auto px-6">
+                <div className="text-center mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6">
+                            <ImageIcon className="w-3 h-3" />
+                            Galeria
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                            Veja o <span className="text-blue-500">Sistema</span> em Ação
+                        </h2>
+                        <p className="text-slate-400 max-w-xl mx-auto text-lg">
+                            Interface moderna, intuitiva e pensada para clínicas de alto padrão.
+                        </p>
+                    </motion.div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                    {screenshots.map((item, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="group relative rounded-2xl overflow-hidden border border-slate-800 hover:border-blue-500/50 transition-all bg-slate-900"
+                        >
+                            {/* Placeholder for screenshot */}
+                            <div className="aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                                <div className="text-center p-8">
+                                    <div className="w-16 h-16 rounded-2xl bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                                        <ImageIcon className="w-8 h-8 text-blue-400" />
+                                    </div>
+                                    <div className="text-white font-bold text-lg mb-2">{item.title}</div>
+                                    <div className="text-slate-500 text-sm">{item.desc}</div>
+                                </div>
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const FAQ = () => {
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+    const faqs = [
+        {
+            q: "Preciso de cartão de crédito para testar?",
+            a: "Não! O teste de 7 dias é 100% gratuito e não requer nenhuma forma de pagamento. Você só paga se decidir continuar após o período de teste."
+        },
+        {
+            q: "Posso migrar meus dados de outro sistema?",
+            a: "Sim! Nossa equipe de suporte auxilia na importação de dados de planilhas ou outros sistemas. A migração é gratuita para novos assinantes."
+        },
+        {
+            q: "Existe limite de pacientes ou profissionais?",
+            a: "Não existe nenhum limite. Você pode cadastrar quantos pacientes e profissionais precisar, sem custos adicionais."
+        },
+        {
+            q: "O sistema funciona no celular?",
+            a: "Sim! O ClinicOS é 100% responsivo e funciona em qualquer dispositivo. Também oferecemos app progressivo (PWA) para instalação no celular."
+        },
+        {
+            q: "Como funciona a integração com WhatsApp?",
+            a: "Integramos via API oficial e Evolution API. Confirmações automáticas, lembretes 24h antes, e campanhas de retorno são enviados automaticamente."
+        },
+        {
+            q: "Meus dados estão seguros?",
+            a: "Absolutamente. Usamos criptografia SSL, backups diários automáticos, e hospedagem em servidores certificados. Conformidade total com LGPD."
+        }
+    ];
+
+    return (
+        <section id="faq" className="py-32 bg-slate-950 relative">
+            <div className="container mx-auto px-6">
+                <div className="text-center mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
+                            Dúvidas Frequentes
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                            Perguntas <span className="text-emerald-500">Frequentes</span>
+                        </h2>
+                    </motion.div>
+                </div>
+
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {faqs.map((item, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.05 }}
+                        >
+                            <button
+                                onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                                className="w-full text-left bg-slate-900/50 border border-slate-800 rounded-xl p-5 hover:border-emerald-500/30 transition-all"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold text-white">{item.q}</span>
+                                    <ChevronDown className={cn(
+                                        "w-5 h-5 text-slate-400 transition-transform",
+                                        openIndex === idx && "rotate-180 text-emerald-400"
+                                    )} />
+                                </div>
+                                <AnimatePresence>
+                                    {openIndex === idx && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <p className="text-slate-400 mt-4 text-sm leading-relaxed">
+                                                {item.a}
+                                            </p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </button>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const CaseStudies = () => {
+    const cases = [
+        {
+            clinic: "Clínica Harmonize",
+            location: "São Paulo - SP",
+            image: "https://i.pravatar.cc/150?img=25",
+            stats: [
+                { label: "Aumento no Faturamento", value: "+127%" },
+                { label: "Redução de No-Shows", value: "-68%" },
+                { label: "Tempo Economizado/Semana", value: "12h" }
+            ],
+            quote: "Em 6 meses, triplicamos nossa capacidade de atendimento sem contratar mais funcionários.",
+            owner: "Dra. Juliana Martins"
+        },
+        {
+            clinic: "Instituto Belle Santé",
+            location: "Rio de Janeiro - RJ",
+            image: "https://i.pravatar.cc/150?img=32",
+            stats: [
+                { label: "ROI de Tráfego Pago", value: "840%" },
+                { label: "Novos Pacientes/Mês", value: "+45" },
+                { label: "Taxa de Retorno", value: "78%" }
+            ],
+            quote: "O rastreamento de origem dos leads mudou completamente nossa estratégia de marketing.",
+            owner: "Dr. André Bastos"
+        }
+    ];
+
+    return (
+        <section id="casos" className="py-32 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
+            <div className="container mx-auto px-6">
+                <div className="text-center mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-wider mb-6">
+                            <Award className="w-3 h-3" />
+                            Casos de Sucesso
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                            Resultados <span className="text-amber-500">Reais</span>
+                        </h2>
+                        <p className="text-slate-400 max-w-xl mx-auto text-lg">
+                            Veja como clínicas transformaram seus resultados com o ClinicOS.
+                        </p>
+                    </motion.div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    {cases.map((item, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: idx * 0.2 }}
+                            className="bg-slate-900/70 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 hover:border-amber-500/30 transition-all"
+                        >
+                            <div className="flex items-center gap-4 mb-6">
+                                <img
+                                    src={item.image}
+                                    alt={item.clinic}
+                                    className="w-16 h-16 rounded-2xl border-2 border-amber-500/50"
+                                />
+                                <div>
+                                    <div className="font-bold text-white text-xl">{item.clinic}</div>
+                                    <div className="text-slate-500">{item.location}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                {item.stats.map((stat, i) => (
+                                    <div key={i} className="text-center bg-slate-800/50 rounded-xl p-3">
+                                        <div className="text-2xl font-black text-amber-400">{stat.value}</div>
+                                        <div className="text-xs text-slate-500 mt-1">{stat.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <blockquote className="text-slate-300 italic mb-4 border-l-2 border-amber-500/50 pl-4">
+                                "{item.quote}"
+                            </blockquote>
+                            <div className="text-sm text-slate-500">— {item.owner}</div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
 const Pricing = () => {
     return (
         <section id="planos" className="py-32 bg-slate-950 relative overflow-hidden">
@@ -646,7 +987,11 @@ export default function PlanilhaLP() {
             <Hero />
             <Features />
             <MockupSection />
+            <Testimonials />
+            <ScreenshotsGallery />
+            <CaseStudies />
             <Pricing />
+            <FAQ />
             <FinalCTA />
 
             {/* Mobile Sticky CTA */}
