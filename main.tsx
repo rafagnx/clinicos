@@ -107,6 +107,7 @@ const App = () => {
                     <Route path="/ClinicSettings" element={<ClinicSettings />} />
                     <Route path="/Settings/Procedures" element={<RetentionConfig />} />
                     <Route path="/Settings/Retention" element={<RetentionConfig />} />
+                    <Route path="/Settings/ProcedureTypes" element={<ProcedureTypes />} />
                     <Route path="/Professionals" element={<Professionals />} />
                     <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
                     <Route path="/Promotions" element={<Promotions />} />

@@ -72,7 +72,7 @@ const navigation = [
   {
     group: "Comercial",
     items: [
-      { name: "Leads", href: "Leads", icon: Target, gradient: "from-violet-500 to-purple-500" },
+
       { name: "Chat Equipe", href: "Chat", icon: MessageSquare, gradient: "from-blue-500 to-indigo-500" },
       { name: "Promoções", href: "Promotions", icon: Tag, gradient: "from-pink-500 to-rose-500" },
       { name: "WhatsApp", href: "WhatsAppSettings", icon: MessageSquare, gradient: "from-green-500 to-emerald-500" },

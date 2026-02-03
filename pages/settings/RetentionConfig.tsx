@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import {
     Clock, Calendar, Sparkles, Save, RotateCcw,
-    Bell, TrendingUp, Zap
+    Bell, TrendingUp, Zap, Settings
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -161,6 +161,13 @@ export default function RetentionConfig() {
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => window.location.href = '/#/Settings/ProcedureTypes'}
+                    >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Gerenciar Procedimentos
+                    </Button>
                     <Button
                         variant="outline"
                         onClick={handleReset}

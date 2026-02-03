@@ -31,7 +31,7 @@ const navigation = [
   { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
   { name: "Agenda", href: "Agenda", icon: Calendar },
   { name: "Pacientes", href: "Patients", icon: Users },
-  { name: "Leads", href: "Leads", icon: Target },
+
   { name: "Chat", href: "Chat", icon: MessageSquare },
   { name: "Promoções", href: "Promotions", icon: Tag },
   { name: "Planos", href: "TreatmentPlans", icon: FileText },
