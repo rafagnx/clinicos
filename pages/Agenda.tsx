@@ -33,6 +33,7 @@ import TimeBlockDialog from "@/components/agenda/TimeBlockDialog";
 import RescheduleDialog from "@/components/agenda/RescheduleDialog";
 import AdvancedFilters from "@/components/agenda/AdvancedFilters";
 import BlockDayModal from "@/components/agenda/BlockDayModal";
+import { AgendaLegend } from "@/components/agenda/AgendaLegend";
 
 const statusConfig = {
   agendado: {
@@ -436,6 +437,8 @@ export default function Agenda() {
           </Button>
 
           <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden md:block"></div>
+
+          <AgendaLegend />
 
           <div className="flex items-center gap-2">
             <AdvancedFilters
@@ -897,6 +900,6 @@ export default function Agenda() {
         }}
         professionals={professionals}
       />
-    </div>
+    </div >
   );
 }
