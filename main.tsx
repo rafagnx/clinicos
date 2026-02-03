@@ -105,7 +105,7 @@ const App = () => {
                     <Route path="/Leads" element={<Leads />} />
                     <Route path="/MedicalRecords" element={<MedicalRecords />} />
                     <Route path="/ClinicSettings" element={<ClinicSettings />} />
-                    <Route path="/Settings/Procedures" element={<ProcedureTypes />} />
+                    <Route path="/Settings/Procedures" element={<RetentionConfig />} />
                     <Route path="/Settings/Retention" element={<RetentionConfig />} />
                     <Route path="/Professionals" element={<Professionals />} />
                     <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
