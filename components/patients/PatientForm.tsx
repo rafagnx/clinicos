@@ -9,6 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 
+const TEMPERAMENTS = ["Analítico", "Emocional", "Exigente", "Prático", "Relacional"];
+const MOTIVATIONS = ["Autoestima", "Carreira/Profissional", "Relacionamento", "Evento Específico", "Saúde"];
+const CONSCIENCE_LEVELS = ["Inconsciente", "Consciente do Problema", "Consciente da Solução", "Pronto para Compra"];
+
 export default function PatientForm({ patient, onSuccess, onCancel }) {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
@@ -23,6 +27,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
         address: "",
         city: "",
         marketing_source: "",
+        temperament: "",
+        main_motivation: "",
+        conscience_level: "",
         notes: "",
         status: "ativo"
     });
@@ -41,6 +48,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 address: patient.address || "",
                 city: patient.city || "",
                 marketing_source: patient.marketing_source || "",
+                temperament: patient.temperament || "",
+                main_motivation: patient.main_motivation || "",
+                conscience_level: patient.conscience_level || "",
                 notes: patient.notes || "",
                 status: patient.status || "ativo"
             });
@@ -225,6 +235,47 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                         <SelectItem value="outro">Outro</SelectItem>
                     </SelectContent>
                 </Select>
+            </div>
+
+            <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-100 space-y-4">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-indigo-800 uppercase tracking-widest">Perfil Comportamental (High Ticket)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <Label>Temperamento</Label>
+                        <Select value={formData.temperament} onValueChange={(v) => setFormData(p => ({ ...p, temperament: v }))}>
+                            <SelectTrigger className="bg-white border-indigo-200">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {TEMPERAMENTS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <Label>Motivação Principal</Label>
+                        <Select value={formData.main_motivation} onValueChange={(v) => setFormData(p => ({ ...p, main_motivation: v }))}>
+                            <SelectTrigger className="bg-white border-indigo-200">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {MOTIVATIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <Label>Nível de Consciência</Label>
+                        <Select value={formData.conscience_level} onValueChange={(v) => setFormData(p => ({ ...p, conscience_level: v }))}>
+                            <SelectTrigger className="bg-white border-indigo-200">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {CONSCIENCE_LEVELS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
             </div>
 
             <div>

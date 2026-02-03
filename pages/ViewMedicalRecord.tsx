@@ -138,6 +138,25 @@ export default function ViewMedicalRecord() {
                         }
                       })()}
                     </div>
+                    {(patient?.temperament || patient?.main_motivation) && (
+                      <div className="flex flex-wrap items-center gap-2 w-full mt-3 pt-3 border-t border-slate-50">
+                        {patient.temperament && (
+                          <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100 border-violet-200 px-3 py-1">
+                            🧠 {patient.temperament}
+                          </Badge>
+                        )}
+                        {patient.main_motivation && (
+                          <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200 px-3 py-1">
+                            ❤️ {patient.main_motivation}
+                          </Badge>
+                        )}
+                        {patient.conscience_level && (
+                          <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200 px-3 py-1">
+                            💡 {patient.conscience_level}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
