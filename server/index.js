@@ -1938,6 +1938,103 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
 // Helper to prevent SQL Injection in column names
 const isValidColumn = (key) => /^[a-zA-Z0-9_]+$/.test(key);
 
+// ============================================================
+// SELF-HEALING DATA INTEGRITY SYSTEM
+// ============================================================
+
+/**
+ * Auto-creates organization if it doesn't exist (prevents FK violations)
+ * @param {string} orgId - Organization UUID
+ * @param {object} client - PG Pool or Client
+ */
+async function ensureOrganizationExists(orgId, client) {
+    if (!orgId) return;
+
+    try {
+        const { rows } = await client.query(
+            'SELECT id FROM organization WHERE id = $1', [orgId]
+        );
+
+        if (rows.length === 0) {
+            console.log(`[SELF-HEAL] Auto-creating missing organization: ${orgId}`);
+            await client.query(`
+                INSERT INTO organization (id, name, slug, "createdAt", "updatedAt", subscription_status, metadata)
+                VALUES ($1, $2, $3, NOW(), NOW(), 'trial', '{}')
+                ON CONFLICT (id) DO NOTHING
+            `, [orgId, `Clínica Auto-${orgId.slice(0, 8)}`, `clinic-${orgId.slice(0, 8)}`]);
+            console.log(`[SELF-HEAL] ✅ Organization ${orgId} created successfully`);
+        }
+    } catch (err) {
+        console.error(`[SELF-HEAL] Error ensuring organization exists:`, err.message);
+        // Don't throw - let the main operation handle the FK error if it still fails
+    }
+}
+
+/**
+ * Validates foreign keys for Appointment entity before INSERT
+ * Returns array of user-friendly error messages in Portuguese
+ */
+async function validateAppointmentFKs(data, client) {
+    const errors = [];
+
+    // Check patient exists
+    if (data.patient_id) {
+        const p = await client.query('SELECT id, name FROM patients WHERE id = $1', [data.patient_id]);
+        if (p.rows.length === 0) {
+            errors.push(`Paciente ID ${data.patient_id} não encontrado. Por favor, cadastre o paciente primeiro.`);
+        }
+    }
+
+    // Check professional exists
+    if (data.professional_id) {
+        const pr = await client.query('SELECT id, name FROM professionals WHERE id = $1', [data.professional_id]);
+        if (pr.rows.length === 0) {
+            errors.push(`Profissional ID ${data.professional_id} não encontrado. Por favor, cadastre o profissional primeiro.`);
+        }
+    }
+
+    // Check promotion exists (if provided and not null)
+    if (data.promotion_id && data.promotion_id !== null) {
+        const promo = await client.query('SELECT id FROM promotions WHERE id = $1', [data.promotion_id]);
+        if (promo.rows.length === 0) {
+            errors.push(`Promoção ID ${data.promotion_id} não encontrada.`);
+        }
+    }
+
+    return errors;
+}
+
+/**
+ * Generic FK validation for any entity
+ */
+async function validateGenericFKs(entity, data, client) {
+    if (entity === 'Appointment') {
+        return validateAppointmentFKs(data, client);
+    }
+
+    // MedicalRecord: check patient_id and professional_id
+    if (entity === 'MedicalRecord') {
+        const errors = [];
+        if (data.patient_id) {
+            const p = await client.query('SELECT id FROM patients WHERE id = $1', [data.patient_id]);
+            if (p.rows.length === 0) {
+                errors.push(`Paciente ID ${data.patient_id} não encontrado.`);
+            }
+        }
+        if (data.professional_id) {
+            const pr = await client.query('SELECT id FROM professionals WHERE id = $1', [data.professional_id]);
+            if (pr.rows.length === 0) {
+                errors.push(`Profissional ID ${data.professional_id} não encontrado.`);
+            }
+        }
+        return errors;
+    }
+
+    return []; // No validation needed for other entities
+}
+
+// ============================================================
+
 // GENERIC CREATE
 app.post('/api/:entity', requireAuth, async (req, res) => {
     const { entity } = req.params;
@@ -1993,6 +2090,26 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
     console.log(`[DEBUG] Raw Data: `, JSON.stringify(data));
 
     try {
+        // ==========================================
+        // SELF-HEALING: Auto-create organization if missing
+        // ==========================================
+        if (data.organization_id) {
+            await ensureOrganizationExists(data.organization_id, pool);
+        }
+
+        // ==========================================
+        // FK VALIDATION: Check related records exist
+        // ==========================================
+        const fkErrors = await validateGenericFKs(entity, data, pool);
+        if (fkErrors.length > 0) {
+            console.log(`[FK-VALIDATION] ❌ Errors for ${entity}:`, fkErrors);
+            return res.status(400).json({
+                error: 'Dados inválidos - registros relacionados não encontrados',
+                details: fkErrors,
+                code: 'FK_VALIDATION_ERROR'
+            });
+        }
+
         // SECURITY FIX: Filter invalid columns
         const keys = Object.keys(data).filter(key => isValidColumn(key));
         console.log(`[DEBUG] Filtered Keys: `, keys);
