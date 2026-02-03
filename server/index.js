@@ -939,7 +939,10 @@ const initSchema = async () => {
             // 8.6. Ensure PATIENTS Columns (Fix 500 Error - Missing columns)
             const newPatientCols = [
                 { name: 'temperature', type: 'VARCHAR(50)' },
-                { name: 'temperament', type: 'VARCHAR(50)' }
+                { name: 'temperament', type: 'VARCHAR(50)' },
+                { name: 'main_motivation', type: 'VARCHAR(100)' },
+                { name: 'conscience_level', type: 'VARCHAR(100)' },
+                { name: 'marketing_source', type: 'VARCHAR(100)' }
             ];
             for (const col of newPatientCols) {
                 await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
