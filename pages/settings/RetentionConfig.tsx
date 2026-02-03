@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const CATEGORY_ICONS = {
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
     "Toxina": Zap,
     "Preenchimentos": Sparkles,
     "Fios": TrendingUp,
@@ -24,6 +24,8 @@ const CATEGORY_ICONS = {
     "Transplante": Calendar,
     "Cirurgias": Calendar
 };
+
+type UpdateItem = { id: number | string; return_interval: number };
 
 export default function RetentionConfig() {
     const queryClient = useQueryClient();
@@ -54,13 +56,13 @@ export default function RetentionConfig() {
         }
     }, [procedures]);
 
-    const updateMutation = useMutation({
-        mutationFn: async (updates) => {
+    const updateMutation = useMutation<void, Error, UpdateItem[]>({
+        mutationFn: async (updates: UpdateItem[]) => {
             // Updates is an array of { id, return_interval }
             const promises = updates.map(update =>
                 base44.entities.ProcedureType.update(update.id, { return_interval: update.return_interval })
             );
-            return Promise.all(promises);
+            await Promise.all(promises);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["procedure-types"] });
@@ -78,7 +80,7 @@ export default function RetentionConfig() {
     };
 
     const handleSave = () => {
-        const updates: Array<{ id: number | string, return_interval: number }> = [];
+        const updates: UpdateItem[] = [];
 
         Object.entries(categoryIntervals).forEach(([catName, interval]) => {
             const catData = PROCEDURE_CATEGORIES[catName];
@@ -223,7 +225,7 @@ export default function RetentionConfig() {
                                     <div className="space-y-2">
                                         <Slider
                                             value={[interval]}
-                                            onValueChange={([value]) => handleIntervalChange(catName, value)}
+                                            onValueChange={(value: number[]) => handleIntervalChange(catName, value[0])}
                                             max={catName === "Preenchimentos" ? 730 : 365}
                                             step={15}
                                             className="cursor-pointer"
