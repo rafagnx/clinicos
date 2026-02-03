@@ -924,6 +924,18 @@ const initSchema = async () => {
                 }
             }
 
+            // 8.5. Ensure APPOINTMENTS Columns (Fix 500 Error - Missing columns)
+            const appointmentCols = [
+                { name: 'source', type: 'VARCHAR(255)' },
+                { name: 'scheduled_by', type: 'VARCHAR(255)' },
+                { name: 'type', type: 'VARCHAR(100)' },
+                { name: 'procedure_name', type: 'VARCHAR(255)' },
+                { name: 'promotion_id', type: 'INTEGER' }
+            ];
+            for (const col of appointmentCols) {
+                await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+            }
+
             // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
             await client.query(`
                 CREATE TABLE IF NOT EXISTS blocked_days (
