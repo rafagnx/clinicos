@@ -126,7 +126,7 @@ export default function Reports() {
                   <BarChart3 className="w-5 h-5 text-blue-600" />
                   Volume de Atendimentos
                 </h3>
-                <AppointmentsByMonthChart appointments={appointments} />
+                <AppointmentsByMonthChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
               <Card className="p-6 border-none shadow-sm">
@@ -134,17 +134,17 @@ export default function Reports() {
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   Faturamento por Profissional
                 </h3>
-                <RevenueByProfessionalChart appointments={appointments} professionals={professionals} />
+                <RevenueByProfessionalChart appointments={appointments} professionals={professionals} timeRange={timeRange} />
               </Card>
 
               <Card className="p-6 border-none shadow-sm">
                 <h3 className="font-bold text-slate-800 mb-6">Procedimentos mais Realizados</h3>
-                <ProceduresChart appointments={appointments} />
+                <ProceduresChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
               <Card className="p-6 border-none shadow-sm">
                 <h3 className="font-bold text-slate-800 mb-6">Status dos Agendamentos</h3>
-                <AppointmentStatusChart appointments={appointments} />
+                <AppointmentStatusChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
               <Card className="p-6 border-none shadow-sm lg:col-span-2">
