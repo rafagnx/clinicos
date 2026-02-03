@@ -39,6 +39,16 @@ const TYPES_LIST = [
     "Compromisso"
 ];
 
+const SOURCES = [
+    "Tráfego Pago (Google)",
+    "Tráfego Pago (Instagram/Facebook)",
+    "Instagram Orgânico",
+    "Indicação",
+    "Retorno/Recorrência",
+    "Passante/Fachada",
+    "Outro"
+];
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function AppointmentForm({
@@ -62,7 +72,8 @@ export default function AppointmentForm({
         notes: "",
         status: "agendado",
         scheduled_by: "",
-        promotion_id: "none"
+        promotion_id: "none",
+        source: ""
     });
 
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -145,7 +156,8 @@ export default function AppointmentForm({
                     date: isValid(initialDate) ? initialDate : new Date(),
                     time: initialTime,
                     scheduled_by: appointment.scheduled_by || "",
-                    promotion_id: appointment.promotion_id || "none"
+                    promotion_id: appointment.promotion_id || "none",
+                    source: appointment.source || ""
                 });
                 if (appointment.patient) {
                     setSelectedPatient(appointment.patient);
@@ -171,7 +183,8 @@ export default function AppointmentForm({
                     notes: "",
                     status: "agendado",
                     scheduled_by: "",
-                    promotion_id: "none"
+                    promotion_id: "none",
+                    source: ""
                 });
                 setSelectedPatient(null);
                 setStep(1);
@@ -629,6 +642,24 @@ export default function AppointmentForm({
                                         className="mt-2"
                                     />
                                 )}
+                            </div>
+
+
+                            <div className="space-y-2">
+                                <Label>Canal de Aquisição (Origem)</Label>
+                                <Select
+                                    value={formData.source || ""}
+                                    onValueChange={(v) => setFormData(p => ({ ...p, source: v }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione a origem deste agendamento" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SOURCES.map(s => (
+                                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2">
