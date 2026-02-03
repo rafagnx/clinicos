@@ -18,7 +18,7 @@ import PlanilhaLP from './pages/PlanilhaLP'
 import Dashboard from './pages/Dashboard'
 import Agenda from './pages/Agenda'
 import Patients from './pages/Patients'
-import Leads from './pages/Leads'
+
 import MedicalRecords from './pages/MedicalRecords'
 import ClinicSettings from './pages/ClinicSettings'
 import Professionals from './pages/Professionals'
@@ -102,7 +102,7 @@ const App = () => {
                     <Route path="/Financial" element={<Financial />} />
                     <Route path="/Agenda" element={<Agenda />} />
                     <Route path="/Patients" element={<Patients />} />
-                    <Route path="/Leads" element={<Leads />} />
+
                     <Route path="/MedicalRecords" element={<MedicalRecords />} />
                     <Route path="/ClinicSettings" element={<ClinicSettings />} />
                     <Route path="/Settings/Procedures" element={<RetentionConfig />} />

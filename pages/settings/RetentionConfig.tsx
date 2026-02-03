@@ -130,7 +130,7 @@ export default function RetentionConfig() {
     };
 
     const formatDuration = (days: number): string => {
-        if (days === 0) return "Sem reaplicação";
+        if (days === 0) return "Sem renovação";
         if (days < 30) return `${days} dias`;
         if (days === 30) return "1 mês";
         if (days < 365) {
@@ -153,10 +153,10 @@ export default function RetentionConfig() {
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
                         <Clock className="w-8 h-8 text-indigo-600" />
-                        Configuração de Reaplicação
+                        Configuração de renovação
                     </h1>
                     <p className="text-slate-500 mt-2">
-                        Defina o tempo ideal de reaplicação para cada categoria de procedimento.
+                        Defina o tempo ideal de renovação para cada categoria de procedimento.
                         Isso alimenta o <strong>Smart Retention</strong> com alertas personalizados.
                     </p>
                 </div>
@@ -231,7 +231,7 @@ export default function RetentionConfig() {
                                     {/* Display Current Interval */}
                                     <div className="text-center p-4 bg-slate-50 rounded-xl border border-slate-100">
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                                            Intervalo de Reaplicação
+                                            Intervalo de renovação
                                         </p>
                                         <p className="text-3xl font-black text-slate-900">
                                             {interval}
@@ -285,7 +285,7 @@ export default function RetentionConfig() {
                                             )}
                                             onClick={() => handleIntervalChange(catName, 0)}
                                         >
-                                            Sem reaplicação
+                                            Sem renovação
                                         </Badge>
                                     </div>
 
@@ -334,3 +334,4 @@ export default function RetentionConfig() {
         </div>
     );
 }
+
