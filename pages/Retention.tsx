@@ -166,7 +166,12 @@ export default function Retention() {
                         <Clock className="w-8 h-8 text-blue-600" />
                         Smart Retention
                     </h1>
-                    <p className="text-slate-500 mt-2">Oportunidades de retorno baseadas no ciclo dos procedimentos.</p>
+                    <p className="text-slate-500 mt-2">
+                        Oportunidades de retorno baseadas no ciclo dos procedimentos.
+                        <a href="/#/Settings/Procedures" className="text-indigo-600 hover:text-indigo-700 font-semibold ml-2 underline">
+                            Configurar intervalos →
+                        </a>
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="relative w-full md:w-64">
@@ -224,7 +229,14 @@ export default function Retention() {
                     ) : filteredOpportunities.length === 0 ? (
                         <div className="text-center py-16 text-slate-400">
                             <CheckCircle2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                            <p>Nenhuma oportunidade de retorno encontrada no momento.</p>
+                            <p className="font-semibold text-slate-600 mb-2">Nenhuma oportunidade de retorno encontrada no momento.</p>
+                            <p className="text-sm text-slate-500 max-w-md mx-auto">
+                                Verifique se os procedimentos têm <strong>intervalos de retorno configurados</strong>.
+                                {' '}
+                                <a href="/#/Settings/Procedures" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">
+                                    Configurar agora
+                                </a>
+                            </p>
                         </div>
                     ) : (
                         <div className="space-y-4">
