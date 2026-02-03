@@ -139,28 +139,66 @@ const Hero = () => {
                 </motion.div>
             </div>
 
-            {/* Dashboard Preview Abstract */}
-            <motion.div
-                initial={{ opacity: 0, y: 100, rotateX: 20 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[90%] md:w-[70%] h-[400px] md:h-[600px] bg-slate-900 rounded-t-3xl border border-slate-800 shadow-2xl opacity-50 blur-[2px] hover:blur-0 transition-all duration-700"
-            >
-                <div className="w-full h-full bg-slate-950/50 backdrop-blur-3xl rounded-t-3xl p-4 border-t border-white/10">
-                    <div className="flex gap-2 mb-4">
-                        <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-4 h-full">
-                        <div className="col-span-1 bg-slate-800/20 rounded-xl h-full animate-pulse"></div>
-                        <div className="col-span-3 bg-slate-800/10 rounded-xl h-full grid grid-rows-3 gap-4">
-                            <div className="row-span-1 bg-slate-800/20 rounded-xl"></div>
-                            <div className="row-span-2 bg-slate-800/20 rounded-xl"></div>
+            {/* Floating High Ticket Cards - "Algo Novo e Diferenciado" */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {/* 1. Card Faturamento (Center Bottom) */}
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20"
+                >
+                    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 p-4 pl-6 pr-8 rounded-2xl shadow-2xl shadow-blue-500/20 flex items-center gap-4 hover:scale-105 transition-transform cursor-default">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <DollarSign className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <div className="text-xs text-slate-400 font-medium uppercase tracking-wider">Faturamento Hoje</div>
+                            <div className="text-2xl font-black text-white tracking-tight">R$ 12.450,00</div>
+                        </div>
+                        <div className="ml-4 flex flex-col items-end">
+                            <div className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <Activity className="w-3 h-3" /> +12%
+                            </div>
                         </div>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
+
+                {/* 2. Card Behavioral (Floating Left) */}
+                <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                    className="absolute bottom-40 left-[10%] lg:left-[20%] z-10 hidden md:block"
+                >
+                    <div className="bg-slate-800/40 backdrop-blur-md border border-white/5 p-3 rounded-xl shadow-xl shadow-purple-500/10 flex items-center gap-3 -rotate-6 hover:rotate-0 transition-transform">
+                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-xl">🧠</div>
+                        <div>
+                            <div className="text-[10px] text-purple-300 font-bold">Perfil Identificado</div>
+                            <div className="text-sm font-bold text-white">Analítico</div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* 3. Card ADS (Floating Right) */}
+                <motion.div
+                    animate={{ y: [0, -15, 0] }}
+                    transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 1 }}
+                    className="absolute bottom-32 right-[10%] lg:right-[20%] z-10 hidden md:block"
+                >
+                    <div className="bg-slate-800/40 backdrop-blur-md border border-white/5 p-3 rounded-xl shadow-xl shadow-emerald-500/10 flex items-center gap-3 rotate-3 hover:rotate-0 transition-transform">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Zap className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-emerald-300 font-bold">ROI Tráfego (Ads)</div>
+                            <div className="text-sm font-bold text-white">840% Retorno</div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Ambient Glows */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+            </div>
         </section>
     );
 };
