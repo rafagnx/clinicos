@@ -764,37 +764,39 @@ export default function Agenda() {
                         </div>
 
                         {height > 40 && (
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border-0 shadow-none font-medium rounded-md bg-opacity-70 backdrop-blur-md", status.class)}>
-                              {status.label}
-                            </Badge>
-                            {/* ... */}
-                            {view !== "week" && <span className={cn("text-[9px] opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>•</span>}
-                            {apt.procedure_name && (
-                              <span className={cn("text-[9px] font-medium uppercase tracking-wide truncate opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                                {apt.procedure_name}
-                              </span>
-                            )}
-                          </div>
+                          <>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border-0 shadow-none font-medium rounded-md bg-opacity-70 backdrop-blur-md", status.class)}>
+                                {status.label}
+                              </Badge>
+                              {/* ... */}
+                              {view !== "week" && <span className={cn("text-[9px] opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>•</span>}
+                              {apt.procedure_name && (
+                                <span className={cn("text-[9px] font-medium uppercase tracking-wide truncate opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
+                                  {apt.procedure_name}
+                                </span>
+                              )}
+                            </div>
 
-                          {/* PRO INDICATORS: High Ticket Context */}
-                        <div className="flex flex-wrap gap-1 mt-0.5 pl-0.5">
-                          {apt.source && (apt.source.toLowerCase().includes("tráfego") || apt.source.toLowerCase().includes("ads")) && (
-                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-emerald-100 text-emerald-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-emerald-200">
-                              📢 Ads
-                            </Badge>
-                          )}
-                          {apt.patient?.temperament && (
-                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-violet-100 text-violet-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-violet-200" title={`Temperamento: ${apt.patient.temperament}`}>
-                              🧠 {apt.patient.temperament}
-                            </Badge>
-                          )}
-                          {apt.patient?.conscience_level === "Pronto para Compra" && (
-                            <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-amber-100 text-amber-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-amber-200" title="Pronto para Compra">
-                              💡 Hot
-                            </Badge>
-                          )}
-                        </div>
+                            {/* PRO INDICATORS: High Ticket Context */}
+                            <div className="flex flex-wrap gap-1 mt-0.5 pl-0.5">
+                              {apt.source && (apt.source.toLowerCase().includes("tráfego") || apt.source.toLowerCase().includes("ads")) && (
+                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-emerald-100 text-emerald-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-emerald-200">
+                                  📢 Ads
+                                </Badge>
+                              )}
+                              {apt.patient?.temperament && (
+                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-violet-100 text-violet-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-violet-200" title={`Temperamento: ${apt.patient.temperament}`}>
+                                  🧠 {apt.patient.temperament}
+                                </Badge>
+                              )}
+                              {apt.patient?.conscience_level === "Pronto para Compra" && (
+                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-amber-100 text-amber-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-amber-200" title="Pronto para Compra">
+                                  💡 Hot
+                                </Badge>
+                              )}
+                            </div>
+                          </>
                         )}
 
                         {/* Hover Actions */}
