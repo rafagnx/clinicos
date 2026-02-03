@@ -3,10 +3,10 @@ import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { DollarSign } from "lucide-react";
 
-export default function RevenueByProfessionalChart({ appointments, professionals }) {
-    const revenueByProfessional = {};
+export default function RevenueByProfessionalChart({ appointments, professionals, timeRange }: any) {
+    const revenueByProfessional: any = {};
 
-    appointments.forEach(apt => {
+    appointments.forEach((apt: any) => {
         if (apt.value && apt.professional_id) {
             if (!revenueByProfessional[apt.professional_id]) {
                 revenueByProfessional[apt.professional_id] = {
@@ -19,7 +19,7 @@ export default function RevenueByProfessionalChart({ appointments, professionals
     });
 
     const data = Object.values(revenueByProfessional)
-        .sort((a, b) => b.total - a.total);
+        .sort((a: any, b: any) => b.total - a.total);
 
     const formatCurrency = (value) => {
         return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;

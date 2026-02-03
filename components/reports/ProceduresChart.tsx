@@ -3,10 +3,10 @@ import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Activity } from "lucide-react";
 
-export default function ProceduresChart({ appointments }) {
-    const procedureCounts = {};
+export default function ProceduresChart({ appointments, timeRange }: any) {
+    const procedureCounts: any = {};
 
-    appointments.forEach(apt => {
+    appointments.forEach((apt: any) => {
         if (apt.procedure_name) {
             procedureCounts[apt.procedure_name] = (procedureCounts[apt.procedure_name] || 0) + 1;
         }
@@ -17,7 +17,7 @@ export default function ProceduresChart({ appointments }) {
             name,
             total: count
         }))
-        .sort((a, b) => b.total - a.total)
+        .sort((a: any, b: any) => b.total - a.total)
         .slice(0, 10);
 
     return (

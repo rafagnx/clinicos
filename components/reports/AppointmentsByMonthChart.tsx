@@ -5,7 +5,7 @@ import { format, subMonths, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "lucide-react";
 
-export default function AppointmentsByMonthChart({ appointments, timeRange }) {
+export default function AppointmentsByMonthChart({ appointments, timeRange }: any) {
     const getMonthsBack = () => {
         if (timeRange === "1month") return 1;
         if (timeRange === "3months") return 3;

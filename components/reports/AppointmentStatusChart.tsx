@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 
-export default function AppointmentStatusChart({ appointments }: { appointments: any[] }) {
+export default function AppointmentStatusChart({ appointments, timeRange }: { appointments: any[], timeRange?: string }) {
     return (
         <Card className="p-6">
             <h3 className="font-semibold text-slate-800 mb-4">Status dos Agendamentos</h3>
