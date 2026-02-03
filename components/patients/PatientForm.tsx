@@ -245,9 +245,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <Label>Temperatura do Lead</Label>
+                        <Label htmlFor="temperature">Temperatura do Lead</Label>
                         <Select value={formData.temperature} onValueChange={(v) => setFormData(p => ({ ...p, temperature: v }))}>
-                            <SelectTrigger className="bg-white border-indigo-200">
+                            <SelectTrigger id="temperature" className="bg-white border-indigo-200">
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -258,9 +258,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                         </Select>
                     </div>
                     <div>
-                        <Label>Perfil Comportamental</Label>
+                        <Label htmlFor="temperament">Perfil Comportamental</Label>
                         <Select value={formData.temperament} onValueChange={(v) => setFormData(p => ({ ...p, temperament: v }))}>
-                            <SelectTrigger className="bg-white border-indigo-200">
+                            <SelectTrigger id="temperament" className="bg-white border-indigo-200">
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -271,9 +271,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <Label>Motivação Principal</Label>
+                        <Label htmlFor="main_motivation">Motivação Principal</Label>
                         <Select value={formData.main_motivation} onValueChange={(v) => setFormData(p => ({ ...p, main_motivation: v }))}>
-                            <SelectTrigger className="bg-white border-indigo-200">
+                            <SelectTrigger id="main_motivation" className="bg-white border-indigo-200">
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -282,9 +282,9 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                         </Select>
                     </div>
                     <div>
-                        <Label>Nível de Consciência</Label>
+                        <Label htmlFor="conscience_level">Nível de Consciência</Label>
                         <Select value={formData.conscience_level} onValueChange={(v) => setFormData(p => ({ ...p, conscience_level: v }))}>
-                            <SelectTrigger className="bg-white border-indigo-200">
+                            <SelectTrigger id="conscience_level" className="bg-white border-indigo-200">
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
