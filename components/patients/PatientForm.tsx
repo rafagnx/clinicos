@@ -27,6 +27,7 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
         address: "",
         city: "",
         marketing_source: "",
+        temperature: "",
         temperament: "",
         main_motivation: "",
         conscience_level: "",
@@ -48,6 +49,7 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 address: patient.address || "",
                 city: patient.city || "",
                 marketing_source: patient.marketing_source || "",
+                temperature: patient.temperature || "",
                 temperament: patient.temperament || "",
                 main_motivation: patient.main_motivation || "",
                 conscience_level: patient.conscience_level || "",
@@ -241,9 +243,22 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-indigo-800 uppercase tracking-widest">Perfil Comportamental (High Ticket)</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <Label>Temperamento</Label>
+                        <Label>Temperatura do Lead</Label>
+                        <Select value={formData.temperature} onValueChange={(v) => setFormData(p => ({ ...p, temperature: v }))}>
+                            <SelectTrigger className="bg-white border-indigo-200">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="hot">🔥 Hot (Quente)</SelectItem>
+                                <SelectItem value="warm">🌡️ Warm (Morno)</SelectItem>
+                                <SelectItem value="cold">❄️ Cold (Frio)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <Label>Perfil Comportamental</Label>
                         <Select value={formData.temperament} onValueChange={(v) => setFormData(p => ({ ...p, temperament: v }))}>
                             <SelectTrigger className="bg-white border-indigo-200">
                                 <SelectValue placeholder="Selecione..." />
@@ -253,6 +268,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                             </SelectContent>
                         </Select>
                     </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <Label>Motivação Principal</Label>
                         <Select value={formData.main_motivation} onValueChange={(v) => setFormData(p => ({ ...p, main_motivation: v }))}>

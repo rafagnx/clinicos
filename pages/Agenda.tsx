@@ -795,39 +795,50 @@ export default function Agenda() {
                         </div>
 
                         {height > 40 && (
-                          <>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Badge variant="outline" className={cn("text-[9px] px-1.5 py-0 h-4 border-0 shadow-none font-medium rounded-md bg-opacity-70 backdrop-blur-md", status.class)}>
-                                {status.label}
-                              </Badge>
-                              {/* ... */}
-                              {view !== "week" && <span className={cn("text-[9px] opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>•</span>}
-                              {apt.procedure_name && (
-                                <span className={cn("text-[9px] font-medium uppercase tracking-wide truncate opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                                  {apt.procedure_name}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* PRO INDICATORS: High Ticket Context */}
-                            <div className="flex flex-wrap gap-1 mt-0.5 pl-0.5">
-                              {apt.source && (apt.source.toLowerCase().includes("tráfego") || apt.source.toLowerCase().includes("ads")) && (
-                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-emerald-100 text-emerald-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-emerald-200">
-                                  📢 Ads
+                          <div className="flex flex-col gap-0.5 mt-0.5 pointer-events-none">
+                            {/* Line 1: Badges - Temperature & Profile */}
+                            <div className="flex flex-wrap gap-1 mb-0.5 items-center">
+                              {/* Temperature Badge (New & Legacy Support) */}
+                              {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
+                                <Badge variant="secondary" className={cn(
+                                  "text-[9px] px-1 h-3.5 border-0 rounded-sm font-bold shadow-sm items-center gap-0.5 pointer-events-auto",
+                                  (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600" :
+                                    apt.patient.temperature === 'warm' ? "bg-orange-400 text-white shadow-orange-400/20 hover:bg-orange-500" :
+                                      "bg-cyan-500 text-white shadow-cyan-500/20 hover:bg-cyan-600"
+                                )}>
+                                  {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? '🔥 Hot' :
+                                    apt.patient.temperature === 'warm' ? '🌡️ Warm' : '❄️ Cold'}
                                 </Badge>
                               )}
+
+                              {/* Profile Badge */}
                               {apt.patient?.temperament && (
-                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-violet-100 text-violet-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-violet-200" title={`Temperamento: ${apt.patient.temperament}`}>
+                                <Badge variant="secondary" className={cn("text-[9px] px-1 h-3.5 border-0 rounded-sm font-medium items-center gap-0.5 pointer-events-auto", isDark ? "bg-indigo-900/40 text-indigo-300" : "bg-indigo-50 text-indigo-700")}>
                                   🧠 {apt.patient.temperament}
                                 </Badge>
                               )}
-                              {apt.patient?.conscience_level === "Pronto para Compra" && (
-                                <Badge variant="secondary" className="px-1 py-0 h-3.5 text-[8px] bg-amber-100 text-amber-800 border-0 flex items-center gap-0.5 shadow-none hover:bg-amber-200" title="Pronto para Compra">
-                                  💡 Hot
+
+                              {/* Source Badge */}
+                              {apt.patient?.marketing_source && (
+                                <Badge variant="secondary" className={cn("text-[9px] px-1 h-3.5 border-0 rounded-sm font-medium items-center gap-0.5 pointer-events-auto", isDark ? "bg-emerald-900/40 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                  📢 {apt.patient.marketing_source === 'trafego_pago' ? 'Ads' : 'Ind.'}
                                 </Badge>
                               )}
                             </div>
-                          </>
+
+                            {/* Line 2: Status & Procedure */}
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <Badge variant="outline" className={cn("text-[8px] px-1 py-0 h-3.5 border-0 shadow-none font-medium rounded-sm bg-opacity-70 backdrop-blur-md uppercase tracking-wider shrink-0", status.class)}>
+                                {status.label}
+                              </Badge>
+                              <span className={cn(
+                                "text-[9px] truncate opacity-90 font-medium",
+                                isDark ? "text-slate-300" : "text-slate-600"
+                              )}>
+                                • {apt.procedure_name || "Consulta"}
+                              </span>
+                            </div>
+                          </div>
                         )}
 
                         {/* Hover Actions */}
