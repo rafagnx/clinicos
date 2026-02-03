@@ -33,6 +33,7 @@ import NewMedicalRecord from './pages/NewMedicalRecord'
 import PatientHistory from './pages/PatientHistory'
 import ImportPatients from './pages/ImportPatients'
 import ProcedureTypes from './pages/settings/ProcedureTypes'
+import RetentionConfig from './pages/settings/RetentionConfig'
 import Marketing from './pages/Marketing'
 import TreatmentPlans from './pages/TreatmentPlans'
 import TreatmentPlanDetails from './pages/TreatmentPlanDetails'
@@ -105,6 +106,7 @@ const App = () => {
                     <Route path="/MedicalRecords" element={<MedicalRecords />} />
                     <Route path="/ClinicSettings" element={<ClinicSettings />} />
                     <Route path="/Settings/Procedures" element={<ProcedureTypes />} />
+                    <Route path="/Settings/Retention" element={<RetentionConfig />} />
                     <Route path="/Professionals" element={<Professionals />} />
                     <Route path="/WhatsAppSettings" element={<WhatsAppSettings />} />
                     <Route path="/Promotions" element={<Promotions />} />
