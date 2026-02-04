@@ -12,6 +12,7 @@ import { startCleanupJob } from './jobs/cleanup.js';
 import { createMarketingRoutes } from './marketing-routes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { runOwnershipMigration } from './migration_ownership.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -1251,20 +1252,9 @@ app.get('/api/health', (req, res) => {
 // START SERVER
 // ------------------------------------------------------------------
 
-import { runOwnershipMigration } from './migration_ownership.js';
-
-httpServer.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT} `);
-    console.log(`Environment: ${process.env.NODE_ENV} `);
-    try {
-        console.log("Verifying database schema...");
-        await initSchema();
-        await runOwnershipMigration(pool);
-    } catch (err) {
-        console.error("Schema init failed:", err);
-    }
-    startCleanupJob();
-});
+// ------------------------------------------------------------------
+// DUPLICATE SERVER START REMOVED (Moved logic to end of file)
+// ------------------------------------------------------------------
 
 
 // Diagnostics Route (Check DB)
@@ -2674,8 +2664,15 @@ app.get('/api/debug-auth-config', (req, res) => {
 
 
 // Run Migration on Startup (Async)
-initSchema().then(() => {
+// Run Migration on Startup (Async)
+initSchema().then(async () => {
     console.log("Database schema verified and migrated.");
+    try {
+        await runOwnershipMigration(pool);
+        startCleanupJob();
+    } catch (err) {
+        console.error("Post-init tasks failed:", err);
+    }
 }).catch(err => {
     console.error("Failed to migrate schema:", err);
 });
