@@ -79,7 +79,11 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        mutation.mutate(formData);
+        const dataToSubmit = {
+            ...formData,
+            birth_date: formData.birth_date ? formData.birth_date : null
+        };
+        mutation.mutate(dataToSubmit);
     };
 
     return (
@@ -132,6 +136,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 <Label htmlFor="name">Nome Completo *</Label>
                 <Input
                     id="name"
+                    name="name"
+                    autoComplete="name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Nome do paciente"
@@ -144,6 +150,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <Label htmlFor="cpf">CPF</Label>
                     <Input
                         id="cpf"
+                        name="cpf"
+                        autoComplete="off"
                         value={formData.cpf}
                         onChange={(e) => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
                         placeholder="000.000.000-00"
@@ -153,6 +161,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <Label htmlFor="birth_date">Data de Nascimento</Label>
                     <Input
                         id="birth_date"
+                        name="birth_date"
+                        autoComplete="bday"
                         type="date"
                         value={formData.birth_date}
                         onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
@@ -163,8 +173,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="gender">Gênero</Label>
-                    <Select value={formData.gender} onValueChange={(v) => setFormData(p => ({ ...p, gender: v }))}>
-                        <SelectTrigger>
+                    <Select name="gender" value={formData.gender} onValueChange={(v) => setFormData(p => ({ ...p, gender: v }))}>
+                        <SelectTrigger id="gender">
                             <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
@@ -179,6 +189,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <Label htmlFor="phone">Telefone *</Label>
                     <Input
                         id="phone"
+                        name="phone"
+                        autoComplete="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                         placeholder="(00) 00000-0000"
@@ -192,6 +204,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <Label htmlFor="whatsapp">WhatsApp</Label>
                     <Input
                         id="whatsapp"
+                        name="whatsapp"
+                        autoComplete="tel"
                         value={formData.whatsapp}
                         onChange={(e) => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
                         placeholder="(00) 00000-0000"
@@ -201,6 +215,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <Label htmlFor="email">E-mail</Label>
                     <Input
                         id="email"
+                        name="email"
+                        autoComplete="email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
@@ -213,6 +229,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 <Label htmlFor="address">Endereço</Label>
                 <Input
                     id="address"
+                    name="address"
+                    autoComplete="street-address"
                     value={formData.address}
                     onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
                     placeholder="Endereço completo"
@@ -221,8 +239,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
 
             <div>
                 <Label htmlFor="marketing_source">Como conheceu a clínica? *</Label>
-                <Select value={formData.marketing_source} onValueChange={(v) => setFormData(p => ({ ...p, marketing_source: v }))}>
-                    <SelectTrigger>
+                <Select name="marketing_source" value={formData.marketing_source} onValueChange={(v) => setFormData(p => ({ ...p, marketing_source: v }))}>
+                    <SelectTrigger id="marketing_source">
                         <SelectValue placeholder="Selecione a origem" />
                     </SelectTrigger>
                     <SelectContent>
