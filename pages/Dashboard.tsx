@@ -165,6 +165,7 @@ export default function Dashboard() {
           trendUp={true}
           color={isDark ? "indigo" : "blue"}
           delay={0}
+          isDark={isDark}
         />
         <StatsCard
           title="Total Pacientes"
@@ -174,6 +175,7 @@ export default function Dashboard() {
           trendUp={true}
           color={isDark ? "purple" : "indigo"}
           delay={0.1}
+          isDark={isDark}
         />
         <StatsCard
           title="Aguardando"
@@ -183,6 +185,7 @@ export default function Dashboard() {
           trendUp={false}
           color={isDark ? "amber" : "orange"}
           delay={0.2}
+          isDark={isDark}
         />
         <StatsCard
           title="Profissionais"
@@ -192,6 +195,7 @@ export default function Dashboard() {
           trendUp={true}
           color={isDark ? "emerald" : "green"}
           delay={0.3}
+          isDark={isDark}
         />
       </div>
 

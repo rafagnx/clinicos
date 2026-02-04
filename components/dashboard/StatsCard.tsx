@@ -9,7 +9,8 @@ export default function StatsCard({
     trend,
     trendUp,
     color = "blue",
-    delay = 0
+    delay = 0,
+    isDark = false
 }) {
     const colorClasses = {
         blue: "bg-blue-50 text-blue-600",
@@ -26,14 +27,23 @@ export default function StatsCard({
     };
 
     return (
-        <Card className="p-6 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm border-slate-200/60 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 duration-300 group">
+        <Card className={cn(
+            "p-6 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 duration-300 group",
+            isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80 border-slate-200/60"
+        )}>
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    <p className={cn(
+                        "text-sm font-semibold uppercase tracking-wide transition-colors",
+                        isDark ? "text-slate-400 group-hover:text-indigo-400" : "text-slate-500 group-hover:text-indigo-600"
+                    )}>
                         {title}
                     </p>
                     <div className="flex items-end gap-3 mt-2">
-                        <p className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                        <p className={cn(
+                            "text-3xl font-bold bg-clip-text text-transparent",
+                            isDark ? "bg-gradient-to-br from-white to-slate-400" : "bg-gradient-to-br from-slate-800 to-slate-600"
+                        )}>
                             {value}
                         </p>
                         {trend && (
