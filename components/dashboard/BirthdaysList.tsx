@@ -3,7 +3,38 @@ import { Cake, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function BirthdaysList({ patients }) {
-    if (!patients || patients.length === 0) {
+    // Filter patients to get only today's birthdays
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth() + 1; // getMonth is 0-indexed
+
+    const filteredPatients = (patients || []).filter(patient => {
+        if (!patient.birth_date) return false;
+
+        // Handle potential different date formats (string or Date object)
+        // Assuming YYYY-MM-DD string from standard DB or ISO string
+        let bDay, bMonth;
+
+        try {
+            const dateStr = String(patient.birth_date).split('T')[0]; // simple ISO split
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                // YYYY-MM-DD
+                bMonth = parseInt(parts[1], 10);
+                bDay = parseInt(parts[2], 10);
+            } else {
+                // Fallback date object parsing
+                const d = new Date(patient.birth_date);
+                bDay = d.getDate();
+                bMonth = d.getMonth() + 1; // fix timezone offset issue manually later if needed? 
+                // Actually relying on UTC-adjusted strings is safer for simple string split
+            }
+        } catch (e) { return false; }
+
+        return bDay === currentDay && bMonth === currentMonth;
+    });
+
+    if (!filteredPatients || filteredPatients.length === 0) {
         return (
             <Card className="p-6 bg-white border-0 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
@@ -28,7 +59,7 @@ export default function BirthdaysList({ patients }) {
                 <h3 className="font-semibold text-slate-800">Aniversariantes</h3>
             </div>
             <div className="space-y-3">
-                {patients.map((patient) => (
+                {filteredPatients.map((patient) => (
                     <div key={patient.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors group">
                         <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
