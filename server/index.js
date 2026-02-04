@@ -2523,7 +2523,7 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
         const token = result.rows[0].token;
         // Construct Frontend URL
         const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
-        const link = `${baseUrl} /register?token=${token}`; / / Assuming register page handles token
+        const link = `${baseUrl}/register?token=${token}`; // Assuming register page handles token
 
         res.json({ link });
     } catch (error) {
