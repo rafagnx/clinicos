@@ -712,6 +712,7 @@ const initSchema = async () => {
                     created_by TEXT,
                     created_at TIMESTAMP DEFAULT NOW()
                  );
+            `);
 
             await client.query(`
                 CREATE TABLE IF NOT EXISTS "conversations"(
@@ -879,7 +880,7 @@ const initSchema = async () => {
             for (const col of profCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -902,7 +903,7 @@ const initSchema = async () => {
             for (const col of patientCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -914,10 +915,10 @@ const initSchema = async () => {
             for (const col of settingsCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'clinic_settings' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -928,7 +929,7 @@ const initSchema = async () => {
             for (const col of procCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'procedure_types' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "procedure_types" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "procedure_types" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -941,7 +942,7 @@ const initSchema = async () => {
             for (const col of medCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'medical_records' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "medical_records" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "medical_records" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -959,7 +960,7 @@ const initSchema = async () => {
             for (const col of aptCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${ col.type }; `);
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
                 }
             }
 
@@ -974,7 +975,7 @@ const initSchema = async () => {
             ];
             for (const col of chatCols) {
                 // Postgres 9.6+ supports IF NOT EXISTS
-                await client.query(`ALTER TABLE "conversations" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
+                await client.query(`ALTER TABLE "conversations" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}; `);
 
                 // TYPE FIX: Ensure professional_id is TEXT
                 if (col.name === 'professional_id') {
@@ -992,7 +993,7 @@ const initSchema = async () => {
                 { name: 'organization_id', type: 'TEXT' }
             ];
             for (const col of msgCols) {
-                await client.query(`ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
+                await client.query(`ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}; `);
 
                 // TYPE FIX: Ensure sender_id is TEXT (if it was created as INTEGER previously)
                 if (col.name === 'sender_id') {
@@ -1009,7 +1010,7 @@ const initSchema = async () => {
                 { name: 'promotion_id', type: 'INTEGER' }
             ];
             for (const col of appointmentCols) {
-                await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
+                await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}; `);
             }
 
             // 8.6. Ensure PATIENTS Columns (Fix 500 Error - Missing columns)
@@ -1021,7 +1022,7 @@ const initSchema = async () => {
                 { name: 'marketing_source', type: 'VARCHAR(100)' }
             ];
             for (const col of newPatientCols) {
-                await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
+                await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}; `);
             }
 
             // 8.7. Ensure APPOINTMENTS Columns (Fix Agenda Errors)
@@ -1034,8 +1035,8 @@ const initSchema = async () => {
             ];
             for (const col of newAppointmentCols) {
                 try {
-                    await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
-                } catch (e) { console.log(`Migration validation: ${ e.message } `); }
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type}; `);
+                } catch (e) { console.log(`Migration validation: ${e.message} `); }
             }
 
             // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
@@ -1253,8 +1254,8 @@ app.get('/api/health', (req, res) => {
 import { runOwnershipMigration } from './migration_ownership.js';
 
 httpServer.listen(PORT, async () => {
-    console.log(`Server running on port ${ PORT } `);
-    console.log(`Environment: ${ process.env.NODE_ENV } `);
+    console.log(`Server running on port ${PORT} `);
+    console.log(`Environment: ${process.env.NODE_ENV} `);
     try {
         console.log("Verifying database schema...");
         await initSchema();
@@ -1307,12 +1308,12 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     const { active } = req.body;
     const { user } = req.auth;
 
-    console.log(`[Admin Bypass] Attempt by ${ user.email } for Org ${ id } to active = ${ active } `);
+    console.log(`[Admin Bypass] Attempt by ${user.email} for Org ${id} to active = ${active} `);
 
     const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
 
     if (!authorizedEmails.includes(user.email)) {
-        console.warn(`[Admin Bypass]Denied: ${ user.email } is not authorized.`);
+        console.warn(`[Admin Bypass]Denied: ${user.email} is not authorized.`);
         return res.status(403).json({ error: "Access Denied. Super Admin only." });
     }
 
@@ -1334,7 +1335,7 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
             RETURNING *
                 `, [finalStatus, id]);
 
-        console.log(`[Admin Bypass]Success.New Status: ${ finalStatus } `);
+        console.log(`[Admin Bypass]Success.New Status: ${finalStatus} `);
         res.json({ success: true, organization: result.rows[0] });
     } catch (error) {
         console.error('[Admin Bypass] DB Error', error);
@@ -1431,7 +1432,7 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        console.log(`[Admin Delete] Starting cascade delete for Org ${ id }`);
+        console.log(`[Admin Delete] Starting cascade delete for Org ${id}`);
 
         // 1. Delete Peripheral Data (Least Dependent)
         await client.query('DELETE FROM "appointments" WHERE "organization_id" = $1', [id]);
@@ -1459,7 +1460,7 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Organization not found" });
         }
 
-        console.log(`[Admin Delete] Successfully deleted Org ${ id } `);
+        console.log(`[Admin Delete] Successfully deleted Org ${id} `);
         res.json({ success: true, message: "Deleted successfully" });
 
     } catch (err) {
@@ -1503,20 +1504,20 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
         // Frontend sends 'display_name', DB uses 'name'
         const nameToUpdate = data.display_name || data.name || data.full_name;
 
-        if (nameToUpdate) { updates.push(`name = $${ i++ } `); values.push(nameToUpdate); }
-        if (data.phone) { updates.push(`phone = $${ i++ } `); values.push(data.phone); }
-        if (data.specialty || data.speciality) { updates.push(`specialty = $${ i++ } `); values.push(data.specialty || data.speciality); }
-        if (data.user_type) { updates.push(`user_type = $${ i++ } `); values.push(data.user_type); }
-        if (data.photo_url || data.image) { updates.push(`image = $${ i++ } `); values.push(data.photo_url || data.image); }
+        if (nameToUpdate) { updates.push(`name = $${i++} `); values.push(nameToUpdate); }
+        if (data.phone) { updates.push(`phone = $${i++} `); values.push(data.phone); }
+        if (data.specialty || data.speciality) { updates.push(`specialty = $${i++} `); values.push(data.specialty || data.speciality); }
+        if (data.user_type) { updates.push(`user_type = $${i++} `); values.push(data.user_type); }
+        if (data.photo_url || data.image) { updates.push(`image = $${i++} `); values.push(data.photo_url || data.image); }
 
-        updates.push(`"updatedAt" = $${ i++ } `);
+        updates.push(`"updatedAt" = $${i++} `);
         values.push(now);
 
         if (updates.length > 1) { // More than just updatedAt
             values.push(user.id);
-            const query = `UPDATE "user" SET ${ updates.join(', ') } WHERE id = $${ i } RETURNING * `;
+            const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING * `;
 
-            console.log(`[Profile] Updating user ${ user.id }: `, updates);
+            console.log(`[Profile] Updating user ${user.id}: `, updates);
 
             // Also update Supabase metadata is handled by frontend, but we own Postgres
             const { rows } = await pool.query(query, values);
@@ -1526,7 +1527,7 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
             } else {
                 // If user doesn't exist in Postgres (integrity error), we should potentially create them?
                 // For now, let's assume existence due to requireAuth, but handle 0 rows
-                console.warn(`[Profile] User ${ user.id } not found in DB during update`);
+                console.warn(`[Profile] User ${user.id} not found in DB during update`);
                 // Attempt UPSERT/Insert if missing?
                 // Let's safe fail for now or try insert
                 await pool.query(`
@@ -1694,12 +1695,12 @@ app.get('/api/blocked-days', requireAuth, async (req, res) => {
         let paramIndex = 2;
 
         if (professionalId && professionalId !== 'all') {
-            query += ` AND professional_id = $${ paramIndex++ } `;
+            query += ` AND professional_id = $${paramIndex++} `;
             params.push(professionalId);
         }
 
         if (startDate && endDate) {
-            query += ` AND((start_date <= $${ paramIndex + 1} AND end_date >= $${ paramIndex }))`;
+            query += ` AND((start_date <= $${paramIndex + 1} AND end_date >= $${paramIndex}))`;
             params.push(startDate, endDate);
         }
 
@@ -1959,18 +1960,18 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         let paramIndex = 1;
 
         // Simple query for all entities (no JOINs to avoid type issues)
-        query = `SELECT * FROM ${ tableName } `;
+        query = `SELECT * FROM ${tableName} `;
 
         if (isUserScoped) {
-            whereClauses.push(`user_id = $${ paramIndex++ } `);
+            whereClauses.push(`user_id = $${paramIndex++} `);
             params.push(user.id);
         } else {
-            whereClauses.push(`organization_id = $${ paramIndex++ } `);
+            whereClauses.push(`organization_id = $${paramIndex++} `);
             params.push(organizationId);
         }
 
         if (req.query.id) {
-            whereClauses.push(`id = $${ paramIndex++ } `);
+            whereClauses.push(`id = $${paramIndex++} `);
             params.push(req.query.id);
         }
 
@@ -1998,23 +1999,23 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             if (typeof value === 'object' && value !== null) {
                 // Handle Operators
                 if (value._gte) {
-                    whereClauses.push(`"${dbColumn}" >= $${ paramIndex++ } `);
+                    whereClauses.push(`"${dbColumn}" >= $${paramIndex++} `);
                     params.push(value._gte);
                 }
                 if (value._gt) {
-                    whereClauses.push(`"${dbColumn}" > $${ paramIndex++ } `);
+                    whereClauses.push(`"${dbColumn}" > $${paramIndex++} `);
                     params.push(value._gt);
                 }
                 if (value._lt) {
-                    whereClauses.push(`"${dbColumn}" < $${ paramIndex++ } `);
+                    whereClauses.push(`"${dbColumn}" < $${paramIndex++} `);
                     params.push(value._lt);
                 }
                 if (value._lte) {
-                    whereClauses.push(`"${dbColumn}" <= $${ paramIndex++ } `);
+                    whereClauses.push(`"${dbColumn}" <= $${paramIndex++} `);
                     params.push(value._lte);
                 }
             } else {
-                whereClauses.push(`"${dbColumn}" = $${ paramIndex++ } `);
+                whereClauses.push(`"${dbColumn}" = $${paramIndex++} `);
                 params.push(value);
             }
         });
@@ -2030,7 +2031,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         if (req.query.limit) {
-            query += ` LIMIT $${ paramIndex++ } `;
+            query += ` LIMIT $${paramIndex++} `;
             params.push(parseInt(req.query.limit));
         }
 
@@ -2044,7 +2045,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
 
         res.json(mappedRows);
     } catch (error) {
-        console.error(`Error fetching ${ entity }: `, error);
+        console.error(`Error fetching ${entity}: `, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -2070,13 +2071,13 @@ async function ensureOrganizationExists(orgId, client) {
         );
 
         if (rows.length === 0) {
-            console.log(`[SELF - HEAL] Auto - creating missing organization: ${ orgId } `);
+            console.log(`[SELF - HEAL] Auto - creating missing organization: ${orgId} `);
             await client.query(`
                 INSERT INTO organization(id, name, slug, "createdAt", "updatedAt", subscription_status, metadata)
         VALUES($1, $2, $3, NOW(), NOW(), 'trial', '{}')
                 ON CONFLICT(id) DO NOTHING
-            `, [orgId, `Clínica Auto - ${ orgId.slice(0, 8) } `, `clinic - ${ orgId.slice(0, 8) } `]);
-            console.log(`[SELF - HEAL] ✅ Organization ${ orgId } created successfully`);
+            `, [orgId, `Clínica Auto - ${orgId.slice(0, 8)} `, `clinic - ${orgId.slice(0, 8)} `]);
+            console.log(`[SELF - HEAL] ✅ Organization ${orgId} created successfully`);
         }
     } catch (err) {
         console.error(`[SELF - HEAL] Error ensuring organization exists: `, err.message);
@@ -2095,7 +2096,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.patient_id) {
         const p = await client.query('SELECT id, name FROM patients WHERE id = $1', [data.patient_id]);
         if (p.rows.length === 0) {
-            errors.push(`Paciente ID ${ data.patient_id } não encontrado.Por favor, cadastre o paciente primeiro.`);
+            errors.push(`Paciente ID ${data.patient_id} não encontrado.Por favor, cadastre o paciente primeiro.`);
         }
     }
 
@@ -2103,7 +2104,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.professional_id) {
         const pr = await client.query('SELECT id, name FROM professionals WHERE id = $1', [data.professional_id]);
         if (pr.rows.length === 0) {
-            errors.push(`Profissional ID ${ data.professional_id } não encontrado.Por favor, cadastre o profissional primeiro.`);
+            errors.push(`Profissional ID ${data.professional_id} não encontrado.Por favor, cadastre o profissional primeiro.`);
         }
     }
 
@@ -2111,7 +2112,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.promotion_id && data.promotion_id !== null) {
         const promo = await client.query('SELECT id FROM promotions WHERE id = $1', [data.promotion_id]);
         if (promo.rows.length === 0) {
-            errors.push(`Promoção ID ${ data.promotion_id } não encontrada.`);
+            errors.push(`Promoção ID ${data.promotion_id} não encontrada.`);
         }
     }
 
@@ -2132,13 +2133,13 @@ async function validateGenericFKs(entity, data, client) {
         if (data.patient_id) {
             const p = await client.query('SELECT id FROM patients WHERE id = $1', [data.patient_id]);
             if (p.rows.length === 0) {
-                errors.push(`Paciente ID ${ data.patient_id } não encontrado.`);
+                errors.push(`Paciente ID ${data.patient_id} não encontrado.`);
             }
         }
         if (data.professional_id) {
             const pr = await client.query('SELECT id FROM professionals WHERE id = $1', [data.professional_id]);
             if (pr.rows.length === 0) {
-                errors.push(`Profissional ID ${ data.professional_id } não encontrado.`);
+                errors.push(`Profissional ID ${data.professional_id} não encontrado.`);
             }
         }
         return errors;
@@ -2200,7 +2201,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         data.organization_id = organizationId;
     }
 
-    console.log(`[DEBUG] Creating ${ entity } in ${ tableName } `);
+    console.log(`[DEBUG] Creating ${entity} in ${tableName} `);
     console.log(`[DEBUG] Raw Data: `, JSON.stringify(data));
 
     try {
@@ -2216,7 +2217,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         // ==========================================
         const fkErrors = await validateGenericFKs(entity, data, pool);
         if (fkErrors.length > 0) {
-            console.log(`[FK - VALIDATION] ❌ Errors for ${ entity }: `, fkErrors);
+            console.log(`[FK - VALIDATION] ❌ Errors for ${entity}: `, fkErrors);
             return res.status(400).json({
                 error: 'Dados inválidos - registros relacionados não encontrados',
                 details: fkErrors,
@@ -2237,9 +2238,9 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
-        const placeholders = keys.map((_, i) => `$${ i + 1 } `).join(', ');
+        const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
 
-        const query = `INSERT INTO ${ tableName } (${ keys.join(', ') }) VALUES(${ placeholders }) RETURNING * `;
+        const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
         console.log(`[DEBUG] Query: `, query);
         console.log(`[DEBUG] Values: `, values);
 
@@ -2247,7 +2248,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        const errorLog = `[${ new Date().toISOString() }] Error creating ${ entity }: ${ error.message } \nDetail: ${ error.detail } \nCode: ${ error.code } \nData: ${ JSON.stringify(data) } \n\n`;
+        const errorLog = `[${new Date().toISOString()}] Error creating ${entity}: ${error.message} \nDetail: ${error.detail} \nCode: ${error.code} \nData: ${JSON.stringify(data)} \n\n`;
         console.error(errorLog);
 
         try {
@@ -2404,16 +2405,16 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
-        const setClause = keys.map((k, i) => `${ k } = $${ i + 1 } `).join(', ');
+        const setClause = keys.map((k, i) => `${k} = $${i + 1} `).join(', ');
 
-        let query = `UPDATE ${ tableName } SET ${ setClause } WHERE id = $${ keys.length + 1 } `;
+        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} `;
         const queryParams = [...values, id];
 
         if (isUserScoped) {
-            query += ` AND user_id = $${ keys.length + 2 } `;
+            query += ` AND user_id = $${keys.length + 2} `;
             queryParams.push(user.id);
         } else {
-            query += ` AND organization_id = $${ keys.length + 2 } `;
+            query += ` AND organization_id = $${keys.length + 2} `;
             queryParams.push(organizationId);
         }
 
@@ -2427,7 +2428,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error updating ${ entity }: `, error);
+        console.error(`Error updating ${entity}: `, error);
         res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
     }
 });
@@ -2465,14 +2466,14 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     try {
         // SPECIAL HANDLING: Professional Deletion (Handle FK Constraint)
         if (entity === 'Professional') {
-            console.log(`[Delete] Professional ${ id }: Nullifying appointments references first.`);
+            console.log(`[Delete] Professional ${id}: Nullifying appointments references first.`);
             await pool.query(
                 `UPDATE appointments SET professional_id = NULL WHERE professional_id = $1`,
                 [id]
             );
         }
 
-        let query = `DELETE FROM ${ tableName } WHERE id = $1`;
+        let query = `DELETE FROM ${tableName} WHERE id = $1`;
         const params = [id];
 
         if (isUserScoped) {
@@ -2489,7 +2490,7 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         }
         res.json({ success: true });
     } catch (error) {
-        console.error(`Error deleting ${ entity }: `, error);
+        console.error(`Error deleting ${entity}: `, error);
 
         // Handle FK Constraints nicely if still hits
         if (error.code === '23503') {
@@ -2522,7 +2523,7 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
         const token = result.rows[0].token;
         // Construct Frontend URL
         const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
-        const link = `${ baseUrl } /register?token=${token}`; / / Assuming register page handles token
+        const link = `${baseUrl} /register?token=${token}`; / / Assuming register page handles token
 
         res.json({ link });
     } catch (error) {
