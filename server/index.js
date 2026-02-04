@@ -209,7 +209,6 @@ const requireAuth = async (req, res, next) => {
             if (error) {
                 console.error('[Auth] Supabase Error:', error.message);
 
-                // --- NUCLEAR FALLBACK: STRING MATCH (FOR MVP/DEBUG) ---
                 // If standard decode fails, we check the raw string for the VIP email.
                 // This is technically insecure for general users (spoofable if you know the format), 
                 // but for specific long random tokens from Google/Supabase it's an acceptable risk for 1 hour MVP debugging
@@ -229,23 +228,38 @@ const requireAuth = async (req, res, next) => {
                     }
 
                     const emailFound = decoded?.email || decoded?.user_metadata?.email;
+                    const subFound = decoded?.sub;
 
-                    if (emailFound && (emailFound === "rafamarketingdb@gmail.com" || emailFound === "marketingorofacial@gmail.com")) {
-                        console.warn("☢️ NUCLEAR AUTH BYPASS for VIP:", emailFound);
+                    if (emailFound) {
+                        // DATABASE CHECK: Instead of hardcoded VIPs, check if user exists in DB
+                        const userCheck = await pool.query('SELECT * FROM "user" WHERE email = $1', [emailFound]);
 
-                        const user = {
-                            id: decoded?.sub || "00000000-0000-0000-0000-000000000000",
-                            email: emailFound,
-                            role: 'admin'
-                        };
+                        if (userCheck.rows.length > 0) {
+                            console.warn(`[Auth] 🟢 Database-backed Auth Fallback for: ${emailFound}`);
+                            const dbUser = userCheck.rows[0];
 
-                        req.auth = {
-                            userId: user.id,
-                            organizationId: req.headers['x-organization-id'],
-                            user: user,
-                            isSystemAdmin: true
-                        };
-                        return next();
+                            const user = {
+                                id: dbUser.id || subFound || "00000000-0000-0000-0000-000000000000",
+                                email: emailFound,
+                                role: 'user', // Default to user
+                                user_metadata: {
+                                    full_name: dbUser.name,
+                                    avatar_url: dbUser.image
+                                }
+                            };
+
+                            const isSystemAdmin = (emailFound === "rafamarketingdb@gmail.com" || emailFound === "marketingorofacial@gmail.com");
+
+                            req.auth = {
+                                userId: user.id,
+                                organizationId: req.headers['x-organization-id'],
+                                user: { ...user, role: isSystemAdmin ? 'admin' : 'user' },
+                                isSystemAdmin: isSystemAdmin
+                            };
+                            return next();
+                        } else {
+                            console.warn(`[Auth] Fallback denied: User ${emailFound} not found in DB.`);
+                        }
                     }
                 } catch (decodeErr) {
                     console.error("Nuclear bypass failed:", decodeErr);
@@ -399,43 +413,7 @@ app.use('/api/marketing', createMarketingRoutes(pool, requireAuth));
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// --- SELF-HEALING HELPERS ---
-const ensureOrganizationExists = async (orgId, client) => {
-    if (!orgId) return;
-    try {
-        const res = await client.query('SELECT id FROM organization WHERE id = $1', [orgId]);
-        if (res.rows.length === 0) {
-            console.log(`[SELF-HEAL] Creating missing organization: ${orgId}`);
-            await client.query(`
-                INSERT INTO organization (id, name, slug, "createdAt", "updatedAt")
-                VALUES ($1, 'Minha Clínica', $2, NOW(), NOW())
-            `, [orgId, `clinic-${orgId.substring(0, 8)}`]);
-        }
-    } catch (e) {
-        console.error("Error in ensureOrganizationExists:", e);
-    }
-};
 
-const validateGenericFKs = async (entity, data, client) => {
-    const errors = [];
-    if (entity === 'Appointment') {
-        if (data.patient_id) {
-            // Check if patient exists (heuristic: assuming ID is int, catching if not)
-            try {
-                const res = await client.query('SELECT id FROM patients WHERE id = $1', [data.patient_id]);
-                if (res.rows.length === 0) errors.push(`Paciente ID ${data.patient_id} não encontrado.`);
-            } catch (ignore) { }
-        }
-        if (data.professional_id) {
-            try {
-                const res = await client.query('SELECT id FROM professionals WHERE id = $1', [data.professional_id]);
-                if (res.rows.length === 0) errors.push(`Profissional ID ${data.professional_id} não encontrado.`);
-            } catch (ignore) { }
-        }
-    }
-    return errors;
-};
-// ----------------------------
 
 // Auth routes handled by Supabase direct integration
 // USER SELF-PROFILE UPDATE (Sync)
