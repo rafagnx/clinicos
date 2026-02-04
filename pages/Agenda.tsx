@@ -34,319 +34,49 @@ import RescheduleDialog from "@/components/agenda/RescheduleDialog";
 import AdvancedFilters from "@/components/agenda/AdvancedFilters";
 import BlockDayModal from "@/components/agenda/BlockDayModal";
 import { AgendaLegend } from "@/components/agenda/AgendaLegend";
+import MobileAgendaView from "@/components/agenda/MobileAgendaView";
 
-const statusConfig = {
-  agendado: {
-    label: "Agendado",
-    class: "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 border border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:text-slate-300 dark:border-slate-700 shadow-sm"
-  },
-  confirmado: {
-    label: "Confirmado",
-    class: "bg-gradient-to-r from-blue-100 to-cyan-50 text-blue-700 border border-blue-200 dark:from-blue-900/30 dark:to-cyan-900/20 dark:text-blue-400 dark:border-blue-800 shadow-sm"
-  },
-  aguardando: {
-    label: "Aguardando",
-    class: "bg-gradient-to-r from-amber-100 to-orange-50 text-amber-700 border border-amber-200 dark:from-amber-900/30 dark:to-orange-900/20 dark:text-amber-400 dark:border-amber-800 shadow-sm"
-  },
-  em_atendimento: {
-    label: "Em atendimento",
-    class: "bg-gradient-to-r from-violet-100 to-purple-50 text-violet-700 border border-violet-200 dark:from-violet-900/30 dark:to-purple-900/20 dark:text-violet-400 dark:border-violet-800 shadow-sm"
-  },
-  finalizado: {
-    label: "Finalizado",
-    class: "bg-gradient-to-r from-emerald-100 to-teal-50 text-emerald-700 border border-emerald-200 dark:from-emerald-900/30 dark:to-teal-900/20 dark:text-emerald-400 dark:border-emerald-800 shadow-sm"
-  },
-  faltou: {
-    label: "Faltou",
-    class: "bg-gradient-to-r from-rose-100 to-pink-50 text-rose-700 border border-rose-200 dark:from-rose-900/30 dark:to-pink-900/20 dark:text-rose-400 dark:border-rose-800 shadow-sm"
-  },
-  cancelado: {
-    label: "Cancelado",
-    class: "bg-gradient-to-r from-slate-100 to-slate-50 text-slate-400 border border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:text-slate-500 dark:border-slate-700 shadow-sm"
-  },
-};
-
-// Função para determinar a cor do card baseado no profissional e tipo
-// Helper to safely parse time string (HH:mm or ISO)
-const parseTime = (timeStr: string) => {
-  if (!timeStr) return { h: 0, m: 0, str: "00:00" };
-
-  // ISO Format (2026-01-29T10:30:00.000Z)
-  if (timeStr.includes("T")) {
-    const date = new Date(timeStr);
-    if (!isNaN(date.getTime())) {
-      const h = date.getHours();
-      const m = date.getMinutes();
-      return { h, m, str: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` };
-    }
-  }
-
-  // Simple HH:mm
-  if (timeStr.includes(":")) {
-    const [hStr, mStr] = timeStr.split(":");
-    const h = parseInt(hStr || "0");
-    const m = parseInt(mStr || "0");
-    return { h, m, str: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}` };
-  }
-
-  return { h: 0, m: 0, str: "00:00" };
-};
-
-// Função para determinar a cor do card baseado no profissional e tipo
-const getAppointmentCardColor = (apt, isDark) => {
-  if (!apt) return "";
-
-  // 1. By Status
-  if (apt.status === "finalizado") return "border-l-emerald-500 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-900/10";
-  if (apt.status === "cancelado") return "border-l-slate-400 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50";
-  if (apt.status === "faltou") return "border-l-rose-500 bg-rose-50/50 hover:bg-rose-100/50 dark:bg-rose-900/10";
-
-  // 2. By Type
-  if (apt.type === "Compromisso") return "border-l-slate-500 bg-slate-100 dark:bg-slate-800";
-  if (apt.type === "Retorno") return "border-l-amber-500 bg-amber-50 dark:bg-amber-900/10";
-
-  // 3. By Procedure Category (heuristic) or Professional
-  // Default vibrant colors
-  const vibrantColors = [
-    "border-l-violet-500 bg-violet-50/60 hover:bg-violet-100/50 dark:bg-violet-900/20",
-    "border-l-pink-500 bg-pink-50/60 hover:bg-pink-100/50 dark:bg-pink-900/20",
-    "border-l-cyan-500 bg-cyan-50/60 hover:bg-cyan-100/50 dark:bg-cyan-900/20",
-    "border-l-indigo-500 bg-indigo-50/60 hover:bg-indigo-100/50 dark:bg-indigo-900/20",
-  ];
-
-  // Hash the ID to pick a stable color
-  const hash = String(apt.professional_id || "").split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return vibrantColors[hash % vibrantColors.length];
-};
-
-// Helper to deduplicate professionals
-const uniqueProfessionals = (profs) => {
-  const seen = new Set();
-  return profs.filter(p => {
-    const duplicate = seen.has(p.id);
-    seen.add(p.id);
-    return !duplicate;
-  });
-};
+// ... existing code ...
 
 export default function Agenda() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
-  const queryClient = useQueryClient();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [view, setView] = useState("day"); // 'day' or 'week'
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
-  const [isTimeBlockOpen, setIsTimeBlockOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isBlockDayOpen, setIsBlockDayOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    professional_id: "all",
-    status: "all",
-  });
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Fetch current user professional profile to auto-select in block modal
-  const { data: currentProfessional } = useQuery({
-    queryKey: ["me-professional"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) return null;
+  // Check for mobile viewport
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-      const profs = await base44.list("Professional", {
-        filter: { email: user.email, limit: 1 }
-      });
-      return profs?.[0] || null;
-    },
-    staleTime: 1000 * 60 * 30 // 30 mins
-  });
-
-  // Queries
-  const { data: rawProfessionals = [], isLoading: isLoadingProfs } = useQuery({
-    queryKey: ["professionals"],
-    queryFn: async () => {
-      const data = await base44.list("Professional", {
-        sort: [{ field: "full_name", direction: "asc" }]
-      });
-      // Filter for valid agenda roles
-      return data.filter(p => {
-        const role = (p.role_type || "").toLowerCase();
-        const specialty = (p.specialty || "").toLowerCase();
-        // Allow: HOF, Biomédico, Doutor, Esteticista, Dentista
-        // Removed "profissional" as it's too generic and includes staff
-        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista", "profissional"].some(r => role.includes(r) || specialty.includes(r));
-      });
-    },
-  });
-
-
-  const professionals = uniqueProfessionals(rawProfessionals);
-
-  // Fetch Patients for robust name lookup
-  const { data: patients = [] } = useQuery({
-    queryKey: ["patients-list"],
-    queryFn: () => base44.list("Patient", { limit: 1000 }), // Fetch list for lookup
-    staleTime: 1000 * 60 * 5 // Cache for 5 mins
-  });
-
-  const { data: appointments = [], isLoading: isLoadingApts } = useQuery({
-    queryKey: ["appointments", selectedDate, view, filters],
-    queryFn: async () => {
-      const start = view === "day" ? selectedDate : startOfWeek(selectedDate, { weekStartsOn: 0 });
-      const end = addDays(start, view === "day" ? 1 : 7);
-
-      const queryFilter: Record<string, any> = {
-        date: {
-          _gte: format(start, "yyyy-MM-dd"),
-          _lt: format(end, "yyyy-MM-dd"),
-        }
-      };
-
-      if (filters.professional_id !== "all") {
-        queryFilter.professional_id = filters.professional_id;
-      }
-      if (filters.status !== "all") {
-        queryFilter.status = filters.status;
-      }
-
-      const data = await base44.list("Appointment", {
-        filter: queryFilter,
-        include: ["patient", "professional"],
-        sort: [{ field: "start_time", direction: "asc" }]
-      });
-      return data;
-    },
-  });
-
-  // Enrich appointments with patient/professional data from separate queries
-  const enrichedAppointments = React.useMemo(() => {
-    if (!appointments || appointments.length === 0) return [];
-
-    const patientMap = new Map(patients.map(p => [String(p.id), p]));
-    const professionalMap = new Map(professionals.map(p => [String(p.id), p]));
-
-    return appointments.map(apt => ({
-      ...apt,
-      patient: apt.patient || patientMap.get(String(apt.patient_id)) || { full_name: 'Paciente' },
-      professional: apt.professional || professionalMap.get(String(apt.professional_id)) || { full_name: 'Profissional' }
-    }));
-  }, [appointments, patients, professionals]);
-
-  // Fetch Blocked Days
-  const { data: blockedDays = [] } = useQuery({
-    queryKey: ["blocked-days", selectedDate, view, filters.professional_id],
-    queryFn: async () => {
-      queryFn: async () => {
-        const start = view === "day" ? selectedDate : startOfWeek(selectedDate, { weekStartsOn: 0 });
-        const end = addDays(start, view === "day" ? 1 : 7);
-
-        const params: any = {
-          startDate: format(start, "yyyy-MM-dd"),
-          endDate: format(end, "yyyy-MM-dd")
-        };
-
-        if (filters.professional_id !== "all") {
-          params.professionalId = parseInt(filters.professional_id);
-        }
-
-        try {
-          return await base44.blockedDays.list(params);
-        } catch (err) {
-          console.error('Error fetching blocked days:', err);
-          return [];
-        }
-      }
-    },
-  });
-
-  // Fetch Holidays
-  const { data: holidays = [] } = useQuery({
-    queryKey: ["holidays", selectedDate.getFullYear()],
-    queryFn: async () => {
-      try {
-        return await base44.holidays.list({ year: selectedDate.getFullYear() });
-      } catch (err) {
-        console.error('Error fetching holidays:', err);
-        return [];
-      }
-    }
-  });
-
-  // Helper functions for blocked days and holidays
-  const isDayBlocked = (date: Date) => {
-    if (!blockedDays || blockedDays.length === 0) return false;
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return blockedDays.some((block: any) => {
-      // Fix Timezone: Parse as ISO but ignore time component safely
-      const blockStart = new Date(block.start_date + 'T00:00:00');
-      const blockEnd = new Date(block.end_date + 'T23:59:59');
-      // Normalize checkDate to avoid time issues
-      const checkDate = new Date(dateStr + 'T12:00:00');
-      return checkDate >= blockStart && checkDate <= blockEnd;
-    });
-  };
-
-  const getBlockReason = (date: Date) => {
-    if (!blockedDays) return null;
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const block = blockedDays.find((b: any) => {
-      // Fix Timezone: Parse as ISO but ignore time component safely
-      const blockStart = new Date(b.start_date + 'T00:00:00');
-      const blockEnd = new Date(b.end_date + 'T23:59:59');
-      // Normalize checkDate to avoid time issues
-      const checkDate = new Date(dateStr + 'T12:00:00');
-      return checkDate >= blockStart && checkDate <= blockEnd;
-    });
-    return block?.reason || 'Bloqueado';
-  };
-
-  const getDayHoliday = (date: Date) => {
-    if (!holidays || holidays.length === 0) return null;
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return holidays.find((h: any) => {
-      // Handle potential ISO string or plain date
-      const hDate = h.date.toString().split('T')[0];
-      return hDate === dateStr;
-    });
-  };
-
-  // Mutations
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string | number, status: string }) => base44.update("Appointment", id, { status }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      toast.success("Status atualizado com sucesso");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string | number) => base44.delete("Appointment", id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      toast.success("Agendamento removido");
-    },
-  });
-
-  // Helpers
-  const timeSlots = Array.from({ length: 25 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 7; // Start at 07:00
-    const minutes = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minutes}`;
-  });
-
-  const filteredAppointments = (enrichedAppointments || []).filter((apt: any) => {
-    if (!searchQuery) return true;
-    const search = searchQuery.toLowerCase();
-    return (
-      (apt.patient?.full_name || apt.patient?.name || "").toLowerCase().includes(search) ||
-      (apt.procedure_name || "").toLowerCase().includes(search) ||
-      (apt.professional?.full_name || "").toLowerCase().includes(search)
-    );
-  });
+  // ... existing code ...
 
   const handleDateChange = (days) => {
     setSelectedDate(prev => addDays(prev, days));
   };
+
+  if (isMobile) {
+    return (
+      <MobileAgendaView
+        date={selectedDate}
+        onDateChange={handleDateChange}
+        onToday={() => setSelectedDate(new Date())}
+        appointments={filteredAppointments}
+        isDark={isDark}
+        onSelectAppointment={(apt) => {
+          setSelectedAppointment(apt);
+          setIsFormOpen(true);
+        }}
+        onNewAppointment={() => {
+          setSelectedAppointment(null);
+          setIsFormOpen(true);
+        }}
+      />
+    );
+  }
 
   return (
     <div className={cn(
