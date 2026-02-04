@@ -108,6 +108,17 @@ export default function Layout() {
 
   const toggleTheme = () => setIsDark(!isDark);
 
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
+
+
+
   const { data: user, isLoading: authLoading } = useQuery({
     queryKey: ["auth-user"],
     queryFn: async () => {

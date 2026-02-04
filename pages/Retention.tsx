@@ -188,41 +188,41 @@ export default function Retention() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-red-50 border-red-100">
+                <Card className="bg-red-50 border-red-100 dark:bg-red-500/10 dark:border-red-500/20">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-red-600 uppercase tracking-wider">Vencidos (Urgente)</CardTitle>
+                        <CardTitle className="text-sm font-medium text-red-600 uppercase tracking-wider dark:text-red-400">Vencidos (Urgente)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-red-700">
+                        <div className="text-3xl font-bold text-red-700 dark:text-red-500">
                             {opportunities.filter(o => o.daysUntilDue < 0).length}
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-amber-50 border-amber-100">
+                <Card className="bg-amber-50 border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-amber-600 uppercase tracking-wider">Próximos 30 dias</CardTitle>
+                        <CardTitle className="text-sm font-medium text-amber-600 uppercase tracking-wider dark:text-amber-400">Próximos 30 dias</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-amber-700">
+                        <div className="text-3xl font-bold text-amber-700 dark:text-amber-500">
                             {opportunities.filter(o => o.daysUntilDue >= 0 && o.daysUntilDue <= 30).length}
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-blue-50 border-blue-100">
+                <Card className="bg-blue-50 border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-blue-600 uppercase tracking-wider">Total Oportunidades</CardTitle>
+                        <CardTitle className="text-sm font-medium text-blue-600 uppercase tracking-wider dark:text-blue-400">Total Oportunidades</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold text-blue-700">
+                        <div className="text-3xl font-bold text-blue-700 dark:text-blue-500">
                             {opportunities.length}
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card>
+            <Card className="dark:bg-[#151A25] dark:border-slate-800">
                 <CardHeader>
-                    <CardTitle>Fluxo de Retorno</CardTitle>
+                    <CardTitle className="dark:text-slate-100">Fluxo de Retorno</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
@@ -230,11 +230,11 @@ export default function Retention() {
                     ) : filteredOpportunities.length === 0 ? (
                         <div className="text-center py-16 text-slate-400">
                             <CheckCircle2 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                            <p className="font-semibold text-slate-600 mb-2">Nenhuma oportunidade de retorno encontrada no momento.</p>
-                            <p className="text-sm text-slate-500 max-w-md mx-auto">
+                            <p className="font-semibold text-slate-600 mb-2 dark:text-slate-300">Nenhuma oportunidade de retorno encontrada no momento.</p>
+                            <p className="text-sm text-slate-500 max-w-md mx-auto dark:text-slate-400">
                                 Verifique se os procedimentos têm <strong>intervalos de retorno configurados</strong>.
                                 {' '}
-                                <Link to="/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold underline">
+                                <Link to="/Settings/Retention" className="text-indigo-600 hover:text-indigo-700 font-semibold underline dark:text-indigo-400 dark:hover:text-indigo-300">
                                     Configurar agora
                                 </Link>
                             </p>
@@ -242,7 +242,7 @@ export default function Retention() {
                     ) : (
                         <div className="space-y-4">
                             {filteredOpportunities.map((opp) => (
-                                <div key={opp.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all gap-4">
+                                <div key={opp.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all gap-4 dark:border-slate-800 dark:hover:border-blue-500/30 dark:hover:bg-blue-500/5">
                                     <div className="flex items-center gap-4">
                                         <div className="relative">
                                             <Avatar className="w-12 h-12 border-2 border-white shadow-sm">

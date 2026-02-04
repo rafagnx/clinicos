@@ -1,0 +1,709 @@
+backend/src/controllers/appointment.controller.ts(57,13): error TS2322: Type '{ organizationId: string; date: Date; time: string; status?: string; notes?: string; procedureName?: string; startTime?: Date; endTime?: Date; duration?: number; patientId?: number; professionalId?: number; }' is not assignable to type '(Without<AppointmentCreateInput, AppointmentUncheckedCreateInput> & AppointmentUncheckedCreateInput) | (Without<...> & AppointmentCreateInput)'.
+  Type '{ organizationId: string; date: Date; time: string; status?: string; notes?: string; procedureName?: string; startTime?: Date; endTime?: Date; duration?: number; patientId?: number; professionalId?: number; }' is not assignable to type 'Without<AppointmentUncheckedCreateInput, AppointmentCreateInput> & AppointmentCreateInput'.
+    Type '{ organizationId: string; date: Date; time: string; status?: string; notes?: string; procedureName?: string; startTime?: Date; endTime?: Date; duration?: number; patientId?: number; professionalId?: number; }' is not assignable to type 'Without<AppointmentUncheckedCreateInput, AppointmentCreateInput>'.
+      Types of property 'organizationId' are incompatible.
+        Type 'string' is not assignable to type 'never'.
+components/chat/MessageArea.tsx(72,55): error TS2339: Property 'integrations' does not exist on type 'Base44Client'.
+components/chat/MessageArea.tsx(73,56): error TS2339: Property 'name' does not exist on type 'unknown'.
+components/promotions/SendPromotionModal.tsx(117,29): error TS2322: Type '{ checked: boolean; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<unknown>'.
+  Property 'checked' does not exist on type 'IntrinsicAttributes & RefAttributes<unknown>'.
+components/ui/accordion.tsx(9,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/accordion.tsx(10,28): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/accordion.tsx(14,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/accordion.tsx(14,57): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/accordion.tsx(17,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/accordion.tsx(31,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/accordion.tsx(31,57): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/accordion.tsx(33,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/alert-dialog.tsx(13,48): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(20,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/alert-dialog.tsx(24,48): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(28,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/alert-dialog.tsx(58,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(59,31): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLHeadingElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLHeadingElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLHeadingElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLHeadingElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/alert-dialog.tsx(63,52): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(65,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLParagraphElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLParagraphElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/alert-dialog.tsx(72,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(73,32): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/alert-dialog.tsx(77,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/alert-dialog.tsx(79,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/breadcrumb.tsx(8,31): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.
+components/ui/breadcrumb.tsx(12,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/breadcrumb.tsx(14,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLOListElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLOListElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLOListElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLOListElement': compact, reversed, start, type, and 318 more.
+components/ui/breadcrumb.tsx(23,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/breadcrumb.tsx(25,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLLIElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLLIElement': type, value, addEventListener, removeEventListener, and 316 more.
+components/ui/breadcrumb.tsx(31,44): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/breadcrumb.tsx(31,53): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/breadcrumb.tsx(36,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLAnchorElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLAnchorElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLAnchorElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLAnchorElement': charset, coords, download, hreflang, and 339 more.
+components/ui/breadcrumb.tsx(43,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/breadcrumb.tsx(45,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLSpanElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLSpanElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLSpanElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLSpanElement': addEventListener, removeEventListener, accessKey, accessKeyLabel, and 314 more.
+components/ui/carousel.tsx(22,5): error TS2339: Property 'orientation' does not exist on type '{}'.
+components/ui/carousel.tsx(23,5): error TS2339: Property 'opts' does not exist on type '{}'.
+components/ui/carousel.tsx(24,5): error TS2339: Property 'setApi' does not exist on type '{}'.
+components/ui/carousel.tsx(25,5): error TS2339: Property 'plugins' does not exist on type '{}'.
+components/ui/carousel.tsx(26,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/carousel.tsx(27,5): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/carousel.tsx(102,9): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/carousel.tsx(115,45): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/carousel.tsx(121,9): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/carousel.tsx(133,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/carousel.tsx(138,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/carousel.tsx(151,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/carousel.tsx(151,57): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/carousel.tsx(151,78): error TS2339: Property 'size' does not exist on type '{}'.
+components/ui/carousel.tsx(156,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/carousel.tsx(172,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/carousel.tsx(172,53): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/carousel.tsx(172,74): error TS2339: Property 'size' does not exist on type '{}'.
+components/ui/carousel.tsx(177,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/chart.tsx(25,44): error TS2339: Property 'id' does not exist on type '{}'.
+components/ui/chart.tsx(25,48): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/chart.tsx(25,59): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/chart.tsx(25,69): error TS2339: Property 'config' does not exist on type '{}'.
+components/ui/chart.tsx(33,9): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/chart.tsx(53,77): error TS2339: Property 'theme' does not exist on type 'unknown'.
+components/ui/chart.tsx(53,93): error TS2339: Property 'color' does not exist on type 'unknown'.
+components/ui/chart.tsx(67,34): error TS2339: Property 'theme' does not exist on type 'unknown'.
+components/ui/chart.tsx(67,57): error TS2339: Property 'color' does not exist on type 'unknown'.
+components/ui/chart.tsx(83,5): error TS2339: Property 'active' does not exist on type '{}'.
+components/ui/chart.tsx(84,5): error TS2339: Property 'payload' does not exist on type '{}'.
+components/ui/chart.tsx(85,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/chart.tsx(86,5): error TS2339: Property 'indicator' does not exist on type '{}'.
+components/ui/chart.tsx(87,5): error TS2339: Property 'hideLabel' does not exist on type '{}'.
+components/ui/chart.tsx(88,5): error TS2339: Property 'hideIndicator' does not exist on type '{}'.
+components/ui/chart.tsx(89,5): error TS2339: Property 'label' does not exist on type '{}'.
+components/ui/chart.tsx(90,5): error TS2339: Property 'labelFormatter' does not exist on type '{}'.
+components/ui/chart.tsx(91,5): error TS2339: Property 'labelClassName' does not exist on type '{}'.
+components/ui/chart.tsx(92,5): error TS2339: Property 'formatter' does not exist on type '{}'.
+components/ui/chart.tsx(93,5): error TS2339: Property 'color' does not exist on type '{}'.
+components/ui/chart.tsx(94,5): error TS2339: Property 'nameKey' does not exist on type '{}'.
+components/ui/chart.tsx(95,5): error TS2339: Property 'labelKey' does not exist on type '{}'.
+components/ui/chart.tsx(145,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/chart.tsx(182,29): error TS2353: Object literal may only specify known properties, and '"--color-bg"' does not exist in type 'Properties<string | number, string & {}>'.
+components/ui/chart.tsx(219,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/chart.tsx(219,16): error TS2339: Property 'hideIcon' does not exist on type '{}'.
+components/ui/chart.tsx(219,34): error TS2339: Property 'payload' does not exist on type '{}'.
+components/ui/chart.tsx(219,43): error TS2339: Property 'verticalAlign' does not exist on type '{}'.
+components/ui/chart.tsx(219,58): error TS2339: Property 'nameKey' does not exist on type '{}'.
+components/ui/chart.tsx(230,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/checkbox.tsx(7,38): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/checkbox.tsx(9,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/drawer.tsx(22,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/drawer.tsx(24,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/drawer.tsx(30,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/drawer.tsx(30,54): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/drawer.tsx(34,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/drawer.tsx(65,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/drawer.tsx(67,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLHeadingElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLHeadingElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLHeadingElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLHeadingElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/drawer.tsx(73,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/drawer.tsx(75,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLParagraphElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLParagraphElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/form.tsx(20,8): error TS2741: Property 'render' is missing in type '{}' but required in type '{ render: ({ field, fieldState, formState, }: { field: ControllerRenderProps<FieldValues, string>; fieldState: ControllerFieldState; formState: UseFormStateReturn<FieldValues>; }) => ReactElement<...>; }'.
+components/ui/form.tsx(30,49): error TS2339: Property 'name' does not exist on type '{}'.
+components/ui/form.tsx(36,11): error TS2339: Property 'id' does not exist on type '{}'.
+components/ui/form.tsx(40,24): error TS2339: Property 'name' does not exist on type '{}'.
+components/ui/form.tsx(50,38): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/form.tsx(55,12): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/form.tsx(61,39): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/form.tsx(66,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLLabelElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLLabelElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLLabelElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLLabelElement': control, form, htmlFor, addEventListener, and 317 more.
+components/ui/form.tsx(79,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.
+components/ui/form.tsx(92,45): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/form.tsx(97,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLParagraphElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLParagraphElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/form.tsx(105,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/form.tsx(105,52): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/form.tsx(115,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLParagraphElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLParagraphElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLParagraphElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/hover-card.tsx(12,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/hover-card.tsx(12,57): error TS2339: Property 'align' does not exist on type '{}'.
+components/ui/hover-card.tsx(12,75): error TS2339: Property 'sideOffset' does not exist on type '{}'.
+components/ui/hover-card.tsx(14,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/input-otp.tsx(7,38): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/input-otp.tsx(7,49): error TS2339: Property 'containerClassName' does not exist on type '{}'.
+components/ui/input-otp.tsx(9,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLInputElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLInputElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLInputElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLInputElement': accept, align, alt, autocomplete, and 373 more.
+components/ui/input-otp.tsx(16,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/input-otp.tsx(17,8): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/input-otp.tsx(21,42): error TS2339: Property 'index' does not exist on type '{}'.
+components/ui/input-otp.tsx(21,49): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/input-otp.tsx(27,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/input-otp.tsx(47,8): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(39,37): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(41,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(50,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(52,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/menubar.tsx(61,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(61,58): error TS2339: Property 'inset' does not exist on type '{}'.
+components/ui/menubar.tsx(61,65): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/menubar.tsx(63,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(76,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(78,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(88,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(88,16): error TS2339: Property 'align' does not exist on type '{}'.
+components/ui/menubar.tsx(88,33): error TS2339: Property 'alignOffset' does not exist on type '{}'.
+components/ui/menubar.tsx(88,51): error TS2339: Property 'sideOffset' does not exist on type '{}'.
+components/ui/menubar.tsx(93,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(106,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(106,52): error TS2339: Property 'inset' does not exist on type '{}'.
+components/ui/menubar.tsx(108,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(118,49): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(118,60): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/menubar.tsx(118,70): error TS2339: Property 'checked' does not exist on type '{}'.
+components/ui/menubar.tsx(120,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(137,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(137,57): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/menubar.tsx(139,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(155,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(155,53): error TS2339: Property 'inset' does not exist on type '{}'.
+components/ui/menubar.tsx(157,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/menubar.tsx(163,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/menubar.tsx(165,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/resizable.tsx(12,4): error TS2741: Property 'direction' is missing in type '{ className: string; }' but required in type '{ autoSaveId?: string; className?: string; direction: Direction; id?: string; keyboardResizeBy?: number; onLayout?: PanelGroupOnLayout; storage?: PanelGroupStorage; style?: CSSProperties; tagName?: keyof HTMLElementTagNameMap; dir?: "auto" | ... 1 more ... | "rtl"; }'.
+components/ui/separator.tsx(7,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/separator.tsx(7,16): error TS2339: Property 'orientation' does not exist on type '{}'.
+components/ui/separator.tsx(7,44): error TS2339: Property 'decorative' does not exist on type '{}'.
+components/ui/separator.tsx(11,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(6,29): error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+components/ui/sidebar.tsx(12,26): error TS2307: Cannot find module '@/components/ui/skeleton' or its corresponding type declarations.
+components/ui/sidebar.tsx(40,5): error TS2339: Property 'defaultOpen' does not exist on type '{}'.
+components/ui/sidebar.tsx(41,5): error TS2339: Property 'open' does not exist on type '{}'.
+components/ui/sidebar.tsx(42,5): error TS2339: Property 'onOpenChange' does not exist on type '{}'.
+components/ui/sidebar.tsx(43,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(44,5): error TS2339: Property 'style' does not exist on type '{}'.
+components/ui/sidebar.tsx(45,5): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/sidebar.tsx(130,11): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(142,5): error TS2339: Property 'side' does not exist on type '{}'.
+components/ui/sidebar.tsx(143,5): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/sidebar.tsx(144,5): error TS2339: Property 'collapsible' does not exist on type '{}'.
+components/ui/sidebar.tsx(145,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(146,5): error TS2339: Property 'children' does not exist on type '{}'.
+components/ui/sidebar.tsx(157,9): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(173,15): error TS2353: Object literal may only specify known properties, and '"--sidebar-width"' does not exist in type 'Properties<string | number, string & {}>'.
+components/ui/sidebar.tsx(185,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(228,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(228,55): error TS2339: Property 'onClick' does not exist on type '{}'.
+components/ui/sidebar.tsx(233,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/sidebar.tsx(250,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(255,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/sidebar.tsx(273,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(276,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.
+components/ui/sidebar.tsx(287,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(290,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLInputElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLInputElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLInputElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLInputElement': accept, align, alt, autocomplete, and 373 more.
+components/ui/sidebar.tsx(301,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(304,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(312,43): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(315,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(323,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(328,7): error TS2322: Type '{ ref: ForwardedRef<unknown>; "data-sidebar": string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<unknown>'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & RefAttributes<unknown>'.
+components/ui/sidebar.tsx(334,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(337,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(348,42): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(351,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(359,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(359,58): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/sidebar.tsx(364,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(376,48): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(376,59): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/sidebar.tsx(381,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/sidebar.tsx(395,49): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(397,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(404,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(406,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLUListElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLUListElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLUListElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLUListElement': compact, type, addEventListener, removeEventListener, and 316 more.
+components/ui/sidebar.tsx(413,45): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(415,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLLIElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLLIElement': type, value, addEventListener, removeEventListener, and 316 more.
+components/ui/sidebar.tsx(446,5): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/sidebar.tsx(447,5): error TS2339: Property 'isActive' does not exist on type '{}'.
+components/ui/sidebar.tsx(448,5): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/sidebar.tsx(449,5): error TS2339: Property 'size' does not exist on type '{}'.
+components/ui/sidebar.tsx(450,5): error TS2339: Property 'tooltip' does not exist on type '{}'.
+components/ui/sidebar.tsx(451,5): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(461,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/sidebar.tsx(492,47): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(492,58): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/sidebar.tsx(492,75): error TS2339: Property 'showOnHover' does not exist on type '{}'.
+components/ui/sidebar.tsx(497,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/sidebar.tsx(516,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(518,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(532,49): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(532,60): error TS2339: Property 'showIcon' does not exist on type '{}'.
+components/ui/sidebar.tsx(540,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/sidebar.tsx(560,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(562,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLUListElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLUListElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLUListElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLUListElement': compact, type, addEventListener, removeEventListener, and 316 more.
+components/ui/sidebar.tsx(573,72): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLLIElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLLIElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLLIElement': type, value, addEventListener, removeEventListener, and 316 more.
+components/ui/sidebar.tsx(576,50): error TS2339: Property 'asChild' does not exist on type '{}'.
+components/ui/sidebar.tsx(576,67): error TS2339: Property 'size' does not exist on type '{}'.
+components/ui/sidebar.tsx(576,80): error TS2339: Property 'isActive' does not exist on type '{}'.
+components/ui/sidebar.tsx(576,90): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/sidebar.tsx(581,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLAnchorElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLAnchorElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLAnchorElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLAnchorElement': charset, coords, download, hreflang, and 339 more.
+components/ui/sonner.tsx(12,7): error TS2322: Type 'string' is not assignable to type '"system" | "light" | "dark"'.
+components/ui/toast.tsx(8,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(17,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(40,35): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toast.tsx(40,46): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/toast.tsx(43,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(51,41): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toast.tsx(53,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(63,40): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toast.tsx(65,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(78,40): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toast.tsx(80,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toast.tsx(87,46): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toast.tsx(89,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/ui/toaster.tsx(15,10): error TS2559: Type '{ children: (Element | Element[])[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+components/ui/toaster.tsx(20,40): error TS2559: Type '{ children: any; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+components/ui/toaster.tsx(22,34): error TS2559: Type '{ children: any; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+components/ui/toggle.tsx(29,36): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/toggle.tsx(29,47): error TS2339: Property 'variant' does not exist on type '{}'.
+components/ui/toggle.tsx(29,56): error TS2339: Property 'size' does not exist on type '{}'.
+components/ui/toggle.tsx(31,5): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLButtonElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLButtonElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 333 more.
+components/ui/tooltip.tsx(14,44): error TS2339: Property 'className' does not exist on type '{}'.
+components/ui/tooltip.tsx(14,55): error TS2339: Property 'sideOffset' does not exist on type '{}'.
+components/ui/tooltip.tsx(17,7): error TS2322: Type 'ForwardedRef<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+  Type 'MutableRefObject<unknown>' is not assignable to type 'LegacyRef<HTMLDivElement>'.
+    Type 'MutableRefObject<unknown>' is not assignable to type 'RefObject<HTMLDivElement>'.
+      Types of property 'current' are incompatible.
+        Type '{}' is missing the following properties from type 'HTMLDivElement': align, addEventListener, removeEventListener, accessKey, and 315 more.
+components/whatsapp/SendWhatsAppButton.tsx(100,50): error TS2345: Argument of type '{ patient_id: any; appointment_id: any; content: string; status: string; }' is not assignable to parameter of type 'void'.
+pages/NotificationSettings.tsx(117,46): error TS2345: Argument of type '{ email_notifications: boolean; push_notifications: boolean; quiet_hours: boolean; quiet_hours_start: string; quiet_hours_end: string; preferences: {}; }' is not assignable to parameter of type 'void'.
+pages/OnboardingManager.tsx(44,20): error TS2339: Property 'id' does not exist on type 'void'.
+pages/OnboardingManager.tsx(44,24): error TS2339: Property 'data' does not exist on type 'void'.
+pages/OnboardingManager.tsx(58,37): error TS2345: Argument of type '{ user_id: any; user_name: any; status: string; progress: number; tasks: { title: string; description: string; }[]; created_date: string; }' is not assignable to parameter of type 'void'.
+pages/OnboardingManager.tsx(114,22): error TS2322: Type '"success" | "outline"' is not assignable to type '"default" | "secondary" | "destructive" | "outline"'.
+  Type '"success"' is not assignable to type '"default" | "secondary" | "destructive" | "outline"'.
+pages/OnboardingWizard.tsx(65,29): error TS2345: Argument of type '{ progress: number; }' is not assignable to parameter of type 'void'.
+pages/OnboardingWizard.tsx(67,29): error TS2345: Argument of type '{ status: string; progress: number; }' is not assignable to parameter of type 'void'.
+pages/PendingReminders.tsx(36,26): error TS2339: Property 'appointment' does not exist on type 'void'.
+pages/PendingReminders.tsx(36,39): error TS2339: Property 'patient' does not exist on type 'void'.
+pages/PendingReminders.tsx(47,20): error TS2339: Property 'integrations' does not exist on type 'Base44Client'.
+pages/PendingReminders.tsx(167,66): error TS2345: Argument of type '{ appointment: any; patient: any; }' is not assignable to parameter of type 'void'.
+pages/Promotions.tsx(63,20): error TS2339: Property 'id' does not exist on type 'void'.
+pages/Promotions.tsx(63,24): error TS2339: Property 'data' does not exist on type 'void'.
+pages/Promotions.tsx(72,58): error TS2345: Argument of type 'void' is not assignable to parameter of type 'string | number'.
+pages/ReminderSettings.tsx(55,27): error TS2345: Argument of type '{ reminders_enabled: boolean; reminder_24h_enabled: boolean; reminder_2h_enabled: boolean; reminder_1h_enabled: boolean; reminder_message_template: string; }' is not assignable to parameter of type 'void'.
+pages/ReminderSettings.tsx(128,22): error TS2304: Cannot find name 'Badge'.
+pages/ReminderSettings.tsx(135,23): error TS2304: Cannot find name 'Badge'.
+pages/TreatmentPlans.tsx(183,22): error TS2741: Property 'plan' is missing in type '{ onSuccess: () => void; onCancel: () => void; }' but required in type '{ plan: any; onSuccess: any; onCancel: any; }'.
+src/auth/permissions.ts(2,24): error TS2305: Module '"@prisma/client"' has no exported member 'Role'.
+src/auth/permissions.ts(11,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: string | string[], subject: "Organization" | "Organization"[], fields?: string | string[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Object literal may only specify known properties, and 'ownerId' does not exist in type 'string[]'.
+  Overload 2 of 2, '(action: string | string[], subject: "Organization" | "Organization"[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Type 'string' is not assignable to type 'MergeUnion<never, string | number | symbol>'.
+src/auth/permissions.ts(18,48): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: string | string[], subject: "Project" | "Project"[], fields?: string | string[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Object literal may only specify known properties, and 'ownerId' does not exist in type 'string[]'.
+  Overload 2 of 2, '(action: string | string[], subject: "Project" | "Project"[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Type 'string' is not assignable to type 'Pick<MongoQueryOperators<MergeUnion<never, string | number | symbol>>, "$eq" | "$ne" | "$lt" | "$lte" | "$gt" | "$gte" | "$in" | "$nin" | ... 5 more ... | "$exists"> | MongoQueryFieldOperators<...>'.
+src/auth/utils.ts(1,46): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/auth/utils.ts(4,10): error TS2724: '"@casl/ability"' has no exported member named 'defineAbilityFor'. Did you mean 'defineAbility'?
+src/http/middlewares/auth.ts(1,46): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/http/middlewares/auth.ts(34,17): error TS2353: Object literal may only specify known properties, and 'avatarUrl' does not exist in type '(Without<UserCreateInput, UserUncheckedCreateInput> & UserUncheckedCreateInput) | (Without<...> & UserCreateInput)'.
+src/routes/admin.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/appointments.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/appointments.ts(78,21): error TS2322: Type 'string' is not assignable to type 'number'.
+src/routes/appointments.ts(79,21): error TS2322: Type 'string' is not assignable to type 'number'.
+src/routes/clinic-settings.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/clinic-settings.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src/routes/notifications.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/notifications.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src/routes/organizations.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/organizations.ts(39,21): error TS2353: Object literal may only specify known properties, and 'ownerId' does not exist in type '(Without<OrganizationCreateInput, OrganizationUncheckedCreateInput> & OrganizationUncheckedCreateInput) | (Without<...> & OrganizationCreateInput)'.
+src/routes/patients.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/procedure-types.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/procedure-types.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src/routes/professionals.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/routes/professionals.ts(59,17): error TS2322: Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type '(Without<ProfessionalCreateInput, ProfessionalUncheckedCreateInput> & ProfessionalUncheckedCreateInput) | (Without<...> & ProfessionalCreateInput)'.
+  Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type 'Without<ProfessionalUncheckedCreateInput, ProfessionalCreateInput> & ProfessionalCreateInput'.
+    Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type 'Without<ProfessionalUncheckedCreateInput, ProfessionalCreateInput>'.
+      Types of property 'organizationId' are incompatible.
+        Type 'string' is not assignable to type 'never'.
+src/server.ts(1,21): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src/server.ts(2,18): error TS2307: Cannot find module '@fastify/cors' or its corresponding type declarations.
+src/server.ts(3,28): error TS2307: Cannot find module '@fastify/swagger' or its corresponding type declarations.
+src/server.ts(5,26): error TS2307: Cannot find module '@scalar/fastify-api-reference' or its corresponding type declarations.
+src_fastify_backup/auth/permissions.ts(2,24): error TS2305: Module '"@prisma/client"' has no exported member 'Role'.
+src_fastify_backup/auth/permissions.ts(11,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: string | string[], subject: "Organization" | "Organization"[], fields?: string | string[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Object literal may only specify known properties, and 'ownerId' does not exist in type 'string[]'.
+  Overload 2 of 2, '(action: string | string[], subject: "Organization" | "Organization"[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Type 'string' is not assignable to type 'MergeUnion<never, string | number | symbol>'.
+src_fastify_backup/auth/permissions.ts(18,48): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(action: string | string[], subject: "Project" | "Project"[], fields?: string | string[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Object literal may only specify known properties, and 'ownerId' does not exist in type 'string[]'.
+  Overload 2 of 2, '(action: string | string[], subject: "Project" | "Project"[], conditions?: MongoQuery<never>): RuleBuilder<AppAbility>', gave the following error.
+    Type 'string' is not assignable to type 'Pick<MongoQueryOperators<MergeUnion<never, string | number | symbol>>, "$eq" | "$ne" | "$lt" | "$lte" | "$gt" | "$gte" | "$in" | "$nin" | ... 5 more ... | "$exists"> | MongoQueryFieldOperators<...>'.
+src_fastify_backup/auth/utils.ts(1,46): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/auth/utils.ts(4,10): error TS2724: '"@casl/ability"' has no exported member named 'defineAbilityFor'. Did you mean 'defineAbility'?
+src_fastify_backup/http/middlewares/auth.ts(1,46): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/http/middlewares/auth.ts(34,17): error TS2353: Object literal may only specify known properties, and 'avatarUrl' does not exist in type '(Without<UserCreateInput, UserUncheckedCreateInput> & UserUncheckedCreateInput) | (Without<...> & UserCreateInput)'.
+src_fastify_backup/routes/admin.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/appointments.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/appointments.ts(78,21): error TS2322: Type 'string' is not assignable to type 'number'.
+src_fastify_backup/routes/appointments.ts(79,21): error TS2322: Type 'string' is not assignable to type 'number'.
+src_fastify_backup/routes/clinic-settings.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/clinic-settings.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src_fastify_backup/routes/notifications.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/notifications.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src_fastify_backup/routes/organizations.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/organizations.ts(39,21): error TS2353: Object literal may only specify known properties, and 'ownerId' does not exist in type '(Without<OrganizationCreateInput, OrganizationUncheckedCreateInput> & OrganizationUncheckedCreateInput) | (Without<...> & OrganizationCreateInput)'.
+src_fastify_backup/routes/patients.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/procedure-types.ts(2,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/procedure-types.ts(3,33): error TS2307: Cannot find module 'fastify-type-provider-zod' or its corresponding type declarations.
+src_fastify_backup/routes/professionals.ts(1,33): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/routes/professionals.ts(59,17): error TS2322: Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type '(Without<ProfessionalCreateInput, ProfessionalUncheckedCreateInput> & ProfessionalUncheckedCreateInput) | (Without<...> & ProfessionalCreateInput)'.
+  Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type 'Without<ProfessionalUncheckedCreateInput, ProfessionalCreateInput> & ProfessionalCreateInput'.
+    Type '{ organizationId: string; email?: string; name?: string; phone?: string; specialty?: string; roleType?: string; councilNumber?: string; councilState?: string; color?: string; appointmentDuration?: number; photoUrl?: string; }' is not assignable to type 'Without<ProfessionalUncheckedCreateInput, ProfessionalCreateInput>'.
+      Types of property 'organizationId' are incompatible.
+        Type 'string' is not assignable to type 'never'.
+src_fastify_backup/server.ts(1,21): error TS2307: Cannot find module 'fastify' or its corresponding type declarations.
+src_fastify_backup/server.ts(2,18): error TS2307: Cannot find module '@fastify/cors' or its corresponding type declarations.
+src_fastify_backup/server.ts(3,28): error TS2307: Cannot find module '@fastify/swagger' or its corresponding type declarations.
+src_fastify_backup/server.ts(5,26): error TS2307: Cannot find module '@scalar/fastify-api-reference' or its corresponding type declarations.
+temp_marketing_repo_v2/src/components/CalendarGrid.tsx(90,13): error TS2739: Type 'DayData[]' is missing the following properties from type 'DayData': color, text
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,11): error TS2339: Property 'data' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,17): error TS2339: Property 'categories' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,29): error TS2339: Property 'notes' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,36): error TS2339: Property 'setNotes' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,46): error TS2339: Property 'updateDay' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,57): error TS2339: Property 'clearDay' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ContentCalendar.tsx(14,67): error TS2339: Property 'updateCategory' does not exist on type '{ events: any; isLoading: boolean; createEvent: UseMutateFunction<any, Error, Partial<CalendarEvent>, unknown>; updateEvent: UseMutateFunction<any, Error, { ...; }, unknown>; deleteEvent: UseMutateFunction<...>; getDayEvents: (date: Date) => any; }'.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(6,29): error TS2307: Cannot find module '@/hooks/use-mobile' or its corresponding type declarations.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(12,26): error TS2307: Cannot find module '@/components/ui/skeleton' or its corresponding type declarations.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(315,6): error TS2339: Property 'className' does not exist on type 'Omit<RefAttributes<unknown>, "ref">'.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(320,9): error TS2322: Type '{ key?: Key; ref: ForwardedRef<unknown>; "data-sidebar": string; className: string; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<unknown>'.
+  Property 'className' does not exist on type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(464,7): error TS2353: Object literal may only specify known properties, and 'children' does not exist in type 'RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(471,8): error TS2322: Type '(string | RefAttributes<unknown>) & { side: string; align: string; hidden: boolean; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<unknown>'.
+  Type 'string & { side: string; align: string; hidden: boolean; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/sidebar.tsx(471,98): error TS2698: Spread types may only be created from object types.
+temp_marketing_repo_v2/src/components/ui/toaster.tsx(1,26): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+temp_marketing_repo_v2/src/components/ui/toaster.tsx(8,6): error TS2559: Type '{ children: any[]; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/toaster.tsx(11,12): error TS2322: Type '{ children: any[]; key: any; }' is not assignable to type 'IntrinsicAttributes & RefAttributes<unknown>'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/toaster.tsx(13,26): error TS2559: Type '{ children: any; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/toaster.tsx(14,32): error TS2559: Type '{ children: any; }' has no properties in common with type 'IntrinsicAttributes & RefAttributes<unknown>'.
+temp_marketing_repo_v2/src/components/ui/use-toast.ts(1,33): error TS2307: Cannot find module '@/hooks/use-toast' or its corresponding type declarations.
+temp_marketing_repo_v2/src/hooks/use-toast.ts(3,15): error TS2305: Module '"@/components/ui/toast"' has no exported member 'ToastActionElement'.
+temp_marketing_repo_v2/src/hooks/use-toast.ts(3,35): error TS2305: Module '"@/components/ui/toast"' has no exported member 'ToastProps'.
+temp_marketing_repo_v2/src/hooks/useCalendarData.ts(36,13): error TS2345: Argument of type '(prev: CalendarData) => { [x: string]: DayData | DayData[]; }' is not assignable to parameter of type 'SetStateAction<CalendarData>'.
+  Type '(prev: CalendarData) => { [x: string]: DayData | DayData[]; }' is not assignable to type '(prevState: CalendarData) => CalendarData'.
+    Type '{ [x: string]: DayData | DayData[]; }' is not assignable to type 'CalendarData'.
+      'string' index signatures are incompatible.
+        Type 'DayData | DayData[]' is not assignable to type 'DayData[]'.
+          Type 'DayData' is missing the following properties from type 'DayData[]': length, pop, push, concat, and 35 more.
+temp_marketing_repo_v2/src/pages/Index.tsx(1,33): error TS2307: Cannot find module '@/components/ContentCalendar' or its corresponding type declarations.
+temp_marketing_repo_v2/vite.config.ts(2,19): error TS2307: Cannot find module '@vitejs/plugin-react-swc' or its corresponding type declarations.
+temp_marketing_repo_v2/vite.config.ts(4,33): error TS2307: Cannot find module 'lovable-tagger' or its corresponding type declarations.

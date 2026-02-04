@@ -266,7 +266,8 @@ export default function Professionals() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {professionals.map((prof) => (
-              <Card key={prof.id} className="p-5 bg-white border-0 shadow-sm hover:shadow-lg transition-all group relative dark:bg-[#151A25] dark:border dark:border-slate-800/50">
+              <Card key={prof.id} className="p-5 bg-white border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative dark:bg-[#151A25] dark:border-slate-800">
+
                 <div className="flex items-start gap-4">
                   <div className="relative">
                     <div

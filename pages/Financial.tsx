@@ -39,7 +39,8 @@ export default function Financial() {
     }, [transactions]);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 min-h-screen dark:bg-[#0B0E14]">
+        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen dark:bg-[#0B0E14]">
+
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Financeiro</h1>

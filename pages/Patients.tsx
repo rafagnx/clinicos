@@ -619,7 +619,8 @@ export default function Patients() {
 
       {/* Patient Form Sheet */}
       <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <SheetContent className="sm:max-w-xl overflow-y-auto">
+        <SheetContent className="sm:max-w-xl overflow-y-auto dark:bg-[#11141D] dark:border-slate-800">
+
           <SheetHeader className="mb-6">
             <SheetTitle>{editingPatient ? "Editar Paciente" : "Novo Paciente"}</SheetTitle>
             <SheetDescription className="sr-only">Formulário para cadastro e edição de pacientes.</SheetDescription>

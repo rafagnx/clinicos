@@ -69,7 +69,8 @@ export default function Reports() {
           <div className="space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 border-none shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
+
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-blue-50 rounded-xl text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
                     <Calendar className="w-6 h-6" />
@@ -121,7 +122,8 @@ export default function Reports() {
 
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="p-6 border-none shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
+
                 <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 dark:text-slate-100">
                   <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Volume de Atendimentos
@@ -129,7 +131,8 @@ export default function Reports() {
                 <AppointmentsByMonthChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
-              <Card className="p-6 border-none shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
+
                 <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 dark:text-slate-100">
                   <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   Faturamento por Profissional
@@ -137,17 +140,20 @@ export default function Reports() {
                 <RevenueByProfessionalChart appointments={appointments} professionals={professionals} timeRange={timeRange} />
               </Card>
 
-              <Card className="p-6 border-none shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
+
                 <h3 className="font-bold text-slate-800 mb-6 dark:text-slate-100">Procedimentos mais Realizados</h3>
                 <ProceduresChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
-              <Card className="p-6 border-none shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
+
                 <h3 className="font-bold text-slate-800 mb-6 dark:text-slate-100">Status dos Agendamentos</h3>
                 <AppointmentStatusChart appointments={appointments} timeRange={timeRange} />
               </Card>
 
-              <Card className="p-6 border-none shadow-sm lg:col-span-2 dark:bg-[#151A25] dark:border dark:border-slate-800">
+              <Card className="p-6 bg-white border border-slate-100 shadow-sm lg:col-span-2 dark:bg-[#151A25] dark:border-slate-800">
+
                 <h3 className="font-bold text-slate-800 mb-6 dark:text-slate-100">Origem dos Pacientes</h3>
                 <LeadSourceChart patients={patients} />
               </Card>
