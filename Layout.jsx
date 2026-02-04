@@ -57,7 +57,7 @@ const navigation = [
   {
     group: "Principal",
     items: [
-      { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard, gradient: "from-blue-500 to-cyan-500" },
+      { name: "Dashboard", href: "dashboard", icon: LayoutDashboard, gradient: "from-blue-500 to-cyan-500" },
       { name: "Agenda", href: "Agenda", icon: Calendar, gradient: "from-purple-500 to-pink-500" },
     ]
   },
