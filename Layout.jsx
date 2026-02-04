@@ -427,7 +427,7 @@ function LayoutContent({
     <>
       {!isSubscriptionActive && <SubscriptionLock />}
       <div className={cn(
-        "min-h-screen font-sans transition-colors duration-300 flex",
+        "h-screen overflow-hidden font-sans transition-colors duration-300 flex",
         isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100" : "bg-gradient-to-br from-slate-50 via-white to-slate-50 text-slate-900"
       )}>
         {/* Mobile Sidebar Backdrop */}
@@ -811,7 +811,7 @@ function LayoutContent({
           )}
 
           {/* Content Viewport */}
-          <main className={cn("flex-1 overflow-x-hidden", !hideLayout && "p-6")}>
+          <main className={cn("flex-1 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-indigo-200 hover:scrollbar-thumb-indigo-300 dark:scrollbar-thumb-slate-700", !hideLayout && "p-6")}>
             <Outlet context={{ isDark }} />
           </main>
         </div>
