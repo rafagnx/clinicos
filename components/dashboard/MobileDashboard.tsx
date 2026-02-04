@@ -70,6 +70,7 @@ interface MobileDashboardProps {
 }
 
 export default function MobileDashboard({ user, stats, appointments }: MobileDashboardProps) {
+    console.log("📱 MOBILE DASHBOARD MOUNTING");
     const [activeTab, setActiveTab] = useState("overview");
 
     // Mock data for the chart (Clinic Occupancy)
