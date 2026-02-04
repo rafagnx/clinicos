@@ -26,14 +26,14 @@ export default function RevenueByProfessionalChart({ appointments, professionals
     };
 
     return (
-        <Card className="p-6 bg-white border-0 shadow-sm">
+        <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
             <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center dark:bg-emerald-900/20">
+                    <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                    <h3 className="font-semibold text-slate-800">Faturamento por Profissional</h3>
-                    <p className="text-sm text-slate-500">Receita gerada por cada profissional</p>
+                    <h3 className="font-semibold text-slate-800 dark:text-white">Faturamento por Profissional</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Receita gerada por cada profissional</p>
                 </div>
             </div>
 
@@ -44,7 +44,7 @@ export default function RevenueByProfessionalChart({ appointments, professionals
             ) : (
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" className="opacity-10" />
                         <XAxis
                             dataKey="name"
                             stroke="#94a3b8"
@@ -60,10 +60,12 @@ export default function RevenueByProfessionalChart({ appointments, professionals
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: 'white',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '8px'
+                                backgroundColor: 'rgb(21 26 37 / 0.9)',
+                                border: '1px solid #1e293b',
+                                borderRadius: '8px',
+                                color: '#f8fafc'
                             }}
+                            itemStyle={{ color: '#f8fafc' }}
                             formatter={(value) => [formatCurrency(value), "Faturamento"]}
                         />
                         <Bar

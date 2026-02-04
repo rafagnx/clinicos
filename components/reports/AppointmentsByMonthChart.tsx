@@ -38,20 +38,20 @@ export default function AppointmentsByMonthChart({ appointments, timeRange }: an
     });
 
     return (
-        <Card className="p-6 bg-white border-0 shadow-sm">
+        <Card className="p-6 bg-white border border-slate-100 shadow-sm dark:bg-[#151A25] dark:border-slate-800">
             <div className="flex items-center gap-2 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center dark:bg-blue-900/20">
+                    <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <h3 className="font-semibold text-slate-800">Agendamentos por Mês</h3>
-                    <p className="text-sm text-slate-500">Evolução mensal dos agendamentos</p>
+                    <h3 className="font-semibold text-slate-800 dark:text-white">Agendamentos por Mês</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Evolução mensal dos agendamentos</p>
                 </div>
             </div>
 
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" className="opacity-10" />
                     <XAxis
                         dataKey="name"
                         stroke="#94a3b8"
@@ -63,11 +63,13 @@ export default function AppointmentsByMonthChart({ appointments, timeRange }: an
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e2e8f0',
+                            backgroundColor: 'rgb(21 26 37 / 0.9)',
+                            border: '1px solid #1e293b',
                             borderRadius: '8px',
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            color: '#f8fafc'
                         }}
+                        itemStyle={{ color: '#f8fafc' }}
                     />
                     <Legend />
                     <Line

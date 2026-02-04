@@ -257,15 +257,16 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                 </Select>
             </div>
 
-            <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-100 space-y-4">
+            <div className="p-4 bg-indigo-50/50 rounded-lg border border-indigo-100 space-y-4 dark:bg-indigo-900/10 dark:border-indigo-900/30">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-indigo-800 uppercase tracking-widest">Perfil Comportamental (High Ticket)</span>
+                    <span className="text-sm font-bold text-indigo-800 uppercase tracking-widest dark:text-indigo-400">Perfil Comportamental (High Ticket)</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="temperature">Temperatura do Lead</Label>
                         <Select value={formData.temperature} onValueChange={(v) => setFormData(p => ({ ...p, temperature: v }))}>
-                            <SelectTrigger id="temperature" className="bg-white border-indigo-200">
+                            <SelectTrigger id="temperature" className="bg-white border-indigo-200 dark:bg-[#151A25] dark:border-slate-800">
+
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -278,7 +279,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <div>
                         <Label htmlFor="temperament">Perfil Comportamental</Label>
                         <Select value={formData.temperament} onValueChange={(v) => setFormData(p => ({ ...p, temperament: v }))}>
-                            <SelectTrigger id="temperament" className="bg-white border-indigo-200">
+                            <SelectTrigger id="temperament" className="bg-white border-indigo-200 dark:bg-[#151A25] dark:border-slate-800">
+
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -291,7 +293,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <div>
                         <Label htmlFor="main_motivation">Motivação Principal</Label>
                         <Select value={formData.main_motivation} onValueChange={(v) => setFormData(p => ({ ...p, main_motivation: v }))}>
-                            <SelectTrigger id="main_motivation" className="bg-white border-indigo-200">
+                            <SelectTrigger id="main_motivation" className="bg-white border-indigo-200 dark:bg-[#151A25] dark:border-slate-800">
+
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -302,7 +305,8 @@ export default function PatientForm({ patient, onSuccess, onCancel }) {
                     <div>
                         <Label htmlFor="conscience_level">Nível de Consciência</Label>
                         <Select value={formData.conscience_level} onValueChange={(v) => setFormData(p => ({ ...p, conscience_level: v }))}>
-                            <SelectTrigger id="conscience_level" className="bg-white border-indigo-200">
+                            <SelectTrigger id="conscience_level" className="bg-white border-indigo-200 dark:bg-[#151A25] dark:border-slate-800">
+
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent>
