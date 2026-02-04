@@ -22,8 +22,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (tomorrowUnconfirmed.length > 0) {
         reminders.push({
             icon: Calendar,
-            color: "text-amber-600",
-            bgColor: "bg-amber-50",
+            color: "text-amber-600 dark:text-amber-400",
+            bgColor: "bg-amber-50 dark:bg-amber-900/10",
             title: `${tomorrowUnconfirmed.length} consulta${tomorrowUnconfirmed.length > 1 ? 's' : ''} não confirmada${tomorrowUnconfirmed.length > 1 ? 's' : ''} para amanhã`,
             action: "Enviar confirmações",
             link: "/Agenda",
@@ -38,8 +38,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (todayNoShows.length > 0) {
         reminders.push({
             icon: UserX,
-            color: "text-rose-600",
-            bgColor: "bg-rose-50",
+            color: "text-rose-600 dark:text-rose-400",
+            bgColor: "bg-rose-50 dark:bg-rose-900/10",
             title: `${todayNoShows.length} paciente${todayNoShows.length > 1 ? 's' : ''} faltou hoje`,
             action: "Entrar em contato",
             link: "/Patients",
@@ -54,8 +54,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (todayWaiting.length > 0) {
         reminders.push({
             icon: Clock,
-            color: "text-blue-600",
-            bgColor: "bg-blue-50",
+            color: "text-blue-600 dark:text-blue-400",
+            bgColor: "bg-blue-50 dark:bg-blue-900/10",
             title: `${todayWaiting.length} paciente${todayWaiting.length > 1 ? 's' : ''} aguardando atendimento`,
             action: "Verificar agenda",
             link: "/Agenda",
@@ -86,8 +86,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (patientsWithoutReturn.length > 0) {
         reminders.push({
             icon: Phone,
-            color: "text-orange-600",
-            bgColor: "bg-orange-50",
+            color: "text-orange-600 dark:text-orange-400",
+            bgColor: "bg-orange-50 dark:bg-orange-900/10",
             title: `${patientsWithoutReturn.length} paciente${patientsWithoutReturn.length > 1 ? 's' : ''} sem retorno há +3 meses`,
             action: "Agendar retorno",
             link: "/Patients",
@@ -104,8 +104,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (expiringPromos.length > 0) {
         reminders.push({
             icon: Tag,
-            color: "text-purple-600",
-            bgColor: "bg-purple-50",
+            color: "text-purple-600 dark:text-purple-400",
+            bgColor: "bg-purple-50 dark:bg-purple-900/10",
             title: `${expiringPromos.length} promoção${expiringPromos.length > 1 ? 'ões' : ''} expirando em 7 dias`,
             action: "Revisar promoções",
             link: "/Promotions",
@@ -118,8 +118,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     if (patientsNoPhone.length > 0 && patientsNoPhone.length <= 10) {
         reminders.push({
             icon: Users,
-            color: "text-slate-600",
-            bgColor: "bg-slate-50",
+            color: "text-slate-600 dark:text-slate-400",
+            bgColor: "bg-slate-50 dark:bg-slate-800/30",
             title: `${patientsNoPhone.length} paciente${patientsNoPhone.length > 1 ? 's' : ''} sem telefone cadastrado`,
             action: "Atualizar cadastro",
             link: "/Patients",
@@ -131,10 +131,10 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
     reminders.sort((a, b) => a.priority - b.priority);
 
     return (
-        <Card className="p-5 bg-white/90 backdrop-blur-sm border-0 shadow-lg h-full">
+        <Card className="p-5 bg-white/90 backdrop-blur-sm border-0 shadow-lg h-full dark:bg-[#151A25] dark:border dark:border-slate-800">
             <div className="flex items-center gap-2 mb-4">
-                <AlertCircle className="w-5 h-5 text-rose-600" />
-                <h3 className="font-semibold text-slate-800">Lembretes Urgentes</h3>
+                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Lembretes Urgentes</h3>
                 {reminders.length > 0 && (
                     <Badge className="bg-rose-600 text-white ml-auto">{reminders.length}</Badge>
                 )}
@@ -142,8 +142,8 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
 
             {reminders.length === 0 ? (
                 <div className="text-center py-8">
-                    <p className="text-sm text-slate-400 mb-2">Nenhum lembrete urgente</p>
-                    <p className="text-xs text-slate-300">Tudo está em dia! 🎉</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mb-2">Nenhum lembrete urgente</p>
+                    <p className="text-xs text-slate-300 dark:text-slate-600">Tudo está em dia! 🎉</p>
                 </div>
             ) : (
                 <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -153,12 +153,12 @@ export default function UrgentRemindersWidget({ appointments, patients, promotio
                             to={createPageUrl(reminder.link?.replace('/', '') || 'Dashboard')}
                             className="block"
                         >
-                            <div className={`p-4 rounded-xl ${reminder.bgColor} border border-current/10 hover:shadow-md transition-all cursor-pointer`}>
+                            <div className={`p-4 rounded-xl ${reminder.bgColor} border border-current/10 hover:shadow-md transition-all cursor-pointer dark:border-white/5`}>
                                 <div className="flex items-start gap-3">
                                     <reminder.icon className={`w-5 h-5 shrink-0 ${reminder.color}`} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-slate-800 mb-1">{reminder.title}</p>
-                                        <Badge variant="outline" className="text-xs">
+                                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">{reminder.title}</p>
+                                        <Badge variant="outline" className="text-xs dark:border-slate-700 dark:text-slate-300">
                                             {reminder.action}
                                         </Badge>
                                     </div>

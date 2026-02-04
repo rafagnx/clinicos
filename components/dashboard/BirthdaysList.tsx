@@ -36,14 +36,14 @@ export default function BirthdaysList({ patients }) {
 
     if (!filteredPatients || filteredPatients.length === 0) {
         return (
-            <Card className="p-6 bg-white border-0 shadow-sm">
+            <Card className="p-6 bg-white border-0 shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 rounded-lg bg-pink-50">
-                        <Cake className="w-4 h-4 text-pink-500" />
+                    <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-900/20">
+                        <Cake className="w-4 h-4 text-pink-500 dark:text-pink-400" />
                     </div>
-                    <h3 className="font-semibold text-slate-800">Aniversariantes</h3>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100">Aniversariantes</h3>
                 </div>
-                <p className="text-sm text-slate-400 text-center py-4">
+                <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
                     Nenhum aniversariante hoje
                 </p>
             </Card>
@@ -51,26 +51,26 @@ export default function BirthdaysList({ patients }) {
     }
 
     return (
-        <Card className="p-6 bg-white border-0 shadow-sm">
+        <Card className="p-6 bg-white border-0 shadow-sm dark:bg-[#151A25] dark:border dark:border-slate-800">
             <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-pink-50">
-                    <Cake className="w-4 h-4 text-pink-500" />
+                <div className="p-2 rounded-lg bg-pink-50 dark:bg-pink-900/20">
+                    <Cake className="w-4 h-4 text-pink-500 dark:text-pink-400" />
                 </div>
-                <h3 className="font-semibold text-slate-800">Aniversariantes</h3>
+                <h3 className="font-semibold text-slate-800 dark:text-slate-100">Aniversariantes</h3>
             </div>
             <div className="space-y-3">
                 {filteredPatients.map((patient) => (
-                    <div key={patient.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors group">
+                    <div key={patient.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                         <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9">
                                 <AvatarImage src={patient.photo_url} />
-                                <AvatarFallback className="bg-pink-100 text-pink-600 text-sm">
+                                <AvatarFallback className="bg-pink-100 text-pink-600 text-sm dark:bg-pink-900/30 dark:text-pink-400">
                                     {patient.full_name?.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                                <p className="text-sm font-medium text-slate-700 truncate">{patient.full_name}</p>
-                                <p className="text-xs text-slate-400">{patient.phone}</p>
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{patient.full_name}</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500">{patient.phone}</p>
                             </div>
                         </div>
 
@@ -92,7 +92,7 @@ export default function BirthdaysList({ patients }) {
                                     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
                                     window.open(url, '_blank');
                                 }}
-                                className="hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-xs font-bold hover:bg-pink-100 transition-all shadow-sm"
+                                className="hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 text-pink-600 rounded-full text-xs font-bold hover:bg-pink-100 transition-all shadow-sm dark:bg-pink-900/30 dark:text-pink-400 dark:hover:bg-pink-900/50"
                             >
                                 Enviar Parabéns
                             </button>

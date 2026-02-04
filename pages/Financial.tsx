@@ -39,11 +39,11 @@ export default function Financial() {
     }, [transactions]);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 min-h-screen">
+        <div className="p-8 max-w-7xl mx-auto space-y-8 bg-slate-50 min-h-screen dark:bg-[#0B0E14]">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Financeiro</h1>
-                    <p className="text-slate-500">Gestão de fluxo de caixa da clínica.</p>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Financeiro</h1>
+                    <p className="text-slate-500 dark:text-slate-400">Gestão de fluxo de caixa da clínica.</p>
                 </div>
                 <NewTransactionDialog
                     open={isDialogOpen}
@@ -53,35 +53,35 @@ export default function Financial() {
 
             {/* Summary Cards */}
             <div className="grid gap-4 md:grid-cols-3">
-                <Card>
+                <Card className="dark:bg-[#151A25] dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Receitas (Total)</CardTitle>
+                        <CardTitle className="text-sm font-medium dark:text-slate-200">Receitas (Total)</CardTitle>
                         <TrendingUp className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-emerald-600">
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.income)}
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="dark:bg-[#151A25] dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Despesas (Total)</CardTitle>
+                        <CardTitle className="text-sm font-medium dark:text-slate-200">Despesas (Total)</CardTitle>
                         <TrendingDown className="h-4 w-4 text-rose-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-rose-600">
+                        <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.expense)}
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="dark:bg-[#151A25] dark:border-slate-800">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Saldo Atual</CardTitle>
+                        <CardTitle className="text-sm font-medium dark:text-slate-200">Saldo Atual</CardTitle>
                         <DollarSign className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className={`text-2xl font-bold ${summary.balance >= 0 ? "text-blue-600" : "text-red-600"}`}>
+                        <div className={`text-2xl font-bold ${summary.balance >= 0 ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.balance)}
                         </div>
                     </CardContent>
@@ -89,42 +89,42 @@ export default function Financial() {
             </div>
 
             {/* Transactions Table */}
-            <Card>
+            <Card className="dark:bg-[#151A25] dark:border-slate-800">
                 <CardHeader>
-                    <CardTitle>Histórico de Transações</CardTitle>
+                    <CardTitle className="dark:text-slate-100">Histórico de Transações</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
-                            <TableRow>
-                                <TableHead>Data</TableHead>
-                                <TableHead>Descrição</TableHead>
-                                <TableHead>Categoria</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead className="text-right">Valor</TableHead>
+                            <TableRow className="dark:border-slate-800">
+                                <TableHead className="dark:text-slate-400">Data</TableHead>
+                                <TableHead className="dark:text-slate-400">Descrição</TableHead>
+                                <TableHead className="dark:text-slate-400">Categoria</TableHead>
+                                <TableHead className="dark:text-slate-400">Tipo</TableHead>
+                                <TableHead className="text-right dark:text-slate-400">Valor</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8">Carregando...</TableCell>
+                                    <TableCell colSpan={5} className="text-center py-8 dark:text-slate-400">Carregando...</TableCell>
                                 </TableRow>
                             ) : transactions.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-slate-500">Nenhuma transação registrada.</TableCell>
+                                    <TableCell colSpan={5} className="text-center py-8 text-slate-500 dark:text-slate-400">Nenhuma transação registrada.</TableCell>
                                 </TableRow>
                             ) : (
                                 transactions.map((t) => (
-                                    <TableRow key={t.id}>
-                                        <TableCell>{t.date ? format(new Date(t.date), 'dd/MM/yyyy') : '-'}</TableCell>
-                                        <TableCell className="font-medium">{t.description}</TableCell>
-                                        <TableCell>{t.category || '-'}</TableCell>
+                                    <TableRow key={t.id} className="dark:border-slate-800">
+                                        <TableCell className="dark:text-slate-300">{t.date ? format(new Date(t.date), 'dd/MM/yyyy') : '-'}</TableCell>
+                                        <TableCell className="font-medium dark:text-slate-200">{t.description}</TableCell>
+                                        <TableCell className="dark:text-slate-300">{t.category || '-'}</TableCell>
                                         <TableCell>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${t.type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${t.type === 'income' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'}`}>
                                                 {t.type === 'income' ? 'Receita' : 'Despesa'}
                                             </span>
                                         </TableCell>
-                                        <TableCell className={`text-right font-medium ${t.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                        <TableCell className={`text-right font-medium ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                             {t.type === 'expense' ? '-' : '+'}
                                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(t.amount))}
                                         </TableCell>

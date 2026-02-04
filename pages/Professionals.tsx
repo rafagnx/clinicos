@@ -204,13 +204,13 @@ export default function Professionals() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-[#0B0E14]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Equipe</h1>
-            <p className="text-slate-500 mt-1">{professionals.length} membros cadastrados</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Equipe</h1>
+            <p className="text-slate-500 mt-1 dark:text-slate-400">{professionals.length} membros cadastrados</p>
           </div>
           {(isAdmin || professionals.length === 0) && (
             <div className="flex gap-2">
@@ -244,18 +244,18 @@ export default function Professionals() {
           </div>
         ) : professionals.length === 0 ? (
           <div className="text-center py-12">
-            <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-slate-400" />
+            <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 dark:bg-slate-800">
+              <Users className="w-8 h-8 text-slate-400 dark:text-slate-500" />
             </div>
-            <h3 className="text-lg font-medium text-slate-900">Nenhum membro cadastrado</h3>
-            <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-6">
+            <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Nenhum membro cadastrado</h3>
+            <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-6 dark:text-slate-400">
               Sua equipe está vazia. Adicione o primeiro membro para começar!
             </p>
             {(isAdmin || professionals.length === 0) && (
               <Button
                 onClick={() => setIsInviteOpen(true)}
                 variant="outline"
-                className="gap-2"
+                className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <UserPlus className="w-4 h-4" />
                 Cadastrar Agora
@@ -266,14 +266,14 @@ export default function Professionals() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {professionals.map((prof) => (
-              <Card key={prof.id} className="p-5 bg-white border-0 shadow-sm hover:shadow-lg transition-all group relative">
+              <Card key={prof.id} className="p-5 bg-white border-0 shadow-sm hover:shadow-lg transition-all group relative dark:bg-[#151A25] dark:border dark:border-slate-800/50">
                 <div className="flex items-start gap-4">
                   <div className="relative">
                     <div
                       className="p-1 rounded-full transition-transform group-hover:scale-105"
                       style={{ background: `linear-gradient(135deg, ${prof.color || "#3B82F6"} 0%, ${prof.color}88 100%)` }}
                     >
-                      <Avatar className="h-16 w-16 border-2 border-white">
+                      <Avatar className="h-16 w-16 border-2 border-white dark:border-[#151A25]">
                         <AvatarImage src={prof.photo_url} />
                         <AvatarFallback className="text-white font-bold text-lg" style={{ backgroundColor: prof.color || "#3B82F6" }}>
                           {prof.full_name?.split(" ").map(n => n[0]).slice(0, 2).join("")}
@@ -282,7 +282,7 @@ export default function Professionals() {
                     </div>
                     {/* Status Dot */}
                     <div
-                      className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                      className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm dark:border-[#151A25]"
                       style={{ backgroundColor: prof.status === 'ativo' ? '#10B981' : (prof.status === 'convidado' ? '#F59E0B' : '#94A3B8') }}
                     />
                   </div>
@@ -290,12 +290,12 @@ export default function Professionals() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <h3 className="font-bold text-lg text-slate-900 leading-tight">
+                        <h3 className="font-bold text-lg text-slate-900 leading-tight dark:text-slate-100">
                           {prof.full_name}
                         </h3>
 
                         <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold h-5 px-2 bg-slate-50 border-slate-200 text-slate-600">
+                          <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold h-5 px-2 bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300">
                             {getRoleLabel(prof.role_type)}
                           </Badge>
 
@@ -314,13 +314,13 @@ export default function Professionals() {
                         </div>
 
                         {prof.specialty && (
-                          <p className="text-sm font-medium text-slate-500">
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                             {prof.specialty}
                           </p>
                         )}
 
                         {prof.council_number && (
-                          <p className="text-xs text-slate-400 font-medium">
+                          <p className="text-xs text-slate-400 font-medium dark:text-slate-500">
                             {prof.council_number} {prof.council_state ? `- ${prof.council_state}` : ''}
                           </p>
                         )}
@@ -328,10 +328,10 @@ export default function Professionals() {
                         <div className="pt-1">
                           <Badge
                             className={`text-[10px] px-2 py-0 h-5 font-bold uppercase tracking-tighter ${prof.status === "ativo"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                              ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30"
                               : prof.status === 'convidado'
-                                ? "bg-amber-50 text-amber-600 border-amber-100"
-                                : "bg-slate-100 text-slate-500 border-slate-200"
+                                ? "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30"
+                                : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
                               }`}
                             variant="outline"
                           >
