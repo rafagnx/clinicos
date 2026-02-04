@@ -647,174 +647,216 @@ const initSchema = async () => {
                 -- Ensure appointments has all required columns
                 DO $$
                 BEGIN
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "patient_id" INTEGER;
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "professional_id" TEXT; -- Changed to TEXT to match UUIDs if needed, or maintain consistency
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "status" TEXT DEFAULT 'agendado';
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "type" TEXT DEFAULT 'Compromisso';
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "procedure_name" TEXT;
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                        ALTER TABLE "appointments" ADD COLUMN "notes" TEXT;
-                    EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
-                         ALTER TABLE "appointments" ADD COLUMN "organization_id" TEXT;
-                    EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "patient_id" INTEGER; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "professional_id" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "status" TEXT DEFAULT 'agendado'; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "type" TEXT DEFAULT 'Compromisso'; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "procedure_name" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "notes" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "organization_id" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    
+                    -- NEW COLUMNS FOR AGENDA FUNCTIONALITY
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "scheduled_by" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "promotion_id" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "source" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "appointments" ADD COLUMN "duration" INTEGER; EXCEPTION WHEN duplicate_column THEN END;
                 END $$;
             `);
 
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS "conversations" (
-                    id SERIAL PRIMARY KEY,
-                    created_at TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "messages" (
-                    id SERIAL PRIMARY KEY,
-                    created_at TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "conversation_members" (
-                    "conversation_id" INTEGER,
-                    "user_id" TEXT,
-                    "role" TEXT DEFAULT 'member',
-                    "joined_at" TIMESTAMP DEFAULT NOW(),
-                    PRIMARY KEY ("conversation_id", "user_id")
-                );
+            // ==========================================
+            // ENSURE SUPPORTING TABLES EXIST
+            // ==========================================
 
-                -- Ensure conversations has group columns
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "procedure_types" (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    duration_minutes INTEGER,
+                    category TEXT,
+                    active BOOLEAN DEFAULT TRUE,
+                    organization_id TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+
+            await client.query(`
+                 CREATE TABLE IF NOT EXISTS "promotions" (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    active BOOLEAN DEFAULT TRUE,
+                    organization_id TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                 );
+            `);
+
+            await client.query(`
+                 CREATE TABLE IF NOT EXISTS "holidays" (
+                    id SERIAL PRIMARY KEY,
+                    date DATE NOT NULL,
+                    name TEXT NOT NULL,
+                    type TEXT, 
+                    organization_id TEXT,
+                    created_by TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                 );
+            `);
+
+            await client.query(`
+                 CREATE TABLE IF NOT EXISTS "blocked_days" (
+                    id SERIAL PRIMARY KEY,
+                    date DATE NOT NULL,
+                    professional_id TEXT,
+                    reason TEXT,
+                    organization_id TEXT,
+                    created_by TEXT,
+                    created_at TIMESTAMP DEFAULT NOW()
+                 );
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS "conversations"(
+                id SERIAL PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "messages"(
+                id SERIAL PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "conversation_members"(
+                "conversation_id" INTEGER,
+                "user_id" TEXT,
+                "role" TEXT DEFAULT 'member',
+                "joined_at" TIMESTAMP DEFAULT NOW(),
+                PRIMARY KEY("conversation_id", "user_id")
+            );
+
+            --Ensure conversations has group columns
                 DO $$
-                BEGIN
-                    BEGIN
+            BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "is_group" BOOLEAN DEFAULT FALSE;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "name" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "image" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "admin_ids" TEXT[];
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "organization_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "professional_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "recipient_professional_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "patient_id" INTEGER;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "status" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                          ALTER TABLE "conversations" ADD COLUMN "last_message_at" TIMESTAMP;
                     EXCEPTION WHEN duplicate_column THEN END;
                 END $$;
 
-                -- Ensure messages has columns
+            --Ensure messages has columns
                 DO $$
-                BEGIN
-                     BEGIN
+            BEGIN
+            BEGIN
                         ALTER TABLE "messages" ADD COLUMN "conversation_id" INTEGER;
                     EXCEPTION WHEN duplicate_column THEN END;
-                     BEGIN
+            BEGIN
                         ALTER TABLE "messages" ADD COLUMN "sender_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                     BEGIN
+            BEGIN
                         ALTER TABLE "messages" ADD COLUMN "text" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-                    BEGIN
+            BEGIN
                         ALTER TABLE "messages" ADD COLUMN "organization_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
                 END $$;
             `);
 
             await client.query(`
-                CREATE TABLE IF NOT EXISTS "notifications" (
-                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                    "title" TEXT,
-                    "message" TEXT,
-                    "user_id" TEXT NOT NULL,
-                    "read" BOOLEAN DEFAULT FALSE,
-                    "action_url" TEXT,
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW(),
-                    "updated_at" TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "clinic_settings" (
-                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                    "clinic_name" TEXT,
-                    "logo_url" TEXT,
-                    "phone" TEXT,
-                    "email" TEXT,
-                    "address" TEXT,
-                    "website" TEXT,
-                    "instagram" TEXT,
-                    "meta_integration" JSONB DEFAULT '{}',
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW(),
-                    "updated_at" TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "leads" (
-                    "id" SERIAL PRIMARY KEY,
-                    "name" TEXT,
-                    "email" TEXT,
-                    "phone" TEXT,
-                    "status" TEXT DEFAULT 'new',
-                    "source" TEXT,
-                    "notes" TEXT,
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "medical_records" (
-                    "id" SERIAL PRIMARY KEY,
-                    "patient_id" INTEGER,
-                    "professional_id" INTEGER,
-                    "content" TEXT,
-                    "date" TIMESTAMP DEFAULT NOW(),
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "financial_transactions" (
-                    "id" SERIAL PRIMARY KEY,
-                    "description" TEXT,
-                    "amount" NUMERIC(10, 2),
-                    "type" TEXT,
-                    "category" TEXT,
-                    "status" TEXT,
-                    "date" DATE,
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS "promotions" (
-                    "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                    "name" TEXT,
-                    "discount_value" NUMERIC(10, 2),
-                    "active" BOOLEAN DEFAULT TRUE,
-                    "organization_id" TEXT,
-                    "created_at" TIMESTAMP DEFAULT NOW()
-                );
+                CREATE TABLE IF NOT EXISTS "notifications"(
+                "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                "title" TEXT,
+                "message" TEXT,
+                "user_id" TEXT NOT NULL,
+                "read" BOOLEAN DEFAULT FALSE,
+                "action_url" TEXT,
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW(),
+                "updated_at" TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "clinic_settings"(
+                "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                "clinic_name" TEXT,
+                "logo_url" TEXT,
+                "phone" TEXT,
+                "email" TEXT,
+                "address" TEXT,
+                "website" TEXT,
+                "instagram" TEXT,
+                "meta_integration" JSONB DEFAULT '{}',
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW(),
+                "updated_at" TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "leads"(
+                "id" SERIAL PRIMARY KEY,
+                "name" TEXT,
+                "email" TEXT,
+                "phone" TEXT,
+                "status" TEXT DEFAULT 'new',
+                "source" TEXT,
+                "notes" TEXT,
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "medical_records"(
+                "id" SERIAL PRIMARY KEY,
+                "patient_id" INTEGER,
+                "professional_id" INTEGER,
+                "content" TEXT,
+                "date" TIMESTAMP DEFAULT NOW(),
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "financial_transactions"(
+                "id" SERIAL PRIMARY KEY,
+                "description" TEXT,
+                "amount" NUMERIC(10, 2),
+                "type" TEXT,
+                "category" TEXT,
+                "status" TEXT,
+                "date" DATE,
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS "promotions"(
+                "id" UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                "name" TEXT,
+                "discount_value" NUMERIC(10, 2),
+                "active" BOOLEAN DEFAULT TRUE,
+                "organization_id" TEXT,
+                "created_at" TIMESTAMP DEFAULT NOW()
+            );
 
             `);
 
             // 2. Add organization_id to key tables if missing
             const tablesToCheck = ['patients', 'professionals', 'appointments', 'leads', 'financial_transactions', 'medical_records'];
             for (const table of tablesToCheck) {
-                const tableExists = await client.query(`SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = $1);`, [table]);
+                const tableExists = await client.query(`SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = $1); `, [table]);
                 if (tableExists.rows[0].exists) {
-                    const colExists = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND column_name = 'organization_id';`, [table]);
+                    const colExists = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND column_name = 'organization_id'; `, [table]);
                     if (colExists.rows.length === 0) {
                         await client.query(`ALTER TABLE "${table}" ADD COLUMN "organization_id" TEXT; `);
                         await client.query(`CREATE INDEX IF NOT EXISTS "idx_${table}_org_id" ON "${table}"("organization_id"); `);
@@ -835,9 +877,9 @@ const initSchema = async () => {
                 { name: 'chat_status', type: 'VARCHAR(20) DEFAULT \'offline\'' }
             ];
             for (const col of profCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "professionals" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -858,9 +900,9 @@ const initSchema = async () => {
                 { name: 'status', type: 'VARCHAR(50) DEFAULT \'ativo\'' }
             ];
             for (const col of patientCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'patients' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "patients" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -870,12 +912,12 @@ const initSchema = async () => {
                 { name: 'primary_color', type: 'VARCHAR(20) DEFAULT \'#3B82F6\'' }
             ];
             for (const col of settingsCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'clinic_settings' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'clinic_settings' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "clinic_settings" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -884,9 +926,9 @@ const initSchema = async () => {
                 { name: 'return_interval', type: 'INTEGER DEFAULT 0' }
             ];
             for (const col of procCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'procedure_types' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'procedure_types' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "procedure_types" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "procedure_types" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -897,9 +939,9 @@ const initSchema = async () => {
                 { name: 'procedures_summary', type: 'TEXT' }
             ];
             for (const col of medCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'medical_records' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'medical_records' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "medical_records" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "medical_records" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -915,9 +957,9 @@ const initSchema = async () => {
                 { name: 'time', type: 'VARCHAR(20)' }
             ];
             for (const col of aptCols) {
-                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1;`, [col.name]);
+                const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = $1; `, [col.name]);
                 if (colCheck.rows.length === 0) {
-                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${col.type}; `);
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN "${col.name}" ${ col.type }; `);
                 }
             }
 
@@ -932,11 +974,11 @@ const initSchema = async () => {
             ];
             for (const col of chatCols) {
                 // Postgres 9.6+ supports IF NOT EXISTS
-                await client.query(`ALTER TABLE "conversations" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+                await client.query(`ALTER TABLE "conversations" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
 
                 // TYPE FIX: Ensure professional_id is TEXT
                 if (col.name === 'professional_id') {
-                    await client.query(`ALTER TABLE "conversations" ALTER COLUMN "professional_id" TYPE TEXT USING professional_id::text;`);
+                    await client.query(`ALTER TABLE "conversations" ALTER COLUMN "professional_id" TYPE TEXT USING professional_id:: text; `);
                 }
             }
 
@@ -950,11 +992,11 @@ const initSchema = async () => {
                 { name: 'organization_id', type: 'TEXT' }
             ];
             for (const col of msgCols) {
-                await client.query(`ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+                await client.query(`ALTER TABLE "messages" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
 
                 // TYPE FIX: Ensure sender_id is TEXT (if it was created as INTEGER previously)
                 if (col.name === 'sender_id') {
-                    await client.query(`ALTER TABLE "messages" ALTER COLUMN "sender_id" TYPE TEXT USING sender_id::text;`);
+                    await client.query(`ALTER TABLE "messages" ALTER COLUMN "sender_id" TYPE TEXT USING sender_id:: text; `);
                 }
             }
 
@@ -967,7 +1009,7 @@ const initSchema = async () => {
                 { name: 'promotion_id', type: 'INTEGER' }
             ];
             for (const col of appointmentCols) {
-                await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+                await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
             }
 
             // 8.6. Ensure PATIENTS Columns (Fix 500 Error - Missing columns)
@@ -979,7 +1021,7 @@ const initSchema = async () => {
                 { name: 'marketing_source', type: 'VARCHAR(100)' }
             ];
             for (const col of newPatientCols) {
-                await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+                await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
             }
 
             // 8.7. Ensure APPOINTMENTS Columns (Fix Agenda Errors)
@@ -992,33 +1034,33 @@ const initSchema = async () => {
             ];
             for (const col of newAppointmentCols) {
                 try {
-                    await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
-                } catch (e) { console.log(`Migration validation: ${e.message}`); }
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${ col.type }; `);
+                } catch (e) { console.log(`Migration validation: ${ e.message } `); }
             }
 
             // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
             await client.query(`
-                CREATE TABLE IF NOT EXISTS blocked_days (
-                    id SERIAL PRIMARY KEY,
-                    user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL, 
-                    professional_id INTEGER NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
-                    organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
-                    start_date DATE NOT NULL,
-                    end_date DATE NOT NULL,
-                    reason TEXT,
-                    created_by TEXT,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                );
-                CREATE TABLE IF NOT EXISTS holidays (
-                    id SERIAL PRIMARY KEY,
-                    organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
-                    date DATE NOT NULL,
-                    name TEXT NOT NULL,
-                    type TEXT NOT NULL DEFAULT 'local', 
-                    created_by TEXT,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                );
+                CREATE TABLE IF NOT EXISTS blocked_days(
+                id SERIAL PRIMARY KEY,
+                user_id TEXT REFERENCES "user"(id) ON DELETE SET NULL,
+                professional_id INTEGER NOT NULL REFERENCES professionals(id) ON DELETE CASCADE,
+                organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                reason TEXT,
+                created_by TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+                CREATE TABLE IF NOT EXISTS holidays(
+                id SERIAL PRIMARY KEY,
+                organization_id TEXT NOT NULL REFERENCES "organization"(id) ON DELETE CASCADE,
+                date DATE NOT NULL,
+                name TEXT NOT NULL,
+                type TEXT NOT NULL DEFAULT 'local',
+                created_by TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
                 CREATE INDEX IF NOT EXISTS idx_blocked_days_org_date ON blocked_days(organization_id, start_date, end_date);
                 CREATE INDEX IF NOT EXISTS idx_holidays_org_date ON holidays(organization_id, date);
                 CREATE UNIQUE INDEX IF NOT EXISTS idx_holidays_unique ON holidays(organization_id, date, type);
@@ -1060,10 +1102,10 @@ const initSchema = async () => {
             for (const org of orgs.rows) {
                 for (const h of seedHolidays) {
                     await client.query(`
-                        INSERT INTO holidays (organization_id, date, name, type)
-                        VALUES ($1, $2, $3, 'national')
-                        ON CONFLICT (organization_id, date, type) DO NOTHING
-                    `, [org.id, h.date, h.name]);
+                        INSERT INTO holidays(organization_id, date, name, type)
+            VALUES($1, $2, $3, 'national')
+                        ON CONFLICT(organization_id, date, type) DO NOTHING
+                `, [org.id, h.date, h.name]);
                 }
             }
 
@@ -1106,17 +1148,17 @@ app.get('/api/admin/organizations', requireAuth, async (req, res) => {
     }
     try {
         const { rows } = await pool.query(`
-            SELECT 
-                o.*,
+            SELECT
+            o.*,
                 u.email as "ownerEmail",
                 u.name as "ownerName"
             FROM "organization" o
             LEFT JOIN "member" m ON m."organizationId" = o.id AND m.role = 'owner'
             LEFT JOIN "user" u ON u.id = m."userId"
-            -- Use DISTINCT ON or Group By if multiple owners, but usually 1. 
-            -- Or just take first one found via implicit join logic.
+            --Use DISTINCT ON or Group By if multiple owners, but usually 1.
+            --Or just take first one found via implicit join logic.
             ORDER BY o."createdAt" DESC
-        `);
+                `);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -1131,14 +1173,14 @@ app.get('/api/admin/members/:orgId', requireAuth, async (req, res) => {
     const { orgId } = req.params;
     try {
         const { rows } = await pool.query(`
-            SELECT 
-                m.id as "membershipId",
+            SELECT
+            m.id as "membershipId",
                 m.role,
                 m."createdAt" as "joinedAt",
-                u.id as "userId",
-                u.name,
-                u.email,
-                u.image
+                    u.id as "userId",
+                    u.name,
+                    u.email,
+                    u.image
             FROM "member" m
             INNER JOIN "user" u ON u.id = m."userId"
             WHERE m."organizationId" = $1
@@ -1173,7 +1215,7 @@ app.post('/api/admin/organization/create', requireAuth, async (req, res) => {
         const now = new Date();
         const newOrg = await pool.query(
             `INSERT INTO "organization"(id, name, slug, "createdAt", "updatedAt")
-VALUES($1, $2, $3, $4, $5) RETURNING * `,
+            VALUES($1, $2, $3, $4, $5) RETURNING * `,
             [orgId, name, slug, now, now]
         );
 
@@ -1181,7 +1223,7 @@ VALUES($1, $2, $3, $4, $5) RETURNING * `,
         const memberId = uuidv4();
         await pool.query(
             `INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
-VALUES($1, $2, $3, $4, $5, $6)`,
+            VALUES($1, $2, $3, $4, $5, $6)`,
             [memberId, orgId, user.id, "owner", now, now]
         );
 
@@ -1211,8 +1253,8 @@ app.get('/api/health', (req, res) => {
 import { runOwnershipMigration } from './migration_ownership.js';
 
 httpServer.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Server running on port ${ PORT } `);
+    console.log(`Environment: ${ process.env.NODE_ENV } `);
     try {
         console.log("Verifying database schema...");
         await initSchema();
@@ -1265,12 +1307,12 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     const { active } = req.body;
     const { user } = req.auth;
 
-    console.log(`[Admin Bypass] Attempt by ${user.email} for Org ${id} to active=${active}`);
+    console.log(`[Admin Bypass] Attempt by ${ user.email } for Org ${ id } to active = ${ active } `);
 
     const authorizedEmails = ['rafamarketingdb@gmail.com', process.env.SUPER_ADMIN_EMAIL].filter(Boolean);
 
     if (!authorizedEmails.includes(user.email)) {
-        console.warn(`[Admin Bypass] Denied: ${user.email} is not authorized.`);
+        console.warn(`[Admin Bypass]Denied: ${ user.email } is not authorized.`);
         return res.status(403).json({ error: "Access Denied. Super Admin only." });
     }
 
@@ -1286,13 +1328,13 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
 
         const result = await pool.query(`
             UPDATE "organization" 
-            SET "subscription_status" = $1, 
+            SET "subscription_status" = $1,
                 "updatedAt" = NOW()
             WHERE id = $2
             RETURNING *
-        `, [finalStatus, id]);
+                `, [finalStatus, id]);
 
-        console.log(`[Admin Bypass] Success. New Status: ${finalStatus}`);
+        console.log(`[Admin Bypass]Success.New Status: ${ finalStatus } `);
         res.json({ success: true, organization: result.rows[0] });
     } catch (error) {
         console.error('[Admin Bypass] DB Error', error);
@@ -1306,21 +1348,21 @@ app.get('/api/user/organizations', requireAuth, async (req, res) => {
 
     try {
         const { rows } = await pool.query(`
-            SELECT 
-                m.id as "membershipId",
+            SELECT
+            m.id as "membershipId",
                 m.role,
                 m."organizationId",
-                o.name as "organizationName",
-                o.slug,
-                o.logo,
-                o.subscription_status,
-                o."createdAt",
-                (SELECT u.email FROM "member" om JOIN "user" u ON u.id = om."userId" WHERE om."organizationId" = o.id AND om.role = 'owner' LIMIT 1) as "ownerEmail"
+                    o.name as "organizationName",
+                    o.slug,
+                    o.logo,
+                    o.subscription_status,
+                    o."createdAt",
+                        (SELECT u.email FROM "member" om JOIN "user" u ON u.id = om."userId" WHERE om."organizationId" = o.id AND om.role = 'owner' LIMIT 1) as "ownerEmail"
             FROM "member" m
             INNER JOIN "organization" o ON o.id = m."organizationId"
             WHERE m."userId" = $1
             ORDER BY m."createdAt" DESC
-        `, [user.id]);
+                `, [user.id]);
 
         // AUTO-CREATE ORG FOR MASTER ADMIN if doesn't have one
         if (user.email === 'rafamarketingdb@gmail.com' && rows.length === 0) {
@@ -1336,34 +1378,34 @@ app.get('/api/user/organizations', requireAuth, async (req, res) => {
             if (existingOrg.rows.length === 0) {
                 await pool.query(`
                     INSERT INTO "organization"(id, name, slug, subscription_status, "createdAt", "updatedAt")
-VALUES($1, $2, $3, $4, $5, $6)
-    `, [orgId, 'ClinicOS Master', 'master-admin', 'active', now, now]);
+            VALUES($1, $2, $3, $4, $5, $6)
+                `, [orgId, 'ClinicOS Master', 'master-admin', 'active', now, now]);
             }
 
             // Create membership
             const memberId = uuidv4();
             await pool.query(`
                 INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
-VALUES($1, $2, $3, $4, $5, $6)
+            VALUES($1, $2, $3, $4, $5, $6)
                 ON CONFLICT DO NOTHING
-    `, [memberId, finalOrgId, user.id, 'owner', now, now]);
+                `, [memberId, finalOrgId, user.id, 'owner', now, now]);
 
             // Re-fetch organizations
             const refetch = await pool.query(`
-SELECT
-m.id as "membershipId",
-    m.role,
-    m."organizationId",
-        o.name as "organizationName",
-        o.slug,
-        o.logo,
-        o.subscription_status,
-        o."createdAt"
+            SELECT
+            m.id as "membershipId",
+                m.role,
+                m."organizationId",
+                    o.name as "organizationName",
+                    o.slug,
+                    o.logo,
+                    o.subscription_status,
+                    o."createdAt"
                 FROM "member" m
                 INNER JOIN "organization" o ON o.id = m."organizationId"
                 WHERE m."userId" = $1
                 ORDER BY m."createdAt" DESC
-            `, [user.id]);
+                `, [user.id]);
 
             return res.json(refetch.rows);
         }
@@ -1389,7 +1431,7 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        console.log(`[Admin Delete] Starting cascade delete for Org ${id}`);
+        console.log(`[Admin Delete] Starting cascade delete for Org ${ id }`);
 
         // 1. Delete Peripheral Data (Least Dependent)
         await client.query('DELETE FROM "appointments" WHERE "organization_id" = $1', [id]);
@@ -1417,7 +1459,7 @@ app.delete('/api/admin/organizations/:id', requireAuth, async (req, res) => {
             return res.status(404).json({ error: "Organization not found" });
         }
 
-        console.log(`[Admin Delete] Successfully deleted Org ${id}`);
+        console.log(`[Admin Delete] Successfully deleted Org ${ id } `);
         res.json({ success: true, message: "Deleted successfully" });
 
     } catch (err) {
@@ -1461,20 +1503,20 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
         // Frontend sends 'display_name', DB uses 'name'
         const nameToUpdate = data.display_name || data.name || data.full_name;
 
-        if (nameToUpdate) { updates.push(`name = $${i++} `); values.push(nameToUpdate); }
-        if (data.phone) { updates.push(`phone = $${i++} `); values.push(data.phone); }
-        if (data.specialty || data.speciality) { updates.push(`specialty = $${i++} `); values.push(data.specialty || data.speciality); }
-        if (data.user_type) { updates.push(`user_type = $${i++} `); values.push(data.user_type); }
-        if (data.photo_url || data.image) { updates.push(`image = $${i++} `); values.push(data.photo_url || data.image); }
+        if (nameToUpdate) { updates.push(`name = $${ i++ } `); values.push(nameToUpdate); }
+        if (data.phone) { updates.push(`phone = $${ i++ } `); values.push(data.phone); }
+        if (data.specialty || data.speciality) { updates.push(`specialty = $${ i++ } `); values.push(data.specialty || data.speciality); }
+        if (data.user_type) { updates.push(`user_type = $${ i++ } `); values.push(data.user_type); }
+        if (data.photo_url || data.image) { updates.push(`image = $${ i++ } `); values.push(data.photo_url || data.image); }
 
-        updates.push(`"updatedAt" = $${i++} `);
+        updates.push(`"updatedAt" = $${ i++ } `);
         values.push(now);
 
         if (updates.length > 1) { // More than just updatedAt
             values.push(user.id);
-            const query = `UPDATE "user" SET ${updates.join(', ')} WHERE id = $${i} RETURNING * `;
+            const query = `UPDATE "user" SET ${ updates.join(', ') } WHERE id = $${ i } RETURNING * `;
 
-            console.log(`[Profile] Updating user ${user.id}: `, updates);
+            console.log(`[Profile] Updating user ${ user.id }: `, updates);
 
             // Also update Supabase metadata is handled by frontend, but we own Postgres
             const { rows } = await pool.query(query, values);
@@ -1484,14 +1526,14 @@ app.put('/api/user/profile', requireAuth, async (req, res) => {
             } else {
                 // If user doesn't exist in Postgres (integrity error), we should potentially create them?
                 // For now, let's assume existence due to requireAuth, but handle 0 rows
-                console.warn(`[Profile] User ${user.id} not found in DB during update`);
+                console.warn(`[Profile] User ${ user.id } not found in DB during update`);
                 // Attempt UPSERT/Insert if missing?
                 // Let's safe fail for now or try insert
                 await pool.query(`
                     INSERT INTO "user"(id, name, email, "createdAt", "updatedAt")
-VALUES($1, $2, $3, NOW(), NOW())
+            VALUES($1, $2, $3, NOW(), NOW())
                     ON CONFLICT(id) DO NOTHING
-    `, [user.id, nameToUpdate || user.email.split('@')[0], user.email]);
+                `, [user.id, nameToUpdate || user.email.split('@')[0], user.email]);
 
                 // Retry update
                 const retry = await pool.query(query, values);
@@ -1525,8 +1567,8 @@ app.post('/api/admin/invites', requireAuth, async (req, res) => {
             // Check if user is an admin/owner of this organization
             const memberCheck = await pool.query(`
                 SELECT role FROM "member" 
-                WHERE "userId" = $1 AND "organizationId" = $2 AND role IN ('admin', 'owner')
-            `, [user.id, organizationId]);
+                WHERE "userId" = $1 AND "organizationId" = $2 AND role IN('admin', 'owner')
+                `, [user.id, organizationId]);
 
             if (memberCheck.rows.length === 0) {
                 return res.status(403).json({ error: "You must be an admin or owner of this organization to invite members" });
@@ -1536,17 +1578,17 @@ app.post('/api/admin/invites', requireAuth, async (req, res) => {
         // Ensure pending_invites table exists with all columns
         await pool.query(`
             CREATE TABLE IF NOT EXISTS "pending_invites"(
-                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-                email TEXT NOT NULL,
-                organization_id TEXT NOT NULL,
-                role TEXT DEFAULT 'member',
-                token TEXT,
-                whatsapp TEXT,
-                created_at TIMESTAMP DEFAULT NOW(),
-                created_by TEXT,
-                accepted BOOLEAN DEFAULT FALSE
-            );
-        `);
+                    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                    email TEXT NOT NULL,
+                    organization_id TEXT NOT NULL,
+                    role TEXT DEFAULT 'member',
+                    token TEXT,
+                    whatsapp TEXT,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    created_by TEXT,
+                    accepted BOOLEAN DEFAULT FALSE
+                );
+            `);
 
         // Add missing columns if table already existed
         try { await pool.query(`ALTER TABLE "pending_invites" ADD COLUMN IF NOT EXISTS "token" TEXT`); } catch (e) { }
@@ -1561,7 +1603,7 @@ app.post('/api/admin/invites', requireAuth, async (req, res) => {
             INSERT INTO "pending_invites"(email, organization_id, role, token, whatsapp, created_by)
             VALUES($1, $2, $3, $4, $5, $6)
             RETURNING *
-        `, [email, organizationId, role || 'member', token, whatsapp || null, user.id]);
+                `, [email, organizationId, role || 'member', token, whatsapp || null, user.id]);
 
         res.json({ success: true, invite: result.rows[0], token });
     } catch (err) {
@@ -1593,8 +1635,8 @@ app.post('/api/user/invites/process', requireAuth, async (req, res) => {
                 const memberId = uuidv4();
                 await pool.query(`
                     INSERT INTO "member"(id, "organizationId", "userId", role, "createdAt", "updatedAt")
-VALUES($1, $2, $3, $4, $5, $6)
-    `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
+            VALUES($1, $2, $3, $4, $5, $6)
+                `, [memberId, invite.organization_id, user.id, invite.role, now, now]);
             }
 
             results.push(invite);
@@ -1622,10 +1664,10 @@ app.get('/api/admin/invites/:orgId', requireAuth, async (req, res) => {
 
     try {
         const { rows } = await pool.query(`
-SELECT * FROM "pending_invites" 
+            SELECT * FROM "pending_invites" 
             WHERE organization_id = $1 
             ORDER BY created_at DESC
-        `, [orgId]);
+                `, [orgId]);
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1647,17 +1689,17 @@ app.get('/api/blocked-days', requireAuth, async (req, res) => {
         let query = `
             SELECT * FROM blocked_days
             WHERE organization_id = $1
-        `;
+                `;
         const params = [organizationId];
         let paramIndex = 2;
 
         if (professionalId && professionalId !== 'all') {
-            query += ` AND professional_id = $${paramIndex++}`;
+            query += ` AND professional_id = $${ paramIndex++ } `;
             params.push(professionalId);
         }
 
         if (startDate && endDate) {
-            query += ` AND ((start_date <= $${paramIndex + 1} AND end_date >= $${paramIndex}))`;
+            query += ` AND((start_date <= $${ paramIndex + 1} AND end_date >= $${ paramIndex }))`;
             params.push(startDate, endDate);
         }
 
@@ -1693,8 +1735,8 @@ app.post('/api/blocked-days', requireAuth, async (req, res) => {
             AND organization_id = $2
             AND DATE(start_time) >= $3
             AND DATE(start_time) <= $4
-            AND status NOT IN ('cancelado', 'faltou')
-        `, [professionalId, organizationId, startDate, endDate]);
+            AND status NOT IN('cancelado', 'faltou')
+            `, [professionalId, organizationId, startDate, endDate]);
 
         // If conflicts exist and user hasn't confirmed, return conflicts
         if (conflictsResult.rows.length > 0 && !confirmConflicts) {
@@ -1706,11 +1748,11 @@ app.post('/api/blocked-days', requireAuth, async (req, res) => {
 
         // Create block
         const insertResult = await pool.query(`
-            INSERT INTO blocked_days 
+            INSERT INTO blocked_days
             (professional_id, organization_id, start_date, end_date, reason, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *
-        `, [professionalId, organizationId, startDate, endDate, reason, user.id]);
+        VALUES($1, $2, $3, $4, $5, $6)
+        RETURNING *
+            `, [professionalId, organizationId, startDate, endDate, reason, user.id]);
 
         res.status(201).json(insertResult.rows[0]);
     } catch (error) {
@@ -1732,9 +1774,9 @@ app.patch('/api/blocked-days/:id', requireAuth, async (req, res) => {
     try {
         // Verify ownership or admin
         const checkResult = await pool.query(`
-            SELECT * FROM blocked_days 
+        SELECT * FROM blocked_days 
             WHERE id = $1 AND organization_id = $2
-        `, [id, organizationId]);
+            `, [id, organizationId]);
 
         if (checkResult.rows.length === 0) {
             return res.status(404).json({ error: 'Bloqueio não encontrado' });
@@ -1745,8 +1787,8 @@ app.patch('/api/blocked-days/:id', requireAuth, async (req, res) => {
             UPDATE blocked_days
             SET reason = $1, updated_at = NOW()
             WHERE id = $2
-            RETURNING *
-        `, [reason, id]);
+        RETURNING *
+            `, [reason, id]);
 
         res.json(updateResult.rows[0]);
     } catch (error) {
@@ -1764,8 +1806,8 @@ app.delete('/api/blocked-days/:id', requireAuth, async (req, res) => {
         const deleteResult = await pool.query(`
             DELETE FROM blocked_days
             WHERE id = $1 AND organization_id = $2
-            RETURNING *
-        `, [id, organizationId]);
+        RETURNING *
+            `, [id, organizationId]);
 
         if (deleteResult.rows.length === 0) {
             return res.status(404).json({ error: 'Bloqueio não encontrado' });
@@ -1785,9 +1827,9 @@ app.get('/api/holidays', requireAuth, async (req, res) => {
 
     try {
         let query = `
-            SELECT * FROM holidays
+        SELECT * FROM holidays
             WHERE organization_id = $1
-        `;
+            `;
         const params = [organizationId];
 
         if (year) {
@@ -1818,7 +1860,7 @@ app.post('/api/holidays', requireAuth, async (req, res) => {
     const adminCheck = await pool.query(`
         SELECT is_admin FROM professionals 
         WHERE organization_id = $1 AND email = $2
-    `, [organizationId, user.email]);
+            `, [organizationId, user.email]);
 
     if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
         return res.status(403).json({ error: 'Apenas administradores podem criar feriados' });
@@ -1826,10 +1868,10 @@ app.post('/api/holidays', requireAuth, async (req, res) => {
 
     try {
         const insertResult = await pool.query(`
-            INSERT INTO holidays (organization_id, date, name, type, created_by)
-            VALUES ($1, $2, $3, 'local', $4)
-            RETURNING *
-        `, [organizationId, date, name, user.id]);
+            INSERT INTO holidays(organization_id, date, name, type, created_by)
+        VALUES($1, $2, $3, 'local', $4)
+        RETURNING *
+            `, [organizationId, date, name, user.id]);
 
         res.status(201).json(insertResult.rows[0]);
     } catch (error) {
@@ -1850,7 +1892,7 @@ app.delete('/api/holidays/:id', requireAuth, async (req, res) => {
     const adminCheck = await pool.query(`
         SELECT is_admin FROM professionals 
         WHERE organization_id = $1 AND email = $2
-    `, [organizationId, user.email]);
+            `, [organizationId, user.email]);
 
     if (adminCheck.rows.length === 0 || !adminCheck.rows[0].is_admin) {
         return res.status(403).json({ error: 'Apenas administradores podem deletar feriados' });
@@ -1861,8 +1903,8 @@ app.delete('/api/holidays/:id', requireAuth, async (req, res) => {
         const deleteResult = await pool.query(`
             DELETE FROM holidays
             WHERE id = $1 AND organization_id = $2 AND type = 'local'
-            RETURNING *
-        `, [id, organizationId]);
+        RETURNING *
+            `, [id, organizationId]);
 
         if (deleteResult.rows.length === 0) {
             return res.status(404).json({ error: 'Feriado não encontrado ou é nacional (não pode ser deletado)' });
@@ -1917,18 +1959,18 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         let paramIndex = 1;
 
         // Simple query for all entities (no JOINs to avoid type issues)
-        query = `SELECT * FROM ${tableName} `;
+        query = `SELECT * FROM ${ tableName } `;
 
         if (isUserScoped) {
-            whereClauses.push(`user_id = $${paramIndex++} `);
+            whereClauses.push(`user_id = $${ paramIndex++ } `);
             params.push(user.id);
         } else {
-            whereClauses.push(`organization_id = $${paramIndex++} `);
+            whereClauses.push(`organization_id = $${ paramIndex++ } `);
             params.push(organizationId);
         }
 
         if (req.query.id) {
-            whereClauses.push(`id = $${paramIndex++} `);
+            whereClauses.push(`id = $${ paramIndex++ } `);
             params.push(req.query.id);
         }
 
@@ -1956,23 +1998,23 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
             if (typeof value === 'object' && value !== null) {
                 // Handle Operators
                 if (value._gte) {
-                    whereClauses.push(`"${dbColumn}" >= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" >= $${ paramIndex++ } `);
                     params.push(value._gte);
                 }
                 if (value._gt) {
-                    whereClauses.push(`"${dbColumn}" > $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" > $${ paramIndex++ } `);
                     params.push(value._gt);
                 }
                 if (value._lt) {
-                    whereClauses.push(`"${dbColumn}" < $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" < $${ paramIndex++ } `);
                     params.push(value._lt);
                 }
                 if (value._lte) {
-                    whereClauses.push(`"${dbColumn}" <= $${paramIndex++} `);
+                    whereClauses.push(`"${dbColumn}" <= $${ paramIndex++ } `);
                     params.push(value._lte);
                 }
             } else {
-                whereClauses.push(`"${dbColumn}" = $${paramIndex++} `);
+                whereClauses.push(`"${dbColumn}" = $${ paramIndex++ } `);
                 params.push(value);
             }
         });
@@ -1988,7 +2030,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         }
 
         if (req.query.limit) {
-            query += ` LIMIT $${paramIndex++} `;
+            query += ` LIMIT $${ paramIndex++ } `;
             params.push(parseInt(req.query.limit));
         }
 
@@ -2002,7 +2044,7 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
 
         res.json(mappedRows);
     } catch (error) {
-        console.error(`Error fetching ${entity}: `, error);
+        console.error(`Error fetching ${ entity }: `, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -2028,16 +2070,16 @@ async function ensureOrganizationExists(orgId, client) {
         );
 
         if (rows.length === 0) {
-            console.log(`[SELF-HEAL] Auto-creating missing organization: ${orgId}`);
+            console.log(`[SELF - HEAL] Auto - creating missing organization: ${ orgId } `);
             await client.query(`
-                INSERT INTO organization (id, name, slug, "createdAt", "updatedAt", subscription_status, metadata)
-                VALUES ($1, $2, $3, NOW(), NOW(), 'trial', '{}')
-                ON CONFLICT (id) DO NOTHING
-            `, [orgId, `Clínica Auto-${orgId.slice(0, 8)}`, `clinic-${orgId.slice(0, 8)}`]);
-            console.log(`[SELF-HEAL] ✅ Organization ${orgId} created successfully`);
+                INSERT INTO organization(id, name, slug, "createdAt", "updatedAt", subscription_status, metadata)
+        VALUES($1, $2, $3, NOW(), NOW(), 'trial', '{}')
+                ON CONFLICT(id) DO NOTHING
+            `, [orgId, `Clínica Auto - ${ orgId.slice(0, 8) } `, `clinic - ${ orgId.slice(0, 8) } `]);
+            console.log(`[SELF - HEAL] ✅ Organization ${ orgId } created successfully`);
         }
     } catch (err) {
-        console.error(`[SELF-HEAL] Error ensuring organization exists:`, err.message);
+        console.error(`[SELF - HEAL] Error ensuring organization exists: `, err.message);
         // Don't throw - let the main operation handle the FK error if it still fails
     }
 }
@@ -2053,7 +2095,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.patient_id) {
         const p = await client.query('SELECT id, name FROM patients WHERE id = $1', [data.patient_id]);
         if (p.rows.length === 0) {
-            errors.push(`Paciente ID ${data.patient_id} não encontrado. Por favor, cadastre o paciente primeiro.`);
+            errors.push(`Paciente ID ${ data.patient_id } não encontrado.Por favor, cadastre o paciente primeiro.`);
         }
     }
 
@@ -2061,7 +2103,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.professional_id) {
         const pr = await client.query('SELECT id, name FROM professionals WHERE id = $1', [data.professional_id]);
         if (pr.rows.length === 0) {
-            errors.push(`Profissional ID ${data.professional_id} não encontrado. Por favor, cadastre o profissional primeiro.`);
+            errors.push(`Profissional ID ${ data.professional_id } não encontrado.Por favor, cadastre o profissional primeiro.`);
         }
     }
 
@@ -2069,7 +2111,7 @@ async function validateAppointmentFKs(data, client) {
     if (data.promotion_id && data.promotion_id !== null) {
         const promo = await client.query('SELECT id FROM promotions WHERE id = $1', [data.promotion_id]);
         if (promo.rows.length === 0) {
-            errors.push(`Promoção ID ${data.promotion_id} não encontrada.`);
+            errors.push(`Promoção ID ${ data.promotion_id } não encontrada.`);
         }
     }
 
@@ -2090,13 +2132,13 @@ async function validateGenericFKs(entity, data, client) {
         if (data.patient_id) {
             const p = await client.query('SELECT id FROM patients WHERE id = $1', [data.patient_id]);
             if (p.rows.length === 0) {
-                errors.push(`Paciente ID ${data.patient_id} não encontrado.`);
+                errors.push(`Paciente ID ${ data.patient_id } não encontrado.`);
             }
         }
         if (data.professional_id) {
             const pr = await client.query('SELECT id FROM professionals WHERE id = $1', [data.professional_id]);
             if (pr.rows.length === 0) {
-                errors.push(`Profissional ID ${data.professional_id} não encontrado.`);
+                errors.push(`Profissional ID ${ data.professional_id } não encontrado.`);
             }
         }
         return errors;
@@ -2158,7 +2200,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         data.organization_id = organizationId;
     }
 
-    console.log(`[DEBUG] Creating ${entity} in ${tableName} `);
+    console.log(`[DEBUG] Creating ${ entity } in ${ tableName } `);
     console.log(`[DEBUG] Raw Data: `, JSON.stringify(data));
 
     try {
@@ -2174,7 +2216,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
         // ==========================================
         const fkErrors = await validateGenericFKs(entity, data, pool);
         if (fkErrors.length > 0) {
-            console.log(`[FK-VALIDATION] ❌ Errors for ${entity}:`, fkErrors);
+            console.log(`[FK - VALIDATION] ❌ Errors for ${ entity }: `, fkErrors);
             return res.status(400).json({
                 error: 'Dados inválidos - registros relacionados não encontrados',
                 details: fkErrors,
@@ -2195,9 +2237,9 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
-        const placeholders = keys.map((_, i) => `$${i + 1} `).join(', ');
+        const placeholders = keys.map((_, i) => `$${ i + 1 } `).join(', ');
 
-        const query = `INSERT INTO ${tableName} (${keys.join(', ')}) VALUES(${placeholders}) RETURNING * `;
+        const query = `INSERT INTO ${ tableName } (${ keys.join(', ') }) VALUES(${ placeholders }) RETURNING * `;
         console.log(`[DEBUG] Query: `, query);
         console.log(`[DEBUG] Values: `, values);
 
@@ -2205,7 +2247,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        const errorLog = `[${new Date().toISOString()}] Error creating ${entity}: ${error.message} \nDetail: ${error.detail} \nCode: ${error.code} \nData: ${JSON.stringify(data)} \n\n`;
+        const errorLog = `[${ new Date().toISOString() }] Error creating ${ entity }: ${ error.message } \nDetail: ${ error.detail } \nCode: ${ error.code } \nData: ${ JSON.stringify(data) } \n\n`;
         console.error(errorLog);
 
         try {
@@ -2240,28 +2282,28 @@ app.post('/api/conversations/group', requireAuth, async (req, res) => {
 
         // 1. Create Conversation
         const convRes = await client.query(`
-            INSERT INTO conversations (
-                organization_id, "professional_id", "status", "last_message_at", "is_group", "name", "image", "admin_ids"
-            ) VALUES ($1, $2, 'active', NOW(), true, $3, $4, $5)
-            RETURNING *
-        `, [organizationId, user.id, name, image || null, [user.id]]);
+            INSERT INTO conversations(
+            organization_id, "professional_id", "status", "last_message_at", "is_group", "name", "image", "admin_ids"
+        ) VALUES($1, $2, 'active', NOW(), true, $3, $4, $5)
+        RETURNING *
+            `, [organizationId, user.id, name, image || null, [user.id]]);
         const conversation = convRes.rows[0];
 
         // 2. Add Participants (Members)
         // Add Creator
         await client.query(`
-            INSERT INTO conversation_members (conversation_id, user_id, role)
-            VALUES ($1, $2, 'admin')
-        `, [conversation.id, user.id]);
+            INSERT INTO conversation_members(conversation_id, user_id, role)
+        VALUES($1, $2, 'admin')
+            `, [conversation.id, user.id]);
 
         // Add Others
         for (const partId of participants) {
             if (partId !== user.id) {
                 await client.query(`
-                    INSERT INTO conversation_members (conversation_id, user_id, role)
-                    VALUES ($1, $2, 'member')
+                    INSERT INTO conversation_members(conversation_id, user_id, role)
+        VALUES($1, $2, 'member')
                 ON CONFLICT DO NOTHING
-                `, [conversation.id, partId]);
+            `, [conversation.id, partId]);
             }
         }
 
@@ -2287,11 +2329,11 @@ app.get('/api/conversations/me', requireAuth, async (req, res) => {
             FROM conversations c
             LEFT JOIN conversation_members cm ON cm.conversation_id = c.id
             WHERE c.organization_id = $1
-            AND (
-                c.professional_id = $2 
-                OR c.recipient_professional_id::text = $2 
+        AND(
+            c.professional_id = $2 
+                OR c.recipient_professional_id:: text = $2 
                 OR cm.user_id = $2
-            )
+        )
             ORDER BY c.last_message_at DESC
         `, [organizationId, user.id]);
 
@@ -2362,16 +2404,16 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
-        const setClause = keys.map((k, i) => `${k} = $${i + 1} `).join(', ');
+        const setClause = keys.map((k, i) => `${ k } = $${ i + 1 } `).join(', ');
 
-        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} `;
+        let query = `UPDATE ${ tableName } SET ${ setClause } WHERE id = $${ keys.length + 1 } `;
         const queryParams = [...values, id];
 
         if (isUserScoped) {
-            query += ` AND user_id = $${keys.length + 2} `;
+            query += ` AND user_id = $${ keys.length + 2 } `;
             queryParams.push(user.id);
         } else {
-            query += ` AND organization_id = $${keys.length + 2} `;
+            query += ` AND organization_id = $${ keys.length + 2 } `;
             queryParams.push(organizationId);
         }
 
@@ -2385,7 +2427,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error updating ${entity}: `, error);
+        console.error(`Error updating ${ entity }: `, error);
         res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
     }
 });
@@ -2423,14 +2465,14 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
     try {
         // SPECIAL HANDLING: Professional Deletion (Handle FK Constraint)
         if (entity === 'Professional') {
-            console.log(`[Delete] Professional ${id}: Nullifying appointments references first.`);
+            console.log(`[Delete] Professional ${ id }: Nullifying appointments references first.`);
             await pool.query(
                 `UPDATE appointments SET professional_id = NULL WHERE professional_id = $1`,
                 [id]
             );
         }
 
-        let query = `DELETE FROM ${tableName} WHERE id = $1`;
+        let query = `DELETE FROM ${ tableName } WHERE id = $1`;
         const params = [id];
 
         if (isUserScoped) {
@@ -2447,7 +2489,7 @@ app.delete('/api/:entity/:id', requireAuth, async (req, res) => {
         }
         res.json({ success: true });
     } catch (error) {
-        console.error(`Error deleting ${entity}: `, error);
+        console.error(`Error deleting ${ entity }: `, error);
 
         // Handle FK Constraints nicely if still hits
         if (error.code === '23503') {
@@ -2480,7 +2522,7 @@ app.get('/api/admin/get-invite-link', requireAuth, async (req, res) => {
         const token = result.rows[0].token;
         // Construct Frontend URL
         const baseUrl = process.env.VITE_FRONTEND_URL || req.headers.origin || "https://clinicos.app";
-        const link = `${baseUrl}/register?token=${token}`; // Assuming register page handles token
+        const link = `${ baseUrl } /register?token=${token}`; / / Assuming register page handles token
 
         res.json({ link });
     } catch (error) {
