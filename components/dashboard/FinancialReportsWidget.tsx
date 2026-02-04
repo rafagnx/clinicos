@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, AlertTriangle } from "lucide-react";
-import { useOutletContext } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -13,8 +12,7 @@ import {
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'];
 
-export default function FinancialReportsWidget({ appointments }) {
-    const { isDark } = useOutletContext<{ isDark: boolean }>();
+export default function FinancialReportsWidget({ isDark, appointments }) {
 
     const stats = useMemo(() => {
         const now = new Date();

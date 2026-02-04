@@ -5,11 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock } from "lucide-react";
 import { format, parseISO, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useOutletContext } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-export default function UpcomingAppointmentsWidget({ appointments, patients, professionals }) {
-    const { isDark } = useOutletContext<{ isDark: boolean }>();
+export default function UpcomingAppointmentsWidget({ isDark, appointments, patients, professionals }) {
     const today = format(new Date(), "yyyy-MM-dd");
     const upcoming = appointments
         .filter(apt => {

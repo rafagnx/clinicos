@@ -8,7 +8,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOutletContext } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const statusConfig = {
@@ -21,8 +20,7 @@ const statusConfig = {
     cancelado: { label: "Cancelado", class: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" }
 };
 
-export default function TodayAppointments({ appointments, patients, professionals, onStatusChange }) {
-    const { isDark } = useOutletContext<{ isDark: boolean }>();
+export default function TodayAppointments({ isDark, appointments, patients, professionals, onStatusChange }) {
 
     const header = (
         <div className={cn(

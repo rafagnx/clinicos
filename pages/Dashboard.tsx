@@ -126,8 +126,8 @@ export default function Dashboard() {
 
   const renderWidget = (id) => {
     switch (id) {
-      case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
-      case "financial_reports": return <FinancialReportsWidget appointments={safeAppointments} />;
+      case "upcoming_appointments": return <UpcomingAppointmentsWidget isDark={isDark} appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
+      case "financial_reports": return <FinancialReportsWidget isDark={isDark} appointments={safeAppointments} />;
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       case "returns_alert": return <ReturnsAlertWidget />;
       default: return null;
@@ -379,6 +379,7 @@ export default function Dashboard() {
             transition={{ delay: 0.1 }}
           >
             <TodayAppointments
+              isDark={isDark}
               appointments={safeAppointments.filter(a => {
                 if (!a?.date) return false;
                 const aptDate = String(a.date).includes('T') ? String(a.date).split('T')[0] : a.date;
