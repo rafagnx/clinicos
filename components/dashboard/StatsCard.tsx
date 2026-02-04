@@ -26,14 +26,14 @@ export default function StatsCard({
     };
 
     return (
-        <Card className="p-6 bg-white/80 backdrop-blur-sm border-slate-200/60 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 duration-300 group">
+        <Card className="p-6 bg-white/80 dark:bg-slate-900/50 backdrop-blur-sm border-slate-200/60 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 duration-300 group">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">
+                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {title}
                     </p>
                     <div className="flex items-end gap-3 mt-2">
-                        <p className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                        <p className="text-3xl font-bold bg-gradient-to-br from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
                             {value}
                         </p>
                         {trend && (

@@ -126,7 +126,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-10 min-h-screen")}>
+    <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-10 min-h-screen relative overflow-hidden")}>
+
+      {/* Ambient Background Glow */}
+      <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] animate-pulse-slow pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[80px] animate-pulse-slow delay-700 pointer-events-none" />
 
       {/* HEADER */}
       <div className={cn("rounded-3xl p-6 md:p-8 border shadow-lg relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200")}>
