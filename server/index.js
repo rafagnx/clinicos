@@ -399,6 +399,44 @@ app.use('/api/marketing', createMarketingRoutes(pool, requireAuth));
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../dist')));
 
+// --- SELF-HEALING HELPERS ---
+const ensureOrganizationExists = async (orgId, client) => {
+    if (!orgId) return;
+    try {
+        const res = await client.query('SELECT id FROM organization WHERE id = $1', [orgId]);
+        if (res.rows.length === 0) {
+            console.log(`[SELF-HEAL] Creating missing organization: ${orgId}`);
+            await client.query(`
+                INSERT INTO organization (id, name, slug, "createdAt", "updatedAt")
+                VALUES ($1, 'Minha Clínica', $2, NOW(), NOW())
+            `, [orgId, `clinic-${orgId.substring(0, 8)}`]);
+        }
+    } catch (e) {
+        console.error("Error in ensureOrganizationExists:", e);
+    }
+};
+
+const validateGenericFKs = async (entity, data, client) => {
+    const errors = [];
+    if (entity === 'Appointment') {
+        if (data.patient_id) {
+            // Check if patient exists (heuristic: assuming ID is int, catching if not)
+            try {
+                const res = await client.query('SELECT id FROM patients WHERE id = $1', [data.patient_id]);
+                if (res.rows.length === 0) errors.push(`Paciente ID ${data.patient_id} não encontrado.`);
+            } catch (ignore) { }
+        }
+        if (data.professional_id) {
+            try {
+                const res = await client.query('SELECT id FROM professionals WHERE id = $1', [data.professional_id]);
+                if (res.rows.length === 0) errors.push(`Profissional ID ${data.professional_id} não encontrado.`);
+            } catch (ignore) { }
+        }
+    }
+    return errors;
+};
+// ----------------------------
+
 // Auth routes handled by Supabase direct integration
 // USER SELF-PROFILE UPDATE (Sync)
 app.put('/api/user/profile', requireAuth, async (req, res) => {
@@ -946,6 +984,20 @@ const initSchema = async () => {
             ];
             for (const col of newPatientCols) {
                 await client.query(`ALTER TABLE "patients" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+            }
+
+            // 8.7. Ensure APPOINTMENTS Columns (Fix Agenda Errors)
+            const newAppointmentCols = [
+                { name: 'date', type: 'VARCHAR(20)' },
+                { name: 'scheduled_by', type: 'VARCHAR(255)' },
+                { name: 'source', type: 'VARCHAR(100)' },
+                { name: 'promotion_id', type: 'VARCHAR(100)' },
+                { name: 'duration', type: 'INTEGER' }
+            ];
+            for (const col of newAppointmentCols) {
+                try {
+                    await client.query(`ALTER TABLE "appointments" ADD COLUMN IF NOT EXISTS "${col.name}" ${col.type};`);
+                } catch (e) { console.log(`Migration validation: ${e.message}`); }
             }
 
             // 9. Ensure HOLIDAYS & BLOCKED DAYS Tables (Fix 500 Error - Type Correction)
@@ -2583,14 +2635,14 @@ app.get('/api/debug-auth-config', (req, res) => {
 
 
 // Run Migration on Startup (Async)
-
-
-// The "catchall" handler
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
+initSchema().then(() => {
+    console.log("Database schema verified and migrated.");
+}).catch(err => {
+    console.error("Failed to migrate schema:", err);
 });
 
-
-
-
-// Trigger Deploy 2
+const PORT = 10000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
