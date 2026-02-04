@@ -81,11 +81,11 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row dark:bg-[#0B0E14]">
       <NotificationPermissionPrompt />
 
       {/* Sidebar Desktop */}
-      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-hidden">
+      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-200 sticky top-0 h-screen overflow-hidden dark:bg-[#11141D] dark:border-slate-800">
         <style>{`
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
@@ -105,10 +105,10 @@ export default function Layout({ children, currentPageName }) {
               )}
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 leading-tight">
+              <h1 className="font-bold text-slate-900 leading-tight dark:text-white">
                 {clinicSettings?.name || "ClinicOS"}
               </h1>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold dark:text-slate-500">
                 Gestão Inteligente
               </p>
             </div>
@@ -124,7 +124,7 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl(item.href)}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/20"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-[#1C2333]/50 dark:hover:text-slate-100"
                     }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -135,8 +135,8 @@ export default function Layout({ children, currentPageName }) {
           </nav>
         </div>
 
-        <div className="p-6 border-t border-slate-100 shrink-0">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+        <div className="p-6 border-t border-slate-100 shrink-0 dark:border-slate-800">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 dark:bg-[#151A25] dark:border-slate-800">
             <Avatar className="w-10 h-10 border-2 border-white shadow-sm">
               <AvatarImage src={user?.photo_url} />
               <AvatarFallback className="bg-white text-slate-400">
@@ -144,10 +144,10 @@ export default function Layout({ children, currentPageName }) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900 truncate">
+              <p className="text-sm font-bold text-slate-900 truncate dark:text-slate-100">
                 {user?.full_name}
               </p>
-              <p className="text-[10px] text-slate-500 truncate uppercase tracking-wider">
+              <p className="text-[10px] text-slate-500 truncate uppercase tracking-wider dark:text-slate-400">
                 {user?.role || "Profissional"}
               </p>
             </div>
@@ -164,12 +164,12 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Header Mobile */}
-      <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-40 flex items-center justify-between">
+      <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-40 flex items-center justify-between dark:bg-[#11141D] dark:border-slate-800">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
-            <Menu className="w-6 h-6 text-slate-600" />
+            <Menu className="w-6 h-6 text-slate-600 dark:text-slate-300" />
           </Button>
-          <h1 className="font-bold text-slate-900">{clinicSettings?.name || "ClinicOS"}</h1>
+          <h1 className="font-bold text-slate-900 dark:text-white">{clinicSettings?.name || "ClinicOS"}</h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -179,9 +179,9 @@ export default function Layout({ children, currentPageName }) {
             className="relative"
             onClick={() => setNotificationsOpen(true)}
           >
-            <Bell className="w-5 h-5 text-slate-600" />
+            <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900" />
             )}
           </Button>
           <Avatar className="w-8 h-8">
@@ -194,16 +194,16 @@ export default function Layout({ children, currentPageName }) {
       {/* Sidebar Mobile (Sheet) */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-72">
-          <div className="flex flex-col h-full">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex flex-col h-full dark:bg-[#11141D]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-slate-900">Menu</span>
+                <span className="font-bold text-slate-900 dark:text-white">Menu</span>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 dark:text-slate-300" />
               </Button>
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -217,7 +217,7 @@ export default function Layout({ children, currentPageName }) {
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
                       ? "bg-primary text-white shadow-lg shadow-primary/20"
-                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100"
                       }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -226,10 +226,10 @@ export default function Layout({ children, currentPageName }) {
                 );
               })}
             </nav>
-            <div className="p-4 border-t border-slate-100">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-600"
+                className="w-full justify-start gap-3 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
                 onClick={handleLogout}
               >
                 <LogOut className="w-5 h-5" />
@@ -265,17 +265,17 @@ export default function Layout({ children, currentPageName }) {
       {/* Conteúdo Principal */}
       <main className="flex-1 relative overflow-x-hidden">
         {/* Header Desktop (Breadcrumbs/User) */}
-        <header className="hidden lg:flex items-center justify-between px-8 py-6 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+        <header className="hidden lg:flex items-center justify-between px-8 py-6 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 dark:bg-[#11141D]/80 dark:border-slate-800">
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-slate-100 rounded-lg">
-              <Settings className="w-5 h-5 text-slate-500" />
+            <div className="p-2 bg-slate-100 rounded-lg dark:bg-slate-800">
+              <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900">{currentPageName}</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{currentPageName}</h2>
               <div className="flex items-center gap-2 text-xs text-slate-400">
                 <span>ClinicOS</span>
                 <span>/</span>
-                <span className="text-slate-600 font-medium">{currentPageName}</span>
+                <span className="text-slate-600 font-medium dark:text-slate-300">{currentPageName}</span>
               </div>
             </div>
           </div>
@@ -297,19 +297,19 @@ export default function Layout({ children, currentPageName }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-3 pl-2 pr-4 py-6 hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-200 transition-all">
-                  <Avatar className="w-8 h-8 border border-slate-200">
+                <Button variant="ghost" className="gap-3 pl-2 pr-4 py-6 hover:bg-slate-50 rounded-xl border border-transparent hover:border-slate-200 transition-all dark:hover:bg-slate-800 dark:hover:border-slate-700">
+                  <Avatar className="w-8 h-8 border border-slate-200 dark:border-slate-700">
                     <AvatarImage src={user?.photo_url} />
                     <AvatarFallback>{user?.full_name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="text-left hidden xl:block">
-                    <p className="text-sm font-bold text-slate-900 leading-none mb-1">{user?.full_name}</p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">{user?.role}</p>
+                    <p className="text-sm font-bold text-slate-900 leading-none mb-1 dark:text-slate-100">{user?.full_name}</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider dark:text-slate-400">{user?.role}</p>
                   </div>
                   <ChevronDown className="w-4 h-4 text-slate-400" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
+              <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl dark:bg-[#1C2333] dark:border-slate-800 dark:text-slate-200">
                 <DropdownMenuItem className="rounded-lg gap-2 py-3 cursor-pointer">
                   <Settings className="w-4 h-4" />
                   Minha Conta
