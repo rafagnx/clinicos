@@ -381,7 +381,7 @@ export default function Dashboard() {
             <TodayAppointments
               appointments={safeAppointments.filter(a => {
                 if (!a?.date) return false;
-                const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+                const aptDate = String(a.date).includes('T') ? String(a.date).split('T')[0] : a.date;
                 return aptDate === today;
               })}
               patients={safePatients}

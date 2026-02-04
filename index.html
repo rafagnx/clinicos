@@ -69,14 +69,8 @@
       }
 
       if (cleaned) {
-        console.log('🔄 Cleaning complete. Refreshing...');
-        // Prevent infinite reload loop
-        if (!sessionStorage.getItem('auth_cleaned')) {
-            sessionStorage.setItem('auth_cleaned', 'true');
-            window.location.reload(); 
-        }
-      } else {
-        sessionStorage.removeItem('auth_cleaned');
+        console.log('🔄 Cleaning complete.');
+        // window.location.reload(); 
       }
     } catch (e) {
       console.error('Shield check failed', e);

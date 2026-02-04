@@ -82,10 +82,10 @@ export default function TodayAppointments({ appointments, patients, professional
                             <div className="flex items-center gap-4">
                                 <div className={cn("text-center min-w-[70px] rounded-xl p-2", isDark ? "bg-slate-950" : "bg-slate-50")}>
                                     <p className={cn("text-lg font-bold", isDark ? "text-slate-200" : "text-slate-800")}>
-                                        {apt.start_time.includes('T') ? new Date(apt.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.start_time || "--:--").substring(0, 5)}
+                                        {apt.start_time?.includes('T') ? new Date(apt.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.start_time || "--:--").substring(0, 5)}
                                     </p>
                                     <p className={cn("text-xs font-medium", isDark ? "text-slate-500" : "text-slate-500")}>
-                                        {apt.end_time.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
+                                        {apt.end_time?.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
                                     </p>
                                 </div>
                                 <div className="flex-1 min-w-0">
