@@ -35,7 +35,7 @@ export default function Dashboard() {
   const defaultWidgets = [
     { id: "upcoming_appointments", enabled: true, order: 0 },
     { id: "financial_reports", enabled: true, order: 1 },
-    { id: "chat_activity", enabled: true, order: 2 },
+    { id: "today_appointments", enabled: true, order: 2 },
     { id: "urgent_reminders", enabled: true, order: 3 },
     { id: "returns_alert", enabled: true, order: 4 }
   ];
@@ -46,8 +46,16 @@ export default function Dashboard() {
       if (saved) {
         const parsed = JSON.parse(saved);
         // Merge with defaults in case new widgets were added
+        // Filter out old chat_activity if it exists in local storage
+        const migrated = parsed.filter(w => w.id !== 'chat_activity');
+
+        // Add new today_appointments if missing
+        if (!migrated.find(w => w.id === 'today_appointments')) {
+          migrated.push({ id: "today_appointments", enabled: true, order: 2 });
+        }
+
         return defaultWidgets.map(def => {
-          const saved = parsed.find(w => w.id === def.id);
+          const saved = migrated.find(w => w.id === def.id);
           return saved || def;
         });
       }
@@ -110,7 +118,19 @@ export default function Dashboard() {
     switch (id) {
       case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
       case "financial_reports": return <FinancialReportsWidget appointments={safeAppointments} />;
-      case "chat_activity": return <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />;
+      case "today_appointments": return (
+        <TodayAppointments
+          appointments={safeAppointments.filter(a => {
+            if (!a?.date) return false;
+            // Handle both "2026-02-02" and "2026-02-02T00:00:00Z" formats
+            const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+            return aptDate === today;
+          })}
+          patients={safePatients}
+          professionals={safeProfessionals}
+          onStatusChange={handleStatusChange}
+        />
+      );
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       case "returns_alert": return <ReturnsAlertWidget />;
       default: return null;
@@ -388,18 +408,10 @@ export default function Dashboard() {
 
         {/* Sidebar Content */}
         <div className="space-y-8">
-          <TodayAppointments
-            appointments={safeAppointments.filter(a => {
-              if (!a?.date) return false;
-              // Handle both "2026-02-02" and "2026-02-02T00:00:00Z" formats
-              const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
-              return aptDate === today;
-            })}
-            patients={safePatients}
-            professionals={safeProfessionals}
-            onStatusChange={handleStatusChange}
-          />
+          <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />
+
           <BirthdaysList patients={safePatients.filter(p => {
+
             if (!p.birth_date) return false;
             try {
               let birthMonth, birthDay;
