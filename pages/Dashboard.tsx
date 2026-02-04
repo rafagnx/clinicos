@@ -27,6 +27,7 @@ import WidgetSelector from "@/components/dashboard/WidgetSelector";
 import MobileDashboard from "@/components/dashboard/MobileDashboard";
 
 export default function Dashboard() {
+  console.log("🔵 DASHBOARD MOUNTED - START");
   const context = useOutletContext<{ isDark: boolean }>();
   const isDark = context?.isDark || false;
   const queryClient = useQueryClient();
