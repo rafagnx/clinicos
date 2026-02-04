@@ -121,21 +121,40 @@ export default function MobileAgendaView({
                                         </h3>
                                     </div>
 
-                                    <p className={cn("text-xs truncate mb-2", isDark ? "text-slate-400" : "text-slate-500")}>
-                                        {apt.procedure_name || "Consulta"}
-                                        {apt.professional?.full_name && ` • ${apt.professional.full_name.split(' ')[0]}`}
-                                    </p>
+                                    {/* Patient Tags Row */}
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                        {apt.patient?.funnel_status && (
+                                            <Badge className={cn(
+                                                "h-5 text-[10px] px-1.5 border-0 font-bold uppercase",
+                                                apt.patient.funnel_status === "hot" ? "bg-rose-500 hover:bg-rose-600 text-white" :
+                                                    apt.patient.funnel_status === "warm" ? "bg-orange-500 hover:bg-orange-600 text-white" :
+                                                        "bg-blue-500 hover:bg-blue-600 text-white"
+                                            )}>
+                                                {apt.patient.funnel_status === "hot" ? "🔥 Quente" :
+                                                    apt.patient.funnel_status === "warm" ? "⚡ Morno" : "❄️ Frio"}
+                                            </Badge>
+                                        )}
+                                        {apt.patient?.personality && (
+                                            <Badge variant="secondary" className="h-5 text-[10px] px-1.5 border-0 font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                                                🧠 {apt.patient.personality}
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center gap-1 mb-2 text-xs">
+                                        <span className={cn("font-medium", isDark ? "text-slate-300" : "text-slate-600")}>
+                                            {apt.professional?.full_name || "Profissional"}
+                                        </span>
+                                        <span className={cn("mx-1", isDark ? "text-slate-600" : "text-slate-300")}>•</span>
+                                        <span className={cn("truncate", isDark ? "text-slate-400" : "text-slate-500")}>
+                                            {apt.procedure_name || "Consulta"}
+                                        </span>
+                                    </div>
 
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className={cn("text-[10px] h-5 border-0 font-medium px-1.5", status.color)}>
+                                        <Badge variant="outline" className={cn("text-[10px] h-5 border-0 font-bold uppercase px-2", status.color)}>
                                             {status.label}
                                         </Badge>
-
-                                        {apt.type && (
-                                            <span className={cn("text-[10px] opacity-70 border px-1.5 rounded h-5 flex items-center", isDark ? "border-slate-700 text-slate-400" : "border-slate-200 text-slate-500")}>
-                                                {apt.type}
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
 

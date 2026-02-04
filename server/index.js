@@ -1690,7 +1690,7 @@ app.get('/api/blocked-days', requireAuth, async (req, res) => {
         const params = [organizationId];
         let paramIndex = 2;
 
-        if (professionalId && professionalId !== 'all') {
+        if (professionalId && professionalId !== 'all' && professionalId !== 'undefined' && professionalId !== 'null') {
             query += ` AND professional_id = $${paramIndex++} `;
             params.push(professionalId);
         }
