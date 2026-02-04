@@ -202,7 +202,10 @@ export default function Dashboard() {
 
         <div className="space-y-8">
           <BirthdaysList patients={safePatients} />
-          <ChatActivityWidget conversations={safeConversations} />
+          <ChatActivityWidget
+            professionals={safeProfessionals}
+            currentUserId={user?.id}
+          />
         </div>
       </div>
 
