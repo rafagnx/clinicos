@@ -2641,8 +2641,8 @@ initSchema().then(() => {
     console.error("Failed to migrate schema:", err);
 });
 
-const PORT = 10000;
-app.listen(PORT, '0.0.0.0', () => {
+// Use httpServer.listen instead of app.listen to support Socket.IO
+httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
