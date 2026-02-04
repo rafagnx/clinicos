@@ -122,7 +122,14 @@ export default function Dashboard() {
   const firstName = (user?.name || user?.display_name || user?.full_name || "Usuário").split(" ")[0];
 
   if (isMobile) {
-    return <MobileDashboard user={user} stats={stats} appointments={safeAppointments} />;
+    return <MobileDashboard
+      user={user}
+      stats={stats}
+      appointments={safeAppointments}
+      patients={safePatients}
+      professionals={safeProfessionals}
+      isDark={isDark}
+    />;
   }
 
   return (
