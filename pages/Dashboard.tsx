@@ -27,7 +27,8 @@ import WidgetSelector from "@/components/dashboard/WidgetSelector";
 import MobileDashboard from "@/components/dashboard/MobileDashboard";
 
 export default function Dashboard() {
-  const { isDark } = useOutletContext<{ isDark: boolean }>();
+  const context = useOutletContext<{ isDark: boolean }>();
+  const isDark = context?.isDark || false;
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
   const [user, setUser] = useState(null);
