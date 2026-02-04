@@ -24,20 +24,36 @@ import FinancialReportsWidget from "@/components/dashboard/FinancialReportsWidge
 import ReturnsAlertWidget from "@/components/dashboard/ReturnsAlertWidget";
 import WidgetSelector from "@/components/dashboard/WidgetSelector";
 
+import MobileDashboard from "@/components/dashboard/MobileDashboard";
+
 export default function Dashboard() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
   const [user, setUser] = useState(null);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Listener
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Widget preferences with localStorage persistence
   const defaultWidgets = [
     { id: "upcoming_appointments", enabled: true, order: 0 },
     { id: "financial_reports", enabled: true, order: 1 },
-    { id: "today_appointments", enabled: true, order: 2 },
-    { id: "urgent_reminders", enabled: true, order: 3 },
-    { id: "returns_alert", enabled: true, order: 4 }
+    { id: "urgent_reminders", enabled: true, order: 2 },
+    { id: "returns_alert", enabled: true, order: 3 }
   ];
 
   const [widgets, setWidgets] = useState(() => {
@@ -45,14 +61,8 @@ export default function Dashboard() {
       const saved = localStorage.getItem('dashboard-widgets');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Merge with defaults in case new widgets were added
-        // Filter out old chat_activity if it exists in local storage
-        const migrated = parsed.filter(w => w.id !== 'chat_activity');
-
-        // Add new today_appointments if missing
-        if (!migrated.find(w => w.id === 'today_appointments')) {
-          migrated.push({ id: "today_appointments", enabled: true, order: 2 });
-        }
+        // Migrations: filter out old ids and merge with defaults
+        const migrated = parsed.filter(w => w.id !== 'chat_activity' && w.id !== 'today_appointments');
 
         return defaultWidgets.map(def => {
           const saved = migrated.find(w => w.id === def.id);
@@ -118,19 +128,6 @@ export default function Dashboard() {
     switch (id) {
       case "upcoming_appointments": return <UpcomingAppointmentsWidget appointments={safeAppointments.filter(a => a?.type !== 'compromisso')} patients={safePatients} professionals={safeProfessionals} />;
       case "financial_reports": return <FinancialReportsWidget appointments={safeAppointments} />;
-      case "today_appointments": return (
-        <TodayAppointments
-          appointments={safeAppointments.filter(a => {
-            if (!a?.date) return false;
-            // Handle both "2026-02-02" and "2026-02-02T00:00:00Z" formats
-            const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
-            return aptDate === today;
-          })}
-          patients={safePatients}
-          professionals={safeProfessionals}
-          onStatusChange={handleStatusChange}
-        />
-      );
       case "urgent_reminders": return <UrgentRemindersWidget appointments={safeAppointments} patients={safePatients} promotions={[]} />;
       case "returns_alert": return <ReturnsAlertWidget />;
       default: return null;
@@ -185,6 +182,10 @@ export default function Dashboard() {
       }
     }
   };
+
+  if (isMobile) {
+    return <MobileDashboard user={user} stats={stats} appointments={safeAppointments} />;
+  }
 
   return (
     <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-10 min-h-screen")}>
@@ -369,8 +370,27 @@ export default function Dashboard() {
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content - Widgets Area */}
+        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Priority #1: Daily Agenda - Fixed prominence */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <TodayAppointments
+              appointments={safeAppointments.filter(a => {
+                if (!a?.date) return false;
+                const aptDate = a.date.includes('T') ? a.date.split('T')[0] : a.date;
+                return aptDate === today;
+              })}
+              patients={safePatients}
+              professionals={safeProfessionals}
+              onStatusChange={handleStatusChange}
+            />
+          </motion.div>
+
+          {/* Draggable Support Widgets Area */}
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="widgets">
               {(provided) => (
@@ -407,74 +427,77 @@ export default function Dashboard() {
         </div>
 
         {/* Sidebar Content */}
-        <div className="space-y-8">
-          <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />
-
-          <BirthdaysList patients={safePatients.filter(p => {
-
-            if (!p.birth_date) return false;
-            try {
-              let birthMonth, birthDay;
-              if (p.birth_date.includes('T')) {
-                const date = new Date(p.birth_date);
-                birthMonth = date.getUTCMonth();
-                birthDay = date.getUTCDate();
-              } else if (p.birth_date.includes('-')) {
-                const part = p.birth_date.split('T')[0];
-                const [y, m, d] = part.split('-').map(Number);
-                birthMonth = m - 1;
-                birthDay = d;
-              } else {
+        <div className="space-y-8 flex flex-col">
+          <div className="order-1 space-y-8">
+            <BirthdaysList patients={safePatients.filter(p => {
+              if (!p.birth_date) return false;
+              try {
+                let birthMonth, birthDay;
+                if (p.birth_date.includes('T')) {
+                  const date = new Date(p.birth_date);
+                  birthMonth = date.getUTCMonth();
+                  birthDay = date.getUTCDate();
+                } else if (p.birth_date.includes('-')) {
+                  const part = p.birth_date.split('T')[0];
+                  const [y, m, d] = part.split('-').map(Number);
+                  birthMonth = m - 1;
+                  birthDay = d;
+                } else {
+                  return false;
+                }
+                const todayDate = new Date();
+                return birthMonth === todayDate.getMonth() && birthDay === todayDate.getDate();
+              } catch (e) {
                 return false;
               }
-              const todayDate = new Date();
-              return birthMonth === todayDate.getMonth() && birthDay === todayDate.getDate();
-            } catch (e) {
-              return false;
-            }
-          })} />
+            })} />
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card className={cn(
-              "relative overflow-hidden p-6 border-none shadow-2xl",
-              "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"
-            )}>
-              {/* Animated background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent animate-shimmer" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className={cn(
+                "relative overflow-hidden p-6 border-none shadow-2xl",
+                "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"
+              )}>
+                {/* Animated background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent animate-shimmer" />
 
-              <div className="relative z-10 space-y-4 text-white">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl w-fit">
-                  <UserPlus className="w-6 h-6" />
+                <div className="relative z-10 space-y-4 text-white">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl w-fit">
+                    <UserPlus className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display font-bold mb-2">Expandir sua Clínica?</h3>
+                    <p className="text-indigo-100 text-sm leading-relaxed">
+                      Convide novos profissionais para sua equipe e gerencie tudo em um só lugar.
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    className="w-full bg-white text-indigo-700 hover:bg-indigo-50 border-none font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                    asChild
+                  >
+                    <Link to={createPageUrl("Professionals")}>Gerenciar Equipe</Link>
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="text-xl font-display font-bold mb-2">Expandir sua Clínica?</h3>
-                  <p className="text-indigo-100 text-sm leading-relaxed">
-                    Convide novos profissionais para sua equipe e gerencie tudo em um só lugar.
-                  </p>
-                </div>
-                <Button
-                  variant="secondary"
-                  className="w-full bg-white text-indigo-700 hover:bg-indigo-50 border-none font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                  asChild
-                >
-                  <Link to={createPageUrl("Professionals")}>Gerenciar Equipe</Link>
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </div>
+
+          <div className="order-2 opacity-80 hover:opacity-100 transition-opacity">
+            <ChatActivityWidget professionals={safeProfessionals} currentUserId={user?.id} />
+          </div>
         </div>
-      </div>
 
-      <WidgetSelector
-        open={selectorOpen}
-        onOpenChange={setSelectorOpen}
-        widgets={widgets}
-        onToggleWidget={(id) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w))}
-      />
+        <WidgetSelector
+          open={selectorOpen}
+          onOpenChange={setSelectorOpen}
+          widgets={widgets}
+          onToggleWidget={(id) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w))}
+        />
+      </div>
     </div>
   );
 }

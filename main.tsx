@@ -98,6 +98,7 @@ const App = () => {
 
                 {/* Authenticated Routes */}
                 <Route element={<Layout />}>
+                    <Route path="/dashboard" element={<Navigate to="/Dashboard" replace />} />
                     <Route path="/Dashboard" element={<Dashboard />} />
                     <Route path="/Financial" element={<Financial />} />
                     <Route path="/Agenda" element={<Agenda />} />

@@ -31,7 +31,7 @@ export default function Auth() {
                 toast.success("Login realizado com sucesso!");
                 localStorage.setItem("clinicos-token", data.session?.access_token || "");
                 // Fetch user org context later or just dashboard
-                window.location.href = "/dashboard";
+                window.location.href = "/Dashboard";
             }
         } catch (e) {
             console.error("Login error:", e);
@@ -100,7 +100,7 @@ export default function Auth() {
                         access_type: 'offline',
                         prompt: 'consent',
                     },
-                    redirectTo: window.location.origin + '/dashboard'
+                    redirectTo: window.location.origin + '/Dashboard'
                 }
             });
             if (error) throw error;

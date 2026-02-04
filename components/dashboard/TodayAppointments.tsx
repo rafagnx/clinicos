@@ -24,15 +24,28 @@ const statusConfig = {
 export default function TodayAppointments({ appointments, patients, professionals, onStatusChange }) {
     const { isDark } = useOutletContext<{ isDark: boolean }>();
 
+    const header = (
+        <div className={cn(
+            "p-5 border-b",
+            isDark ? "bg-gradient-to-r from-blue-900/10 to-indigo-900/10 border-slate-800" : "bg-gradient-to-r from-blue-50 to-indigo-50 border-slate-100"
+        )}>
+            <h3 className={cn("font-bold", isDark ? "text-white" : "text-slate-800")}>📅 Agenda do Dia</h3>
+            <p className={cn("text-sm mt-1", isDark ? "text-slate-400" : "text-slate-600")}>
+                {appointments?.length || 0} consultas agendadas
+            </p>
+        </div>
+    );
+
     if (!appointments || appointments.length === 0) {
         return (
             <Card className={cn(
-                "p-8 border-0 shadow-sm transition-all duration-300",
-                isDark ? "bg-slate-900/50 border-slate-800" : "bg-white"
+                "backdrop-blur-sm border-0 shadow-lg overflow-hidden transition-all duration-300",
+                isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80"
             )}>
-                <div className={cn("text-center", isDark ? "text-slate-500" : "text-slate-400")}>
+                {header}
+                <div className={cn("p-12 text-center", isDark ? "text-slate-500" : "text-slate-400")}>
                     <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhum agendamento para hoje</p>
+                    <p>Nenhuma consulta para hoje</p>
                 </div>
             </Card>
         );
@@ -43,13 +56,7 @@ export default function TodayAppointments({ appointments, patients, professional
             "backdrop-blur-sm border-0 shadow-lg overflow-hidden transition-all duration-300",
             isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80"
         )}>
-            <div className={cn(
-                "p-5 border-b",
-                isDark ? "bg-gradient-to-r from-blue-900/10 to-indigo-900/10 border-slate-800" : "bg-gradient-to-r from-blue-50 to-indigo-50 border-slate-100"
-            )}>
-                <h3 className={cn("font-bold", isDark ? "text-white" : "text-slate-800")}>📅 Agenda do Dia</h3>
-                <p className={cn("text-sm mt-1", isDark ? "text-slate-400" : "text-slate-600")}>{appointments.length} consultas agendadas</p>
-            </div>
+            {header}
             <div className={cn("divide-y", isDark ? "divide-slate-800" : "divide-slate-50")}>
                 {appointments.map((apt) => {
                     const status = statusConfig[apt.status] || statusConfig.agendado;

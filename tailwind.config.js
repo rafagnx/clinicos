@@ -67,6 +67,24 @@ export default {
                     gray: "hsl(var(--calendar-gray))",
                     holiday: "hsl(var(--calendar-holiday))",
                 },
+                // Mobile Dashboard Palette
+                sage: {
+                    DEFAULT: "#C6D1C0",
+                    light: "#D8E2D3",
+                    dark: "#A5B29E",
+                },
+                "off-black": "#1D1D1D",
+                "dark-gray": "#2B2B2B",
+                "pale-yellow": "#F9E58C",
+                "soft-red": "#F25C54",
+                "cool-blue": "#5A7BEF",
+                "bright-orange": "#F7941D",
+                "pastel-pink": "#FAD6DC",
+                status: {
+                    success: "#9FE6A0",
+                    warning: "#FFD966",
+                    error: "#FF6B6B",
+                },
             },
             borderRadius: {
                 lg: "var(--radius)",

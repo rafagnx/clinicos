@@ -144,7 +144,7 @@ export default function Login() {
                         access_type: 'offline',
                         prompt: 'consent',
                     },
-                    redirectTo: window.location.origin + '/dashboard',
+                    redirectTo: window.location.origin + '/Dashboard',
                     skipBrowserRedirect: false
                 }
             });
