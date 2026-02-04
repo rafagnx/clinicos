@@ -2392,6 +2392,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         const values = keys.map(key => {
             const v = data[key];
+            if (v === null) return null;
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
