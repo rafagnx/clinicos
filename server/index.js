@@ -607,6 +607,24 @@ const initSchema = async () => {
                     phone TEXT,
                     created_at TIMESTAMP DEFAULT NOW()
                 );
+
+                -- Ensure patients has all required columns (Expanded for Edit Profile)
+                DO $$
+                BEGIN
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "cpf" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "birth_date" DATE; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "gender" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "address" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "whatsapp" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "origin" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "notes" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    
+                    -- Behavioral Profile Fields
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "temperature" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "behavioral_profile" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "motivation" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "patients" ADD COLUMN "conscience_level" TEXT; EXCEPTION WHEN duplicate_column THEN END;
+                END $$;
             `);
 
             await client.query(`
