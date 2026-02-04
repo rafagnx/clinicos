@@ -143,6 +143,12 @@ const requireAuth = async (req, res, next) => {
                     if (existingByEmail.rows.length > 0 && existingByEmail.rows[0].id !== user.id) {
                         // User exists with same email but DIFFERENT ID - update the old record with new ID
                         console.log(`[Auth] Updating User ID for ${user.email} from ${existingByEmail.rows[0].id} to ${user.id}`);
+
+                        // FIX: Delete potentially conflicting sessions from 'better-auth' or similar that are holding the old ID
+                        try {
+                            await pool.query('DELETE FROM "session" WHERE "userId" = $1', [existingByEmail.rows[0].id]);
+                        } catch (e) { /* Ignore if session table invalid */ }
+
                         await pool.query(`
                             UPDATE "user" SET 
                                 id = $1, 

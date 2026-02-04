@@ -82,23 +82,23 @@ export default function Dashboard() {
     base44.auth.me().then(setUser).catch(() => { });
   }, []);
 
-  const { data: appointments = [] } = useQuery({
+  const { data: appointments = [], isError: isErrorApt } = useQuery({
     queryKey: ["appointments"],
     queryFn: () => base44.entities.Appointment.list("-date")
   });
 
-  const { data: patients = [] } = useQuery({
+  const { data: patients = [], isError: isErrorPatients } = useQuery({
     queryKey: ["patients"],
     queryFn: () => (base44.entities.Patient as any).filter({ status: "ativo" })
   });
 
-  const { data: professionals = [] } = useQuery({
+  const { data: professionals = [], isError: isErrorPros } = useQuery({
     queryKey: ["professionals"],
     queryFn: () => (base44.entities.Professional as any).filter({ status: "ativo" })
   });
 
   // Fetch conversations for chat widget
-  const { data: conversations = [] } = useQuery({
+  const { data: conversations = [], isError: isErrorConv } = useQuery({
     queryKey: ["conversations"],
     queryFn: () => base44.list("Conversation", { sort: [{ field: "last_message_at", direction: "desc" }] })
   });
@@ -368,6 +368,17 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </motion.div>
+
+      {(isErrorApt || isErrorPatients || isErrorPros || isErrorConv) && (
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 mb-4 animate-in fade-in slide-in-from-top-4">
+          <h3 className="font-bold flex items-center gap-2">
+            ⚠️ Erro de conexão
+          </h3>
+          <p className="text-sm">
+            Alguns dados não puderam ser carregados. Tente recarregar a página.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area */}
