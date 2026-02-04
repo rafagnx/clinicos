@@ -135,118 +135,122 @@ export default function Dashboard() {
   return (
     <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-10 min-h-screen relative overflow-hidden")}>
 
-      {/* Ambient Background Glow */}
-      <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] animate-pulse-slow pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[80px] animate-pulse-slow delay-700 pointer-events-none" />
+      {/* Ambient Background Glow - INCREASED VISIBILITY */}
+      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-slow pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] animate-pulse-slow delay-700 pointer-events-none z-0" />
 
-      {/* HEADER */}
-      <div className={cn("rounded-3xl p-6 md:p-8 border shadow-lg relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200")}>
-        {/* Decorative Background Elements */}
-        {!isDark && (
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-full opacity-50 pointer-events-none" />
-        )}
+      {/* Content Wrapper - Ensure z-index is higher than background */}
+      <div className="relative z-10 space-y-6 md:space-y-10">
 
-        <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
-          <div>
-            <h1 className={cn("text-3xl md:text-4xl font-bold mb-2 tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-              {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">{firstName}</span>!
-            </h1>
-            <p className={cn("text-base flex items-center gap-2", isDark ? "text-slate-400" : "text-slate-600")}>
-              <Calendar className="w-4 h-4 text-indigo-500" />
-              {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-            </p>
+        {/* HEADER */}
+        <div className={cn("rounded-3xl p-6 md:p-8 border shadow-lg relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200")}>
+          {/* Decorative Background Elements */}
+          {!isDark && (
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-bl-full opacity-50 pointer-events-none" />
+          )}
+
+          <div className="flex flex-col md:flex-row justify-between gap-6 relative z-10">
+            <div>
+              <h1 className={cn("text-3xl md:text-4xl font-bold mb-2 tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">{firstName}</span>!
+              </h1>
+              <p className={cn("text-base flex items-center gap-2", isDark ? "text-slate-400" : "text-slate-600")}>
+                <Calendar className="w-4 h-4 text-indigo-500" />
+                {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+              </p>
+            </div>
+            <Button onClick={() => setSelectorOpen(true)} variant="outline" className={cn("rounded-xl border shadow-sm hover:shadow-md transition-all", isDark ? "border-slate-700 hover:bg-slate-800" : "border-slate-200 hover:bg-slate-50")}>
+              <Settings className="w-4 h-4 mr-2" /> Personalizar
+            </Button>
           </div>
-          <Button onClick={() => setSelectorOpen(true)} variant="outline" className={cn("rounded-xl border shadow-sm hover:shadow-md transition-all", isDark ? "border-slate-700 hover:bg-slate-800" : "border-slate-200 hover:bg-slate-50")}>
-            <Settings className="w-4 h-4 mr-2" /> Personalizar
-          </Button>
         </div>
-      </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <StatsCard
-          title="Consultas Hoje"
-          value={stats.todayAppointments}
-          icon={Calendar}
-          trend="+12%"
-          trendUp={true}
-          color={isDark ? "indigo" : "blue"}
-          delay={0}
-          isDark={isDark}
-        />
-        <StatsCard
-          title="Total Pacientes"
-          value={stats.totalPatients}
-          icon={Users}
-          trend="+5%"
-          trendUp={true}
-          color={isDark ? "purple" : "indigo"}
-          delay={0.1}
-          isDark={isDark}
-        />
-        <StatsCard
-          title="Aguardando"
-          value={stats.pendingConfirmations}
-          icon={Clock}
-          trend="-2%"
-          trendUp={false}
-          color={isDark ? "amber" : "orange"}
-          delay={0.2}
-          isDark={isDark}
-        />
-        <StatsCard
-          title="Profissionais"
-          value={stats.activeProfessionals}
-          icon={CheckCircle2}
-          trend="Ativo"
-          trendUp={true}
-          color={isDark ? "emerald" : "green"}
-          delay={0.3}
-          isDark={isDark}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* TODAY'S APPOINTMENTS */}
-          <TodayAppointments
+        {/* STATS */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <StatsCard
+            title="Consultas Hoje"
+            value={stats.todayAppointments}
+            icon={Calendar}
+            trend="+12%"
+            trendUp={true}
+            color={isDark ? "indigo" : "blue"}
+            delay={0}
             isDark={isDark}
-            appointments={safeAppointments.filter(a => {
-              if (!a?.date) return false;
-              // Normalize date string (avoid timezone issues for simple equality)
-              const aptDate = String(a.date).includes('T') ? String(a.date).split('T')[0] : a.date;
-              return aptDate === today;
-            })}
-            patients={safePatients}
-            professionals={safeProfessionals}
-            onStatusChange={handleStatusChange}
           />
+          <StatsCard
+            title="Total Pacientes"
+            value={stats.totalPatients}
+            icon={Users}
+            trend="+5%"
+            trendUp={true}
+            color={isDark ? "purple" : "indigo"}
+            delay={0.1}
+            isDark={isDark}
+          />
+          <StatsCard
+            title="Aguardando"
+            value={stats.pendingConfirmations}
+            icon={Clock}
+            trend="-2%"
+            trendUp={false}
+            color={isDark ? "amber" : "orange"}
+            delay={0.2}
+            isDark={isDark}
+          />
+          <StatsCard
+            title="Profissionais"
+            value={stats.activeProfessionals}
+            icon={CheckCircle2}
+            trend="Ativo"
+            trendUp={true}
+            color={isDark ? "emerald" : "green"}
+            delay={0.3}
+            isDark={isDark}
+          />
+        </div>
 
-          {/* WIDGETS */}
-          <div className="space-y-6">
-            {widgets
-              .filter(w => w.enabled)
-              .sort((a, b) => a.order - b.order)
-              .map(widget => renderWidget(widget.id))}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* TODAY'S APPOINTMENTS */}
+            <TodayAppointments
+              isDark={isDark}
+              appointments={safeAppointments.filter(a => {
+                if (!a?.date) return false;
+                // Normalize date string (avoid timezone issues for simple equality)
+                const aptDate = String(a.date).includes('T') ? String(a.date).split('T')[0] : a.date;
+                return aptDate === today;
+              })}
+              patients={safePatients}
+              professionals={safeProfessionals}
+              onStatusChange={handleStatusChange}
+            />
+
+            {/* WIDGETS */}
+            <div className="space-y-6">
+              {widgets
+                .filter(w => w.enabled)
+                .sort((a, b) => a.order - b.order)
+                .map(widget => renderWidget(widget.id))}
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <BirthdaysList patients={safePatients} />
+
+            <ChatActivityWidget
+              professionals={safeProfessionals}
+              currentUserId={user?.id}
+            />
           </div>
         </div>
 
-        <div className="space-y-8">
-          <BirthdaysList patients={safePatients} />
-
-          <ChatActivityWidget
-            professionals={safeProfessionals}
-            currentUserId={user?.id}
-          />
-        </div>
+        <WidgetSelector
+          open={selectorOpen}
+          onOpenChange={setSelectorOpen}
+          widgets={widgets}
+          onToggleWidget={(id) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w))}
+        />
       </div>
-
-      <WidgetSelector
-        open={selectorOpen}
-        onOpenChange={setSelectorOpen}
-        widgets={widgets}
-        onToggleWidget={(id) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, enabled: !w.enabled } : w))}
-      />
     </div>
   );
 }
