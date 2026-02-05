@@ -2484,8 +2484,13 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     // DATA FIX: Restricted fields that should never be updated via generic PUT
     const restrictedFields = [
         'id', 'patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name',
-        'created_at', 'temperature', 'temperament', 'conscience_level', 'main_motivation'
+        'created_at'
     ];
+
+    // Restrict behavioral fields ONLY for Appointment to prevent SQL errors (they belong to Patient)
+    if (entity === 'Appointment') {
+        restrictedFields.push('temperature', 'temperament', 'conscience_level', 'main_motivation');
+    }
 
     // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
     if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {

@@ -932,7 +932,11 @@ export default function Agenda() {
                                     "text-[9px] truncate font-bold uppercase tracking-wider",
                                     isDark ? "text-slate-200" : "text-slate-700"
                                   )}>
-                                    <span className={cn("font-black", (typeConfig[apt.type] || typeConfig["Consulta"]).color)}>
+                                    <span className={cn("font-black", (() => {
+                                      const t = (apt.type || "Consulta").trim();
+                                      const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
+                                      return (typeConfig[key || t] || typeConfig["Consulta"]).color;
+                                    })())}>
                                       {apt.type || "Consulta"}
                                     </span>
                                     <span className="opacity-50 mx-1">•</span>
