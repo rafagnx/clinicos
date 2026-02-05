@@ -199,7 +199,7 @@ export default function Professionals() {
           </p>
         </div>
 
-        {(isAdmin || professionals.length === 0) && (
+        {(isActuallyAdmin || professionals.length === 0) && (
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => setIsInviteOpen(true)}
