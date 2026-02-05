@@ -890,7 +890,7 @@ export default function Agenda() {
                             setIsFormOpen(true);
                           }}
                         >
-                          <div className="p-2 flex flex-col h-full gap-0.5 relative z-10">
+                          <div className="px-2 py-1.5 flex flex-col h-full gap-0.5 relative z-10">
                             <div className="flex items-center gap-2 min-w-0">
                               <span className={cn(
                                 "text-[9px] font-black px-1 py-0.5 rounded-md tracking-wider shadow-sm border",
@@ -912,7 +912,7 @@ export default function Agenda() {
                             </div>
 
                             {height > 35 && (
-                              <div className="flex flex-col gap-1 mt-1 pointer-events-none">
+                              <div className="flex flex-col gap-0.5 mt-0.5 pointer-events-none">
                                 <div className="flex flex-wrap gap-1 items-center">
                                   {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
                                     <div className={cn(
@@ -929,14 +929,14 @@ export default function Agenda() {
 
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <span className={cn(
-                                    "text-[9px] truncate opacity-60 font-bold uppercase tracking-wider",
+                                    "text-[9px] truncate font-bold uppercase tracking-wider",
                                     isDark ? "text-slate-200" : "text-slate-700"
                                   )}>
-                                    <span style={{ color: (typeConfig[apt.type] || typeConfig["Consulta"]).color.replace('text-', 'oklch(var(--') }}>
+                                    <span className={cn("font-black", (typeConfig[apt.type] || typeConfig["Consulta"]).color)}>
                                       {apt.type || "Consulta"}
                                     </span>
                                     <span className="opacity-50 mx-1">•</span>
-                                    {apt.procedure_name || "Procedimento"}
+                                    <span className="opacity-70">{apt.procedure_name || "Procedimento"}</span>
                                   </span>
                                 </div>
                               </div>
