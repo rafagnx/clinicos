@@ -923,7 +923,7 @@ export default function Agenda() {
                                     "text-[9px] truncate opacity-60 font-bold uppercase tracking-wider",
                                     isDark ? "text-slate-200" : "text-slate-700"
                                   )}>
-                                    {apt.procedure_name || "Consulta"}
+                                    {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
                                   </span>
                                 </div>
                               </div>

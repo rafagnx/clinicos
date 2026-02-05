@@ -274,7 +274,7 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
                 <div className="flex items-center gap-1.5 text-xs">
                     <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
                     <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                        {apt.procedure_name || "Consulta"}
+                        {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
                     </span>
                 </div>
             </div>

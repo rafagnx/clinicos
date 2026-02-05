@@ -104,6 +104,8 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                     <div className={cn("flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-50")}>
                                         <User className="w-3 h-3 text-blue-500" />
                                         {professionalName}
+                                        <span className="mx-1 opacity-50">•</span>
+                                        <span className="text-blue-500">{apt.type || "Consulta"}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
