@@ -57,7 +57,8 @@ export default function Professionals() {
   // Form State
   const [formData, setFormData] = useState({
     full_name: "", role_type: "profissional", specialty: "", council_number: "", council_state: "",
-    phone: "", email: "", color: "#3B82F6", appointment_duration: 30, status: "ativo", photo_url: ""
+    phone: "", email: "", color: "#3B82F6", appointment_duration: 30, status: "ativo", photo_url: "",
+    is_admin: false
   });
 
   // Fetch Current User
@@ -84,6 +85,9 @@ export default function Professionals() {
       setIsFormOpen(false);
       resetForm();
       toast.success("Profissional cadastrado!");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error || "Erro ao cadastrar profissional");
     }
   });
 
@@ -94,6 +98,9 @@ export default function Professionals() {
       setIsFormOpen(false);
       resetForm();
       toast.success("Cadastro atualizado!");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.error || "Erro ao atualizar cadastro");
     }
   });
 
@@ -108,7 +115,8 @@ export default function Professionals() {
   const resetForm = () => {
     setFormData({
       full_name: "", role_type: "profissional", specialty: "", council_number: "", council_state: "",
-      phone: "", email: "", color: "#3B82F6", appointment_duration: 30, status: "ativo", photo_url: ""
+      phone: "", email: "", color: "#3B82F6", appointment_duration: 30, status: "ativo", photo_url: "",
+      is_admin: false
     });
     setEditing(null);
   };
@@ -250,9 +258,10 @@ export default function Professionals() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               className={cn(
-                "group relative overflow-hidden rounded-[2rem] glass-premium border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-white/20",
+                "group relative overflow-hidden rounded-[2rem] glass-premium border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-white/20 cursor-pointer",
                 isDark ? "bg-slate-900/40" : "bg-white/60"
               )}
+              onClick={() => (isAdmin || prof.email === user?.email) && handleEdit(prof)}
             >
               {/* Dynamic Gradient Background based on card color */}
               <div
@@ -291,7 +300,7 @@ export default function Professionals() {
                       </h3>
 
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/20 -mt-1 -mr-2">
                             <MoreVertical className="w-4 h-4" />
                           </Button>
@@ -524,6 +533,18 @@ export default function Professionals() {
                   </div>
                 </div>
               )}
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Acesso de Gestor</Label>
+                  <p className="text-[10px] text-slate-500 font-medium">Permite editar configurações e equipe</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formData.is_admin}
+                  onChange={(e) => setFormData(p => ({ ...p, is_admin: e.target.checked }))}
+                  className="w-5 h-5 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-6 border-t mt-auto">

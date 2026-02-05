@@ -1,5 +1,4 @@
-import React from "react";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     Calendar, Clock, MapPin, MoreVertical,
@@ -47,17 +46,24 @@ export default function MobileAgendaView({
     holiday
 }: MobileAgendaViewProps) {
 
+    // Generic date extractor from ISO or space-separated string
+    const getDateStr = (apt: any) => {
+        if (apt.date) return apt.date;
+        const st = apt.start_time || "";
+        return st.substring(0, 10); // Works for both T and space
+    };
+
     // Group appointments by day and hour
     const sortedAppointments = [...appointments].sort((a, b) => {
-        const dateA = a.date || (a.start_time?.includes('T') ? a.start_time.split('T')[0] : "");
-        const dateB = b.date || (b.start_time?.includes('T') ? b.start_time.split('T')[0] : "");
+        const dateA = getDateStr(a);
+        const dateB = getDateStr(b);
         if (dateA !== dateB) return dateA.localeCompare(dateB);
         return (a.start_time || "").localeCompare(b.start_time || "");
     });
 
     // Function to group by date
     const groupedByDay = sortedAppointments.reduce((acc: any, apt) => {
-        const dateStr = apt.date || (apt.start_time?.includes('T') ? apt.start_time.split('T')[0] : "");
+        const dateStr = getDateStr(apt);
         if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(apt);
         return acc;
@@ -81,10 +87,13 @@ export default function MobileAgendaView({
 
                     <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onToday}>
                         <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
-                            {view === "week" ? "Semana" : format(date, "EEEE", { locale: ptBR })}
+                            {view === "week" ? "Esta Semana" : format(date, "EEEE", { locale: ptBR })}
                         </h2>
                         <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em] opacity-60", isDark ? "text-slate-400" : "text-slate-500")}>
-                            {format(date, "d 'de' MMMM", { locale: ptBR })}
+                            {view === "week"
+                                ? `${format(addDays(date, -date.getDay()), "d/MM")} - ${format(addDays(date, 6 - date.getDay()), "d/MM")}`
+                                : format(date, "d 'de' MMMM", { locale: ptBR })
+                            }
                         </span>
                     </div>
 
@@ -112,9 +121,9 @@ export default function MobileAgendaView({
                         <button
                             onClick={() => onViewChange("day")}
                             className={cn(
-                                "px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all relative overflow-hidden",
+                                "px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
                                 view === "day"
-                                    ? "text-white bg-blue-600 shadow-md"
+                                    ? "text-white bg-blue-600 shadow-[0_4px_12px_-4px_rgba(37,99,235,0.6)]"
                                     : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
                             )}
                         >
@@ -123,9 +132,9 @@ export default function MobileAgendaView({
                         <button
                             onClick={() => onViewChange("week")}
                             className={cn(
-                                "px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all relative overflow-hidden",
+                                "px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
                                 view === "week"
-                                    ? "text-white bg-blue-600 shadow-md"
+                                    ? "text-white bg-blue-600 shadow-[0_4px_12px_-4px_rgba(37,99,235,0.6)]"
                                     : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
                             )}
                         >

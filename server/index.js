@@ -938,7 +938,8 @@ const initSchema = async () => {
                 { name: 'color', type: 'VARCHAR(100) DEFAULT \'#3B82F6\'' },
                 { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' },
                 { name: 'user_id', type: 'TEXT' },
-                { name: 'chat_status', type: 'VARCHAR(20) DEFAULT \'offline\'' }
+                { name: 'chat_status', type: 'VARCHAR(20) DEFAULT \'offline\'' },
+                { name: 'updated_at', type: 'TIMESTAMP DEFAULT NOW()' }
             ];
             for (const col of profCols) {
                 const colCheck = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'professionals' AND column_name = $1; `, [col.name]);
@@ -2474,20 +2475,21 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
     const data = req.body;
 
+    // DATA FIX: Restricted fields that should never be updated via generic PUT
+    const restrictedFields = ['id', 'patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name', 'created_at'];
+
     // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
     if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
         data.name = data.full_name;
-        delete data.full_name;
     }
+
+    // Remove restricted fields
+    restrictedFields.forEach(field => delete data[field]);
 
     // DATA FIX: Cleanup ClinicSettings artifacts
     if (entity === 'ClinicSettings') {
         if (data.full_name !== undefined) delete data.full_name;
     }
-
-    // DATA FIX: Cleanup Joined Objects (Appointments, etc)
-    const joinedFields = ['patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name'];
-    joinedFields.forEach(field => delete data[field]);
 
     try {
         // SECURITY FIX: Filter invalid columns
@@ -2499,24 +2501,26 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         const values = keys.map(key => {
             const v = data[key];
-            if (v === null) return null;
+            if (v === undefined || v === null) return null;
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
-        const setClause = keys.map((k, i) => `${k} = $${i + 1} `).join(', ');
+        const setClause = keys.map((k, i) => `"${k}" = $${i + 1}`).join(', ');
 
-        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1} `;
+        let query = `UPDATE ${tableName} SET ${setClause} WHERE id = $${keys.length + 1}`;
         const queryParams = [...values, id];
 
         if (isUserScoped) {
-            query += ` AND user_id = $${keys.length + 2} `;
+            query += ` AND user_id = $${keys.length + 2}`;
             queryParams.push(user.id);
         } else {
-            query += ` AND organization_id = $${keys.length + 2} `;
+            query += ` AND organization_id = $${keys.length + 2}`;
             queryParams.push(organizationId);
         }
 
-        query += ` RETURNING * `;
+        query += ` RETURNING *`;
+
+        console.log(`[DEBUG] Updating ${entity} ${id}:`, query);
 
         const { rows } = await pool.query(query, queryParams);
 
@@ -2526,8 +2530,8 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         res.json(rows[0]);
     } catch (error) {
-        console.error(`Error updating ${entity}: `, error);
-        res.status(500).json({ error: "Internal Server Error" }); // Security: Hide DB error
+        console.error(`Error updating ${entity}:`, error);
+        res.status(500).json({ error: error.message, detail: error.detail });
     }
 });
 
