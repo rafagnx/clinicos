@@ -92,7 +92,5 @@ createCrud('patients', 'patients');
 createCrud('clinic-settings', 'clinic-settings');
 createCrud('notifications', 'notifications');
 createCrud('leads', 'leads');
-createCrud('messages', 'messages');
-createCrud('conversations', 'conversations');
 createCrud('promotions', 'promotions');
 

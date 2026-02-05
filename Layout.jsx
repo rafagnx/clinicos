@@ -432,7 +432,8 @@ function LayoutContent({
   }, []);
 
   const isDashboard = location.pathname.endsWith('/Dashboard') || location.pathname === '/';
-  const hideLayout = isMobile && isDashboard;
+  // Disable hideLayout to ensure navigation is always accessible on mobile/PWA
+  const hideLayout = false; // isMobile && isDashboard;
 
   return (
     <>

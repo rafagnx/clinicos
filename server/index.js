@@ -80,28 +80,46 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle sending messages (Real-time relay)
-    socket.on('send_message', (data) => {
-        const { recipientId, message, senderId, senderName, conversationId } = data;
+    // Handle sending messages (Real-time relay + DB Persistence)
+    socket.on('send_message', async (data) => {
+        const { recipientId, message, senderId, senderName, conversationId, organizationId } = data;
 
-        // Broadcast to recipient's room
-        io.to(recipientId).emit('receive_message', {
-            id: uuidv4(), // Temp ID for immediate display
-            text: message,
-            sender_id: senderId,
-            conversation_id: conversationId,
-            sender_name: senderName, // For notification
-            created_at: new Date().toISOString()
-        });
+        try {
+            // 1. Save message to DB
+            const msgRes = await pool.query(`
+                INSERT INTO messages (conversation_id, sender_id, content, organization_id, created_at)
+                VALUES ($1, $2, $3, $4, NOW())
+                RETURNING *
+            `, [conversationId, senderId, message, organizationId]);
 
-        // Also emit back to sender (for other tabs)
-        io.to(senderId).emit('receive_message', {
-            id: uuidv4(),
-            text: message,
-            sender_id: senderId,
-            conversation_id: conversationId,
-            created_at: new Date().toISOString()
-        });
+            const savedMsg = msgRes.rows[0];
+
+            // 2. Update conversation's last_message_at
+            await pool.query(`
+                UPDATE conversations SET last_message_at = NOW() WHERE id = $1
+            `, [conversationId]);
+
+            // 3. Broadcast to recipient's room
+            io.to(recipientId).emit('receive_message', {
+                id: savedMsg.id,
+                text: savedMsg.content,
+                sender_id: savedMsg.sender_id,
+                conversation_id: savedMsg.conversation_id,
+                sender_name: senderName,
+                created_at: savedMsg.created_at
+            });
+
+            // 4. Emit back to sender
+            io.to(senderId).emit('receive_message', {
+                id: savedMsg.id,
+                text: savedMsg.content,
+                sender_id: savedMsg.sender_id,
+                conversation_id: savedMsg.conversation_id,
+                created_at: savedMsg.created_at
+            });
+        } catch (err) {
+            console.error('[Socket] Error saving/sending message:', err);
+        }
     });
 
     // Handle Status Updates (Real-time)
@@ -2280,7 +2298,7 @@ app.post('/api/conversations/group', requireAuth, async (req, res) => {
         // 1. Create Conversation
         const convRes = await client.query(`
             INSERT INTO conversations(
-            organization_id, "professional_id", "status", "last_message_at", "is_group", "name", "image", "admin_ids"
+            organization_id, "professional_id", "status", "last_message_at", "is_group", "title", "image", "admin_ids"
         ) VALUES($1, $2, 'active', NOW(), true, $3, $4, $5)
         RETURNING *
             `, [organizationId, user.id, name, image || null, [user.id]]);
@@ -2322,21 +2340,49 @@ app.get('/api/conversations/me', requireAuth, async (req, res) => {
 
     try {
         const { rows } = await pool.query(`
-            SELECT DISTINCT c.*
+            SELECT DISTINCT c.*,
+                   c.title as name,
+                   (SELECT content FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
+                   (SELECT created_at FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_at
             FROM conversations c
             LEFT JOIN conversation_members cm ON cm.conversation_id = c.id
             WHERE c.organization_id = $1
-        AND(
-            c.professional_id = $2 
-                OR c.recipient_professional_id:: text = $2 
+              AND (
+                c.professional_id = $2 
+                OR c.recipient_professional_id::text = $2 
                 OR cm.user_id = $2
-        )
-            ORDER BY c.last_message_at DESC
+              )
+            ORDER BY last_message_at DESC NULLS LAST, c.created_at DESC
         `, [organizationId, user.id]);
 
         res.json(rows);
     } catch (error) {
         console.error("Fetch Conversations Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// FETCH MESSAGES FOR CONVERSATION
+app.get('/api/messages/:conversationId', requireAuth, async (req, res) => {
+    const { conversationId } = req.params;
+    const { organizationId } = req.auth;
+
+    try {
+        const { rows } = await pool.query(`
+            SELECT m.*, 
+                   m.content as text,
+                   u.name as sender_name,
+                   u.image as sender_photo,
+                   u.email as sender_email
+            FROM messages m
+            LEFT JOIN "user" u ON m.sender_id = u.id
+            WHERE m.conversation_id = $1 AND m.organization_id = $2
+            ORDER BY m.created_at ASC
+        `, [conversationId, organizationId]);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Fetch Messages Error:", error);
         res.status(500).json({ error: error.message });
     }
 });

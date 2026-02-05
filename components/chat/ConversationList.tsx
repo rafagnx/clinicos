@@ -25,11 +25,7 @@ export default function ConversationList({
     });
 
     const getConversationName = (conv) => {
-        if (conv.type === "group") return conv.name || "Grupo sem nome";
-        const otherNames = conv.participant_names?.filter((_, idx) =>
-            conv.participants[idx] !== currentUserEmail
-        );
-        return otherNames?.[0] || "Conversa";
+        return conv.title || conv.name || "Conversa";
     };
 
     const getConversationPhoto = (conv) => {

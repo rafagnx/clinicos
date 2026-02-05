@@ -217,7 +217,7 @@ export default function MessageArea({
                                         )}
                                     </div>
                                     <p className="text-xs text-slate-400 mt-1 mx-1">
-                                        {format(new Date(msg.created_date), "HH:mm", { locale: ptBR })}
+                                        {format(new Date(msg.created_at || msg.created_date), "HH:mm", { locale: ptBR })}
                                     </p>
                                 </div>
                             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/lib/base44Client";
+import { base44, api } from "@/lib/base44Client";
 import { X, Send, Minus, Maximize2, Minimize2, Paperclip, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,8 +28,9 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
     const { data: conversation } = useQuery({
         queryKey: ["conversation-with", recipient.id],
         queryFn: async () => {
-            const all = await base44.entities.Conversation.list();
-            return all.find(c =>
+            // Use the specific endpoint for current user conversations
+            const { data: all } = await api.get('/conversations/me');
+            return all.find((c: any) =>
                 // Case 1: Standard Prof-Patient
                 (c.professional_id === currentUser.id && c.patient_id === recipient.id) ||
                 (c.professional_id === recipient.id && c.patient_id === currentUser.id) ||
@@ -44,36 +45,15 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
     // 2. Fetch Messages (Initial Load Only - No Polling)
     const { data: messages = [] } = useQuery({
         queryKey: ["messages", conversation?.id],
-        queryFn: () => base44.list("Message", { filter: { conversation_id: conversation.id } }),
+        queryFn: async () => {
+            const { data } = await api.get(`/messages/${conversation.id}`);
+            return data;
+        },
         enabled: !!conversation
     });
 
-    // 3. Realtime Subscription (Supabase LIVE)
-    useEffect(() => {
-        if (!conversation?.id) return;
-
-        const channel = supabase
-            .channel(`public:messages:${conversation.id}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages',
-                    filter: `conversation_id=eq.${conversation.id}`
-                },
-                (payload) => {
-                    console.log("New message received via Supabase Realtime:", payload);
-                    queryClient.invalidateQueries({ queryKey: ["messages"] });
-                    queryClient.invalidateQueries({ queryKey: ["conversation-with"] });
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [conversation?.id, queryClient]);
+    // 3. (REMOVED) Supabase LIVE subscription - replaced by Socket.io in Context
+    // Redundant logic removed to simplify state management and rely on Socket.io for messages.
 
     // Scroll to bottom on new messages
     useEffect(() => {
@@ -129,8 +109,8 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
             const result = await base44.entities.Message.create({
                 conversation_id: convId,
                 sender_id: currentUser.id,
-                text,
-                created_date: new Date().toISOString()
+                content: text,
+                organization_id: currentUser.active_organization_id
             });
 
             // Notification Logic (Skip if sending to self)
@@ -162,10 +142,11 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
             if (socket && recipient) {
                 socket.emit('send_message', {
                     recipientId: recipient.id,
-                    message: newMessage.text,
+                    message: newMessage.content,
                     senderId: currentUser.id,
                     senderName: currentUser.name || "Usuário",
-                    conversationId: newMessage.conversation_id
+                    conversationId: newMessage.conversation_id,
+                    organizationId: currentUser.active_organization_id
                 });
             }
         },
@@ -275,12 +256,12 @@ export default function FloatingChatWindow({ recipient, currentUser }: any) {
                                                         {getSenderName(msg.sender_id)}
                                                     </span>
                                                 )}
-                                                {msg.text}
+                                                {msg.text || msg.content}
                                                 <span className={cn(
                                                     "text-[9px] block mt-1 opacity-70 text-right",
                                                     isMe ? "text-indigo-100" : "text-slate-400"
                                                 )}>
-                                                    {new Date(msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    {new Date(msg.created_at || msg.created_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </div>

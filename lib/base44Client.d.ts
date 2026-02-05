@@ -1,3 +1,5 @@
+import { AxiosInstance } from 'axios';
+
 export interface EntityHandler {
     list: (params?: any) => Promise<any[]>;
     read: (params?: any) => Promise<any[]>;
@@ -69,3 +71,4 @@ export interface Base44Client {
 }
 
 export declare const base44: Base44Client;
+export declare const api: AxiosInstance;

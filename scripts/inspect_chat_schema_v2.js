@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, '../server/.env') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const { Pool } = pg;
 
@@ -23,7 +23,7 @@ async function inspect() {
             FROM information_schema.columns 
             WHERE table_name = 'conversations';
         `);
-        console.table(res.rows);
+        res.rows.forEach(row => console.log(JSON.stringify(row)));
 
         console.log("\nInspecting 'messages' table...");
         const resMsg = await pool.query(`
@@ -31,7 +31,7 @@ async function inspect() {
             FROM information_schema.columns 
             WHERE table_name = 'messages';
         `);
-        console.table(resMsg.rows);
+        resMsg.rows.forEach(row => console.log(JSON.stringify(row)));
 
     } catch (err) {
         console.error("Error:", err);
