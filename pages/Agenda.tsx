@@ -835,7 +835,7 @@ export default function Agenda() {
                   if (minutesSince7 < 0) return null;
 
                   const slots = minutesSince7 / 30;
-                  const ROW_HEIGHT = 50;
+                  const ROW_HEIGHT = 60;
                   const top = slots * ROW_HEIGHT;
                   const height = (durationMinutes / 30) * ROW_HEIGHT;
 
@@ -905,8 +905,8 @@ export default function Agenda() {
                               )}>
                                 {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
-                                  <span className="opacity-40 font-normal ml-1 text-[9px]">
-                                    {professional.name?.split(' ')[0] || "Pro"}
+                                  <span className="opacity-60 font-medium ml-1 text-[10px] truncate max-w-[100px]">
+                                    • {professional.name || professional.full_name || "Profissional"}
                                   </span>
                                 )}
                               </h4>
