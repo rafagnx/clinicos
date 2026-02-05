@@ -896,7 +896,7 @@ export default function Agenda() {
                                 {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
                                   <span className="opacity-50 font-medium ml-1">
-                                    • {professional.name?.split(' ')[0]}
+                                    • {professional.name?.replace(/^Dr\.?\s*/i, '').split(' ')[0]}
                                   </span>
                                 )}
                               </h4>
@@ -912,8 +912,8 @@ export default function Agenda() {
                                         apt.patient.temperature === 'warm' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
                                           "bg-blue-500/10 text-blue-500 border border-blue-500/20"
                                     )}>
-                                      {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? 'HOT' :
-                                        apt.patient.temperature === 'warm' ? 'WARM' : 'COLD'}
+                                      {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? 'QUENTE' :
+                                        apt.patient.temperature === 'warm' ? 'MORNO' : 'FRIO'}
                                     </div>
                                   )}
                                 </div>

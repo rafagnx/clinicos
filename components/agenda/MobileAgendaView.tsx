@@ -245,6 +245,11 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
                 <div className="flex justify-between items-start mb-1.5">
                     <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
                         {apt.patient?.full_name || "Paciente sem nome"}
+                        {apt.professional && (
+                            <span className="opacity-60 text-[10px] font-normal ml-1 block">
+                                com {apt.professional.name?.replace(/^Dr\.?\s*/i, '').split(' ')[0]}
+                            </span>
+                        )}
                     </h3>
                 </div>
 
@@ -257,8 +262,8 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
                                 (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
                                     "bg-blue-500/10 text-blue-500 border border-blue-500/20"
                         )}>
-                            {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "HOT" :
-                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "WARM" : "COLD"}
+                            {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "QUENTE" :
+                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "MORNO" : "FRIO"}
                         </div>
                     )}
                     <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
