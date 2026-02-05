@@ -2307,6 +2307,7 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
         const values = keys.map(key => {
             const v = data[key];
+            if (v === undefined || v === null || v === '') return null;
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
@@ -2331,9 +2332,12 @@ app.post('/api/:entity', requireAuth, async (req, res) => {
 
         // DEBUG MODE: Return actual error
         res.status(500).json({
-            error: "DEBUG_ERROR: " + error.message,
+            error: "SERVER_ERROR: " + error.message,
             detail: error.detail,
             code: error.code,
+            entity: entity,
+            tableName: tableName,
+            dataReceived: data,
             pg_query: "See Server Logs"
         });
     }
