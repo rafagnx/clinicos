@@ -19,6 +19,9 @@ interface MobileAgendaViewProps {
     isDark: boolean;
     onSelectAppointment: (apt: any) => void;
     onNewAppointment: () => void;
+    view: "day" | "week";
+    onViewChange: (view: "day" | "week") => void;
+    holiday?: { name: string } | null;
 }
 
 const statusConfig: any = {
@@ -38,13 +41,29 @@ export default function MobileAgendaView({
     appointments,
     isDark,
     onSelectAppointment,
-    onNewAppointment
+    onNewAppointment,
+    view,
+    onViewChange,
+    holiday
 }: MobileAgendaViewProps) {
 
-    // Group appointments by hour for better visualization
+    // Group appointments by day and hour
     const sortedAppointments = [...appointments].sort((a, b) => {
+        const dateA = a.date || (a.start_time?.includes('T') ? a.start_time.split('T')[0] : "");
+        const dateB = b.date || (b.start_time?.includes('T') ? b.start_time.split('T')[0] : "");
+        if (dateA !== dateB) return dateA.localeCompare(dateB);
         return (a.start_time || "").localeCompare(b.start_time || "");
     });
+
+    // Function to group by date
+    const groupedByDay = sortedAppointments.reduce((acc: any, apt) => {
+        const dateStr = apt.date || (apt.start_time?.includes('T') ? apt.start_time.split('T')[0] : "");
+        if (!acc[dateStr]) acc[dateStr] = [];
+        acc[dateStr].push(apt);
+        return acc;
+    }, {});
+
+    const days = Object.keys(groupedByDay).sort();
 
     return (
         <div className={cn("min-h-full flex flex-col relative", isDark ? "bg-[#0B0E14]" : "bg-slate-50")}>
@@ -52,29 +71,72 @@ export default function MobileAgendaView({
 
             {/* Header: Date Navigation - Liquid Glass */}
             <div className={cn(
-                "sticky top-0 z-20 flex items-center justify-between p-4 border-b backdrop-blur-xl transition-colors",
+                "sticky top-0 z-20 flex flex-col border-b backdrop-blur-xl transition-colors",
                 isDark ? "bg-[#0B0E14]/80 border-white/5" : "bg-white/80 border-slate-200/50"
             )}>
-                <Button variant="ghost" size="icon" onClick={() => onDateChange(-1)} className="rounded-xl hover:bg-white/10">
-                    <ChevronLeft className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
-                </Button>
+                <div className="flex items-center justify-between p-4 pb-2">
+                    <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? -7 : -1)} className="rounded-xl hover:bg-white/10">
+                        <ChevronLeft className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
+                    </Button>
 
-                <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onToday}>
-                    <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
-                        {format(date, "EEEE", { locale: ptBR })}
-                    </h2>
-                    <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em] opacity-60", isDark ? "text-slate-400" : "text-slate-500")}>
-                        {format(date, "d 'de' MMMM", { locale: ptBR })}
-                    </span>
+                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onToday}>
+                        <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
+                            {view === "week" ? "Semana" : format(date, "EEEE", { locale: ptBR })}
+                        </h2>
+                        <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em] opacity-60", isDark ? "text-slate-400" : "text-slate-500")}>
+                            {format(date, "d 'de' MMMM", { locale: ptBR })}
+                        </span>
+                    </div>
+
+                    <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? 7 : 1)} className="rounded-xl hover:bg-white/10">
+                        <ChevronRight className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
+                    </Button>
                 </div>
 
-                <Button variant="ghost" size="icon" onClick={() => onDateChange(1)} className="rounded-xl hover:bg-white/10">
-                    <ChevronRight className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
-                </Button>
+                {/* Holiday Badge */}
+                {holiday && (
+                    <div className="px-4 pb-2 flex justify-center">
+                        <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full">
+                            <Sparkles className="w-3 h-3" />
+                            {holiday.name}
+                        </Badge>
+                    </div>
+                )}
+
+                {/* View Switcher Mobile */}
+                <div className="flex p-2 justify-center gap-2">
+                    <div className={cn(
+                        "flex p-1 rounded-xl glass-premium border-white/5",
+                        isDark ? "bg-slate-950/60" : "bg-white/60"
+                    )}>
+                        <button
+                            onClick={() => onViewChange("day")}
+                            className={cn(
+                                "px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all relative overflow-hidden",
+                                view === "day"
+                                    ? "text-white bg-blue-600 shadow-md"
+                                    : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
+                            )}
+                        >
+                            Dia
+                        </button>
+                        <button
+                            onClick={() => onViewChange("week")}
+                            className={cn(
+                                "px-6 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all relative overflow-hidden",
+                                view === "week"
+                                    ? "text-white bg-blue-600 shadow-md"
+                                    : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
+                            )}
+                        >
+                            Semana
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* List Content */}
-            <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto pb-32 relative z-10">
+            <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-32 relative z-10">
                 {sortedAppointments.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 min-h-[50vh]">
                         <div className={cn(
@@ -96,76 +158,30 @@ export default function MobileAgendaView({
                         </Button>
                     </div>
                 ) : (
-                    sortedAppointments.map((apt, i) => {
-                        const status = statusConfig[apt.status] || statusConfig.agendado;
-                        const time = apt.start_time?.substring(0, 5) || "--:--";
-                        const isFirst = i === 0;
-
-                        return (
-                            <Card
-                                key={apt.id}
-                                onClick={() => onSelectAppointment(apt)}
-                                className={cn(
-                                    "flex items-stretch overflow-hidden border-0 shadow-lg active:scale-[0.98] transition-all duration-300 group relative",
-                                    isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md",
-                                    isFirst && "ring-2 ring-blue-500/20"
-                                )}
-                            >
-                                {/* Gradient Indicator Bar */}
+                    view === "week" ? (
+                        days.map((dayStr) => (
+                            <div key={dayStr} className="space-y-3">
                                 <div className={cn(
-                                    "w-1.5 absolute left-0 top-0 bottom-0 bg-gradient-to-b",
-                                    (apt.patient?.temperature === "hot" || apt.patient?.funnel_status === "hot") ? "from-rose-500 to-orange-500" :
-                                        (apt.patient?.temperature === "warm" || apt.patient?.funnel_status === "warm") ? "from-amber-500 to-yellow-500" :
-                                            "from-blue-500 to-indigo-500"
-                                )} />
-
-                                {/* Time Column */}
-                                <div className={cn(
-                                    "w-20 flex flex-col items-center justify-center px-2 py-4 border-r ml-1.5",
-                                    isDark ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
+                                    "flex items-center gap-3 px-2 py-1 sticky top-0 z-10 backdrop-blur-md rounded-lg",
+                                    isDark ? "bg-slate-950/60 text-blue-400" : "bg-white/60 text-blue-600"
                                 )}>
-                                    <span className={cn("text-sm font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>{time}</span>
-                                    <Badge variant="outline" className={cn("mt-1.5 h-4 px-1 text-[8px] font-black uppercase border-0 bg-opacity-10", isDark ? "bg-white text-slate-400" : "bg-black text-slate-500")}>
-                                        {format(new Date(), "HH:mm") > time && apt.status !== 'finalizado' ? 'ATRASADO' : 'HORÁRIO'}
-                                    </Badge>
+                                    <span className="text-[10px] font-black uppercase tracking-widest">
+                                        {format(new Date(dayStr + "T12:00:00"), "EEEE, d 'de' MMMM", { locale: ptBR })}
+                                    </span>
+                                    <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
-
-                                {/* Content */}
-                                <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
-                                    <div className="flex justify-between items-start mb-1.5">
-                                        <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
-                                            {apt.patient?.full_name || "Paciente sem nome"}
-                                        </h3>
-                                    </div>
-
-                                    {/* Patient Tags Row - High Ticket Indicators */}
-                                    <div className="flex flex-wrap gap-1.5 mb-2.5">
-                                        {(apt.patient?.temperature || apt.patient?.funnel_status) && (
-                                            <div className={cn(
-                                                "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
-                                                (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
-                                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
-                                                        "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                                            )}>
-                                                {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "HOT" :
-                                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "WARM" : "COLD"}
-                                            </div>
-                                        )}
-                                        <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
-                                            {status.label}
-                                        </Badge>
-                                    </div>
-
-                                    <div className="flex items-center gap-1.5 text-xs">
-                                        <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
-                                        <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                                            {apt.procedure_name || "Consulta"}
-                                        </span>
-                                    </div>
+                                <div className="space-y-3">
+                                    {groupedByDay[dayStr].map((apt: any) => (
+                                        <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
+                                    ))}
                                 </div>
-                            </Card>
-                        );
-                    })
+                            </div>
+                        ))
+                    ) : (
+                        sortedAppointments.map((apt) => (
+                            <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
+                        ))
+                    )
                 )}
             </div>
 
@@ -180,5 +196,73 @@ export default function MobileAgendaView({
                 </Button>
             </div>
         </div>
+    );
+}
+
+function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean, onSelect: (apt: any) => void }) {
+    const status = statusConfig[apt.status] || statusConfig.agendado;
+    const time = apt.start_time?.substring(0, 5) || "--:--";
+
+    return (
+        <Card
+            onClick={() => onSelect(apt)}
+            className={cn(
+                "flex items-stretch overflow-hidden border-0 shadow-lg active:scale-[0.98] transition-all duration-300 group relative",
+                isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md"
+            )}
+        >
+            {/* Gradient Indicator Bar */}
+            <div className={cn(
+                "w-1.5 absolute left-0 top-0 bottom-0 bg-gradient-to-b",
+                (apt.patient?.temperature === "hot" || apt.patient?.funnel_status === "hot") ? "from-rose-500 to-orange-500" :
+                    (apt.patient?.temperature === "warm" || apt.patient?.funnel_status === "warm") ? "from-amber-500 to-yellow-500" :
+                        "from-blue-500 to-indigo-500"
+            )} />
+
+            {/* Time Column */}
+            <div className={cn(
+                "w-20 flex flex-col items-center justify-center px-2 py-4 border-r ml-1.5",
+                isDark ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
+            )}>
+                <span className={cn("text-sm font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>{time}</span>
+                <Badge variant="outline" className={cn("mt-1.5 h-4 px-1 text-[8px] font-black uppercase border-0 bg-opacity-10", isDark ? "bg-white text-slate-400" : "bg-black text-slate-500")}>
+                    {format(new Date(), "HH:mm") > time && apt.status !== 'finalizado' ? 'ATRASADO' : 'HORÁRIO'}
+                </Badge>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
+                <div className="flex justify-between items-start mb-1.5">
+                    <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
+                        {apt.patient?.full_name || "Paciente sem nome"}
+                    </h3>
+                </div>
+
+                {/* Patient Tags Row - High Ticket Indicators */}
+                <div className="flex flex-wrap gap-1.5 mb-2.5">
+                    {(apt.patient?.temperature || apt.patient?.funnel_status) && (
+                        <div className={cn(
+                            "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
+                            (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
+                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
+                                    "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                        )}>
+                            {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "HOT" :
+                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "WARM" : "COLD"}
+                        </div>
+                    )}
+                    <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
+                        {status.label}
+                    </Badge>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs">
+                    <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
+                    <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
+                        {apt.procedure_name || "Consulta"}
+                    </span>
+                </div>
+            </div>
+        </Card>
     );
 }
