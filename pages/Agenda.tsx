@@ -890,58 +890,54 @@ export default function Agenda() {
                             setIsFormOpen(true);
                           }}
                         >
-                          <div className="px-2 py-1.5 flex flex-col h-full gap-0.5 relative z-10">
-                            <div className="flex items-center gap-2 min-w-0">
+                          <div className="p-1 flex flex-col h-full relative z-10 overflow-hidden">
+                            {/* Header: Time & Name */}
+                            <div className="flex items-center gap-1.5 min-w-0 mb-0.5">
                               <span className={cn(
-                                "text-[9px] font-black px-1 py-0.5 rounded-md tracking-wider shadow-sm border",
-                                isDark ? "bg-white/10 text-slate-300 border-white/5" : "bg-slate-900/5 text-slate-700 border-slate-900/5"
+                                "text-[9px] font-black px-1 rounded transition-colors whitespace-nowrap",
+                                isDark ? "text-slate-400 bg-white/5" : "text-slate-500 bg-slate-100"
                               )}>
                                 {timeDisplay}
                               </span>
                               <h4 className={cn(
-                                "text-[11px] font-black truncate leading-none tracking-tight",
+                                "text-[10px] font-bold truncate leading-none",
                                 isDark ? "text-white" : "text-slate-900"
                               )}>
                                 {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
-                                  <span className={cn("opacity-50 font-medium ml-1 truncate max-w-[80px]")}>
-                                    • {professional.name || professional.full_name || "Profissional"}
+                                  <span className="opacity-40 font-normal ml-1 text-[9px]">
+                                    {professional.name?.split(' ')[0] || "Pro"}
                                   </span>
                                 )}
                               </h4>
                             </div>
 
-                            {height > 35 && (
-                              <div className="flex flex-col gap-0.5 mt-0.5 pointer-events-none">
-                                <div className="flex flex-wrap gap-1 items-center">
-                                  {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
-                                    <div className={cn(
-                                      "text-[7px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter shadow-sm items-center gap-0.5 flex",
-                                      (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "bg-red-500/10 text-red-500 border border-red-500/20" :
-                                        apt.patient.temperature === 'warm' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
-                                          "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                                    )}>
-                                      {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? 'QUENTE' :
-                                        apt.patient.temperature === 'warm' ? 'MORNO' : 'FRIO'}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="flex items-center gap-1.5 min-w-0">
+                            {/* Details: Tags & Info - Fluid Layout */}
+                            {height > 30 && (
+                              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0 text-[9px] leading-tight opacity-90">
+                                {/* Tags */}
+                                {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
                                   <span className={cn(
-                                    "text-[9px] truncate font-bold uppercase tracking-wider",
-                                    isDark ? "text-slate-200" : "text-slate-700"
+                                    "font-black uppercase tracking-tighter text-[8px]",
+                                    (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "text-red-500" :
+                                      apt.patient.temperature === 'warm' ? "text-amber-500" : "text-blue-500"
                                   )}>
-                                    <span className={cn("font-black", (() => {
-                                      const t = (apt.type || "Consulta").trim();
-                                      const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
-                                      return (typeConfig[key || t] || typeConfig["Consulta"]).color;
-                                    })())}>
-                                      {apt.type || "Consulta"}
-                                    </span>
-                                    <span className="opacity-50 mx-1">•</span>
-                                    <span className="opacity-70">{apt.procedure_name || "Procedimento"}</span>
+                                    {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? 'QUENTE' :
+                                      apt.patient.temperature === 'warm' ? 'MORNO' : 'FRIO'}
                                   </span>
+                                )}
+
+                                {/* Type & Procedure */}
+                                <div className={cn("truncate flex-1 min-w-0", isDark ? "text-slate-300" : "text-slate-600")}>
+                                  <span className={cn("font-bold uppercase tracking-wide", (() => {
+                                    const t = (apt.type || "Consulta").trim();
+                                    const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
+                                    return (typeConfig[key || t] || typeConfig["Consulta"]).color;
+                                  })())}>
+                                    {apt.type || "Consulta"}
+                                  </span>
+                                  <span className="opacity-40 mx-1">•</span>
+                                  <span className="opacity-80 lowercase first-letter:capitalize truncate">{apt.procedure_name || "Procedimento"}</span>
                                 </div>
                               </div>
                             )}
