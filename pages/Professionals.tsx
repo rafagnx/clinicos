@@ -121,12 +121,14 @@ export default function Professionals() {
     setEditing(null);
   };
 
-  const isAdmin = user?.role?.toLowerCase()?.includes("admin") ||
+  const currentUserProf = professionals.find((p: any) => p.email === user?.email);
+  const isActuallyAdmin = user?.role?.toLowerCase()?.includes("admin") ||
     user?.role?.toLowerCase()?.includes("gerente") ||
     user?.role === "admin" ||
     user?.role === "owner" ||
     user?.email === "rafamarketingdb@gmail.com" ||
-    user?.user_metadata?.role === "admin";
+    user?.user_metadata?.role === "admin" ||
+    currentUserProf?.is_admin === true;
 
   const getRoleLabel = (roleType: string) => {
     const labels: Record<string, string> = {
@@ -258,10 +260,11 @@ export default function Professionals() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               className={cn(
-                "group relative overflow-hidden rounded-[2rem] glass-premium border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-white/20 cursor-pointer",
+                "group relative overflow-hidden rounded-[2rem] glass-premium border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:border-white/20",
+                (isActuallyAdmin || prof.email === user?.email) ? "cursor-pointer" : "cursor-default",
                 isDark ? "bg-slate-900/40" : "bg-white/60"
               )}
-              onClick={() => (isAdmin || prof.email === user?.email) && handleEdit(prof)}
+              onClick={() => (isActuallyAdmin || prof.email === user?.email) && handleEdit(prof)}
             >
               {/* Dynamic Gradient Background based on card color */}
               <div
@@ -299,28 +302,30 @@ export default function Professionals() {
                         {prof.full_name}
                       </h3>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/20 -mt-1 -mr-2">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[180px]", isDark ? "bg-slate-900 text-slate-200" : "bg-white/90 backdrop-blur-xl")}>
-                          {(isAdmin || prof.email === user?.email) && (
-                            <DropdownMenuItem onClick={() => handleEdit(prof)} className="gap-3 p-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer focus:bg-slate-100 dark:focus:bg-slate-800">
-                              <Edit2 className="w-3.5 h-3.5" /> Editar Perfil
-                            </DropdownMenuItem>
-                          )}
-                          {isAdmin && (
-                            <DropdownMenuItem
-                              onClick={() => confirm(`Excluir ${prof.full_name}?`) && deleteMutation.mutate(prof.id)}
-                              className="gap-3 p-2.5 rounded-xl text-rose-500 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-900/20 text-[10px] font-black uppercase tracking-widest cursor-pointer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Desativar
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="relative z-20">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/20 -mt-1 -mr-2" onClick={(e) => e.stopPropagation()}>
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[180px]", isDark ? "bg-slate-900 text-slate-200" : "bg-white/90 backdrop-blur-xl")}>
+                            {(isActuallyAdmin || prof.email === user?.email) && (
+                              <DropdownMenuItem onClick={() => handleEdit(prof)} className="gap-3 p-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer focus:bg-slate-100 dark:focus:bg-slate-800">
+                                <Edit2 className="w-3.5 h-3.5" /> Editar Perfil
+                              </DropdownMenuItem>
+                            )}
+                            {isActuallyAdmin && (
+                              <DropdownMenuItem
+                                onClick={() => confirm(`Excluir ${prof.full_name}?`) && deleteMutation.mutate(prof.id)}
+                                className="gap-3 p-2.5 rounded-xl text-rose-500 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-900/20 text-[10px] font-black uppercase tracking-widest cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Desativar
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
@@ -333,7 +338,7 @@ export default function Professionals() {
 
                       {prof.is_admin && (
                         <div className="px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-amber-950 border-0 shadow-lg shadow-amber-500/20 flex items-center gap-1">
-                          <Shield className="w-2 h-2 fill-current" /> GESTOR
+                          <Shield className="w-2 h-2 fill-current" /> ADMIN
                         </div>
                       )}
                     </div>
@@ -535,7 +540,7 @@ export default function Professionals() {
               )}
               <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                 <div className="space-y-0.5">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Acesso de Gestor</Label>
+                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Acesso de Admin</Label>
                   <p className="text-[10px] text-slate-500 font-medium">Permite editar configurações e equipe</p>
                 </div>
                 <input
