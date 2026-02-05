@@ -416,23 +416,25 @@ export default function Professionals() {
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest opacity-70">Função na Clínica Classification</Label>
-                <Select value={formData.role_type} onValueChange={(v) => setFormData(p => ({ ...p, role_type: v }))}>
-                  <SelectTrigger className="h-12 rounded-xl border-slate-200 dark:border-slate-800 bg-transparent">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hof">HOF</SelectItem>
-                    <SelectItem value="biomedico">Biomédico</SelectItem>
-                    <SelectItem value="profissional">Profissional (Outro)</SelectItem>
-                    <SelectItem value="secretaria">Secretária</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="gerente">Gerente</SelectItem>
-                    <SelectItem value="outro">Outro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {isActuallyAdmin && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Função na Clínica Classification</Label>
+                  <Select value={formData.role_type} onValueChange={(v) => setFormData(p => ({ ...p, role_type: v }))}>
+                    <SelectTrigger className="h-12 rounded-xl border-slate-200 dark:border-slate-800 bg-transparent">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hof">HOF</SelectItem>
+                      <SelectItem value="biomedico">Biomédico</SelectItem>
+                      <SelectItem value="profissional">Profissional (Outro)</SelectItem>
+                      <SelectItem value="secretaria">Secretária</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
+                      <SelectItem value="gerente">Gerente</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label className="text-xs font-black uppercase tracking-widest opacity-70">Nome Completo</Label>
@@ -538,18 +540,20 @@ export default function Professionals() {
                   </div>
                 </div>
               )}
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                <div className="space-y-0.5">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Acesso de Admin</Label>
-                  <p className="text-[10px] text-slate-500 font-medium">Permite editar configurações e equipe</p>
+              {isActuallyAdmin && (
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div className="space-y-0.5">
+                    <Label className="text-xs font-black uppercase tracking-widest opacity-70">Acesso de Admin</Label>
+                    <p className="text-[10px] text-slate-500 font-medium">Permite editar configurações e equipe</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_admin}
+                    onChange={(e) => setFormData(p => ({ ...p, is_admin: e.target.checked }))}
+                    className="w-5 h-5 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={formData.is_admin}
-                  onChange={(e) => setFormData(p => ({ ...p, is_admin: e.target.checked }))}
-                  className="w-5 h-5 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-              </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-6 border-t mt-auto">
