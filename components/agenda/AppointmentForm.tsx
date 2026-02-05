@@ -332,8 +332,12 @@ export default function AppointmentForm({
                 promotion_id: data.promotion_id === "none" ? null : data.promotion_id
             };
 
-            // Clean up UI-only fields if needed
+            // Clean up UI-only and patient-specific behavioral fields
+            const behavioralFields = ['temperature', 'temperament', 'conscience_level', 'main_motivation'];
+            behavioralFields.forEach(f => delete payload[f]);
             delete payload.patient_name;
+            delete payload.patient;
+            delete payload.professional;
 
             return base44.entities.Appointment.create(payload);
         },
@@ -378,6 +382,13 @@ export default function AppointmentForm({
                 date: format(startDateTime, "yyyy-MM-dd"),
                 promotion_id: data.promotion_id === "none" ? null : data.promotion_id
             };
+
+            // Clean up UI-only and patient-specific behavioral fields
+            const behavioralFields = ['temperature', 'temperament', 'conscience_level', 'main_motivation'];
+            behavioralFields.forEach(f => delete payload[f]);
+            delete payload.patient_name;
+            delete payload.patient;
+            delete payload.professional;
 
             return base44.entities.Appointment.update(appointment.id, payload);
         },

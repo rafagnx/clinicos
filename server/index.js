@@ -333,7 +333,8 @@ app.use(cors({
             "https://clinicos-ruby.vercel.app",
             "https://clinicos-black.vercel.app",
             "https://clinicos-eta.vercel.app",
-            "https://clinicosapp.vercel.app"
+            "https://clinicosapp.vercel.app",
+            "https://clinicosapp.vercel.app/"
         ];
 
         if (allowedOrigins.indexOf(origin) === -1) {
@@ -939,6 +940,7 @@ const initSchema = async () => {
                 { name: 'appointment_duration', type: 'INTEGER DEFAULT 30' },
                 { name: 'user_id', type: 'TEXT' },
                 { name: 'chat_status', type: 'VARCHAR(20) DEFAULT \'offline\'' },
+                { name: 'is_admin', type: 'BOOLEAN DEFAULT FALSE' },
                 { name: 'updated_at', type: 'TIMESTAMP DEFAULT NOW()' }
             ];
             for (const col of profCols) {
@@ -2476,7 +2478,10 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
     const data = req.body;
 
     // DATA FIX: Restricted fields that should never be updated via generic PUT
-    const restrictedFields = ['id', 'patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name', 'created_at'];
+    const restrictedFields = [
+        'id', 'patient', 'professional', 'organization', 'full_name', 'patient_name', 'professional_name',
+        'created_at', 'temperature', 'temperament', 'conscience_level', 'main_motivation'
+    ];
 
     // DATA FIX: Map 'full_name' to 'name' for Professionals and Patients if needed
     if ((entity === 'Professional' || entity === 'Patient') && data.full_name) {
@@ -2501,7 +2506,7 @@ app.put('/api/:entity/:id', requireAuth, async (req, res) => {
 
         const values = keys.map(key => {
             const v = data[key];
-            if (v === undefined || v === null) return null;
+            if (v === undefined || v === null || v === '') return null;
             return (typeof v === 'object' ? JSON.stringify(v) : v);
         });
 
