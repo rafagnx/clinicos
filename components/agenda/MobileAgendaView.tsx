@@ -247,7 +247,7 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
                         {apt.patient?.full_name || "Paciente sem nome"}
                         {apt.professional && (
                             <span className="opacity-60 text-[10px] font-normal ml-1 block">
-                                com {apt.professional.name?.replace(/^Dr\.?\s*/i, '').split(' ')[0]}
+                                com {apt.professional.name || apt.professional.full_name || "Profissional"}
                             </span>
                         )}
                     </h3>

@@ -895,8 +895,8 @@ export default function Agenda() {
                               )}>
                                 {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
-                                  <span className="opacity-50 font-medium ml-1">
-                                    • {professional.name?.replace(/^Dr\.?\s*/i, '').split(' ')[0]}
+                                  <span className={cn("opacity-50 font-medium ml-1 truncate max-w-[80px]")}>
+                                    • {professional.name || professional.full_name || "Profissional"}
                                   </span>
                                 )}
                               </h4>
