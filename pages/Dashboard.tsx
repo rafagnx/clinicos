@@ -159,7 +159,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2 backdrop-blur-md">
                 <Activity className="w-3.5 h-3.5 animate-pulse" />
-                CENTRAL DE COMANDO {organization?.name ? `• ${organization.name.toUpperCase()}` : "• SISTEMA O.S."}
+                DASHBOARD {organization?.name ? `• ${organization.name.toUpperCase()}` : "• VISÃO GERAL"}
               </div>
 
               <div className="flex flex-col gap-2">
