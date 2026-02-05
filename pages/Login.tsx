@@ -191,7 +191,7 @@ export default function Login() {
                     <span className="text-2xl font-bold tracking-tight text-white">ClinicOS</span>
                 </div>
 
-                <div className="max-w-xl space-y-8">
+                <div className="max-w-xl space-y-4">
                     <h1 className="text-5xl font-bold leading-tight text-white">
                         Bem-vindo ao futuro da <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">sua clínica</span>.
                     </h1>
@@ -344,3 +344,6 @@ export default function Login() {
         </div>
     );
 }
+
+
+

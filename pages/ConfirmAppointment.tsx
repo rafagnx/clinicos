@@ -93,7 +93,7 @@ export default function ConfirmAppointment() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full p-8 space-y-8">
+      <Card className="max-w-md w-full p-8 space-y-4">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-slate-900">Confirmar Agendamento</h1>
           <p className="text-slate-500">Olá! Por favor, confirme sua presença para o agendamento abaixo:</p>
@@ -145,4 +145,7 @@ export default function ConfirmAppointment() {
     </div>
   );
 }
+
+
+
 

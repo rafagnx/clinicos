@@ -132,7 +132,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 lg:p-8 space-y-8">
+    <div className="max-w-4xl mx-auto p-4 lg:p-8 space-y-4">
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         <div className="relative group">
           <Avatar className="h-24 w-24 border-4 border-white shadow-md">
@@ -236,7 +236,7 @@ export default function Profile() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <Card className="p-6 space-y-8 border-slate-200/60 shadow-sm">
+          <Card className="p-6 space-y-4 border-slate-200/60 shadow-sm">
             <div className="space-y-6">
               <h3 className="font-bold text-slate-900 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-blue-600" />
@@ -304,4 +304,7 @@ export default function Profile() {
     </div>
   );
 }
+
+
+
 

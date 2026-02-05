@@ -848,7 +848,7 @@ function LayoutContent({
           )}
 
           {/* Content Viewport */}
-          <main className={cn("flex-1 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-indigo-200 hover:scrollbar-thumb-indigo-300 dark:scrollbar-thumb-slate-700", !hideLayout && "p-6")}>
+          <main className={cn("flex-1 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-indigo-200 hover:scrollbar-thumb-indigo-300 dark:scrollbar-thumb-slate-700", !hideLayout && "px-6 pb-6 pt-0")}>
             <Outlet context={{ isDark, organization }} />
           </main>
         </div>

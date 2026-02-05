@@ -80,7 +80,7 @@ export default function OnboardingWizard() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="max-w-3xl mx-auto space-y-4">
         {/* Progress Header */}
         <div className="text-center space-y-2">
           <Rocket className="w-12 h-12 text-blue-600 mx-auto mb-4" />
@@ -202,4 +202,7 @@ export default function OnboardingWizard() {
     </div>
   );
 }
+
+
+
 

@@ -163,7 +163,7 @@ export default function Retention() {
     };
 
     return (
-        <div className={cn("p-4 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col")}>
+        <div className={cn("p-4 lg:p-4 max-w-[1600px] mx-auto space-y-4 min-h-screen relative overflow-hidden flex flex-col")}>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                 <div className="space-y-1">
                     <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest mb-1">
@@ -362,3 +362,6 @@ export default function Retention() {
         </div>
     );
 }
+
+
+

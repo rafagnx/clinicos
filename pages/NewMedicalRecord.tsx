@@ -144,7 +144,7 @@ export default function NewMedicalRecord() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* 1. Basic Info */}
           <Card className="p-6 space-y-6">
             <h3 className="text-lg font-semibold text-slate-900 border-b pb-2">Informações Básicas</h3>
@@ -458,4 +458,7 @@ export default function NewMedicalRecord() {
     </div>
   );
 }
+
+
+
 

@@ -64,14 +64,14 @@ export default function ReminderSettings() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-4 lg:p-8 space-y-8">
+    <div className="max-w-3xl mx-auto p-4 lg:p-8 space-y-4">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Configurações de Lembretes</h1>
         <p className="text-slate-500">Configure como e quando seus pacientes serão lembrados das consultas</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card className="p-6 space-y-8 border-slate-200/60 shadow-sm">
+        <Card className="p-6 space-y-4 border-slate-200/60 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base">Ativar Lembretes Automáticos</Label>
@@ -155,4 +155,7 @@ export default function ReminderSettings() {
     </div>
   );
 }
+
+
+
 

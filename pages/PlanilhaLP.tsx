@@ -669,7 +669,7 @@ const Pricing = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        className="relative p-8 md:p-12 rounded-[2.5rem] border bg-gradient-to-br from-blue-600/10 via-slate-900 to-slate-900 border-blue-500/50 shadow-2xl shadow-blue-500/10 transition-all duration-300"
+                        className="relative px-8 md:px-12 pb-8 md:pb-12 pt-4 rounded-[2.5rem] border bg-gradient-to-br from-blue-600/10 via-slate-900 to-slate-900 border-blue-500/50 shadow-2xl shadow-blue-500/10 transition-all duration-300"
                     >
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-xl whitespace-nowrap">
                             Plano Único e Completo
@@ -1045,3 +1045,6 @@ export default function PlanilhaLP() {
         </div>
     );
 }
+
+
+

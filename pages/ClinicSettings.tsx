@@ -249,7 +249,7 @@ export default function ClinicSettings() {
   );
 
   return (
-    <div className={cn("p-4 md:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col", isDark ? "text-slate-100" : "")}>
+    <div className={cn("p-4 md:p-10 max-w-[1600px] mx-auto space-y-4 min-h-screen relative overflow-hidden flex flex-col", isDark ? "text-slate-100" : "")}>
 
       {/* Header Liquid Scale */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
@@ -277,7 +277,7 @@ export default function ClinicSettings() {
         )}
       </div>
 
-      <Tabs defaultValue="general" className="space-y-8 relative z-10">
+      <Tabs defaultValue="general" className="space-y-4 relative z-10">
         <div className="overflow-x-auto pb-2 scrollbar-hide">
           <TabsList className={cn("h-auto gap-2 p-1 bg-transparent")}>
             <TabsTrigger value="general" className={tabTriggerClass}>Geral</TabsTrigger>
@@ -521,4 +521,7 @@ export default function ClinicSettings() {
     </div>
   );
 }
+
+
+
 

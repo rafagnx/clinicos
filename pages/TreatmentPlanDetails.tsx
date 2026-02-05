@@ -46,7 +46,7 @@ export default function TreatmentPlanDetails() {
     const progress = (totalPerformed / (Number(plan.total_value) || 1)) * 100;
 
     return (
-        <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
+        <div className="px-6 lg:px-4 pb-6 lg:pb-4 pt-0 max-w-5xl mx-auto space-y-6">
             <Button variant="ghost" onClick={() => navigate("/TreatmentPlans")} className="mb-2 pl-0 hover:bg-transparent hover:text-indigo-600">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para lista
             </Button>
@@ -176,3 +176,6 @@ function SelectStatus({ currentStatus, onChange }) {
         </div>
     );
 }
+
+
+

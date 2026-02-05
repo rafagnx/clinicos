@@ -163,7 +163,7 @@ export default function Professionals() {
   };
 
   return (
-    <div className={cn("p-4 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col")}>
+    <div className={cn("p-4 lg:p-4 max-w-[1600px] mx-auto space-y-4 min-h-screen relative overflow-hidden flex flex-col")}>
 
       {/* BACKGROUND KINETIC ENGINE */}
       <div className="absolute inset-0 z-0">
@@ -721,3 +721,6 @@ function InviteMemberDialog({ open, onOpenChange }: { open: boolean, onOpenChang
     </Dialog>
   );
 }
+
+
+

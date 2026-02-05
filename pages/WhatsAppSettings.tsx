@@ -105,7 +105,7 @@ export default function WhatsAppSettings() {
   }
 
   return (
-    <div className={cn("p-4 md:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col")}>
+    <div className={cn("p-4 md:p-10 max-w-[1600px] mx-auto space-y-4 min-h-screen relative overflow-hidden flex flex-col")}>
 
       {/* Header Liquid Scale */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
@@ -302,4 +302,7 @@ export default function WhatsAppSettings() {
     </div>
   );
 }
+
+
+
 

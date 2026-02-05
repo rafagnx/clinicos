@@ -146,7 +146,7 @@ export default function RetentionConfig() {
 
     return (
         <div className={cn(
-            "p-4 lg:p-10 max-w-[1600px] mx-auto min-h-screen relative overflow-hidden flex flex-col space-y-8",
+            "p-4 lg:p-4 max-w-[1600px] mx-auto min-h-screen relative overflow-hidden flex flex-col space-y-4",
             isDark ? "text-slate-100" : "text-slate-900"
         )}>
 
@@ -363,3 +363,6 @@ export default function RetentionConfig() {
         </div>
     );
 }
+
+
+

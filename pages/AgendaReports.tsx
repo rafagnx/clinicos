@@ -123,7 +123,7 @@ export default function AgendaReports() {
   }
 
   return (
-    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Relatórios da Agenda</h1>
@@ -326,4 +326,7 @@ export default function AgendaReports() {
     </div>
   );
 }
+
+
+
 

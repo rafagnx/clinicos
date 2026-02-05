@@ -63,7 +63,7 @@ export default function TreatmentPlans() {
     const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
 
     return (
-        <div className="p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen">
+        <div className="px-6 lg:px-4 pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto space-y-4 min-h-screen">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
@@ -189,3 +189,6 @@ export default function TreatmentPlans() {
         </div>
     );
 }
+
+
+

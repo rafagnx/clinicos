@@ -134,23 +134,23 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={cn("p-4 md:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 md:space-y-12 min-h-screen relative overflow-hidden")}>
+    <div className={cn("px-4 md:px-6 lg:px-4 pb-4 md:pb-6 lg:pb-4 pt-0 max-w-7xl mx-auto space-y-4 md:space-y-6 min-h-screen relative overflow-hidden")}>
 
       {/* BACKGROUND KINETIC ENGINE */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-mesh animate-mesh opacity-[0.15]"></div>
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse-slow pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] animate-pulse-slow delay-700 pointer-events-none" />
       </div>
 
       {/* Content Wrapper - Ensure z-index is higher than background */}
-      <div className="relative z-10 space-y-6 md:space-y-12">
+      <div className="relative z-10 space-y-4 md:space-y-8 mt-0">
 
         {/* HEADER REFINED SCALE */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={cn("rounded-[2.5rem] p-8 md:p-12 glass-premium border-white/10 relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)]", isDark ? "bg-slate-950/40" : "bg-white/60")}
+          className={cn("rounded-[2.5rem] px-8 md:px-12 pb-8 md:pb-12 pt-6 glass-premium border-white/10 relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)]", isDark ? "bg-slate-950/40" : "bg-white/60")}
         >
           {/* Decorative Scintillation Engine */}
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-transparent rounded-full blur-[120px] pointer-events-none group-hover:scale-125 transition-transform duration-[2000ms]" />
@@ -251,7 +251,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-4">
             {/* TODAY'S APPOINTMENTS */}
             <TodayAppointments
               isDark={isDark}
@@ -275,7 +275,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-4">
             <BirthdaysList patients={safePatients} />
 
             <ChatActivityWidget
@@ -295,3 +295,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+

@@ -238,7 +238,7 @@ export default function ImportPatients() {
   };
 
   return (
-    <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-4">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl("Patients"))}>
           <ArrowLeft className="w-5 h-5" />
@@ -383,4 +383,7 @@ export default function ImportPatients() {
     </div>
   );
 }
+
+
+
 

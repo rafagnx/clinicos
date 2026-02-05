@@ -150,7 +150,7 @@ export default function Patients() {
   };
 
   return (
-    <div className={cn("p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen")}>
+    <div className={cn("px-6 lg:px-4 pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto space-y-4 min-h-screen")}>
       {/* Header Liquid Scale */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <div className="space-y-1">
@@ -622,4 +622,7 @@ export default function Patients() {
     </div >
   );
 }
+
+
+
 

@@ -8,7 +8,7 @@ export default function AdminFinancial() {
     const { isDark } = useAdminTheme();
 
     return (
-        <div className="space-y-8 p-6 lg:p-10 max-w-[1600px] mx-auto min-h-screen">
+        <div className="space-y-4 px-6 lg:px-4 pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto min-h-screen">
             {/* Header Liquid */}
             <div className="flex flex-col gap-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 w-fit">
@@ -85,3 +85,6 @@ export default function AdminFinancial() {
         </div>
     );
 }
+
+
+

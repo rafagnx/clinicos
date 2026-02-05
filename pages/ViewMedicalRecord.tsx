@@ -168,12 +168,12 @@ export default function ViewMedicalRecord() {
           </div>
 
           {/* Structured Sections */}
-          <div className="p-6 sm:p-10 space-y-12 bg-white">
+          <div className="p-6 sm:p-10 space-y-6 bg-white">
 
             {/* 1. Medical History & Complaint */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <MedicalSection title="Histórico e Queixa" icon={Stethoscope}>
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div>
                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Queixa Principal</h4>
                     <p className="text-slate-800 text-xl font-medium leading-relaxed">
@@ -190,7 +190,7 @@ export default function ViewMedicalRecord() {
               </MedicalSection>
 
               <MedicalSection title="Segurança Clínica" icon={Thermometer}>
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div className="p-5 bg-rose-50/50 border border-rose-100 rounded-2xl">
                     <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                       <Activity className="w-3 h-3" /> Alergias
@@ -214,7 +214,7 @@ export default function ViewMedicalRecord() {
             {/* 2. Aesthetic Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               <MedicalSection title="Análise Estética" icon={Sparkles}>
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div className="bg-indigo-50/30 p-5 rounded-2xl border border-indigo-100/50">
                     <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Avaliação Facial</h4>
                     <p className="text-indigo-900 font-semibold leading-relaxed">
@@ -247,7 +247,7 @@ export default function ViewMedicalRecord() {
 
             {/* 3. Procedures Summary */}
             <MedicalSection title="Execução Técnica" icon={Beaker}>
-              <div className="space-y-8">
+              <div className="space-y-4">
                 <div className="flex flex-wrap gap-2">
                   {parsedContent?.selected_procedures?.map((proc: string, i: number) => (
                     <Badge key={i} className="bg-indigo-600 text-white hover:bg-indigo-600 border-0 px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl shadow-md">
@@ -302,3 +302,6 @@ export default function ViewMedicalRecord() {
     </div>
   );
 }
+
+
+

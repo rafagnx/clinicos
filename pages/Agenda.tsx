@@ -375,7 +375,7 @@ export default function Agenda() {
           }}
         />
       ) : (
-        <div className={cn("p-4 lg:p-10 max-w-[1600px] mx-auto space-y-6 min-h-screen relative overflow-hidden flex flex-col")}>
+        <div className={cn("px-4 md:px-6 lg:px-4 pb-4 md:pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto space-y-4 md:space-y-6 min-h-screen relative overflow-hidden flex flex-col")}>
           {/* Header Liquid Scale */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -1018,3 +1018,6 @@ export default function Agenda() {
     </>
   );
 }
+
+
+

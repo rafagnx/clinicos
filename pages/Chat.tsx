@@ -76,7 +76,7 @@ export default function Chat() {
   const { getStatus } = useChat();
 
   return (
-    <div className={cn("p-4 lg:p-10 max-w-7xl mx-auto space-y-8 min-h-screen relative overflow-hidden")}>
+    <div className={cn("p-4 lg:p-4 max-w-7xl mx-auto space-y-4 min-h-screen relative overflow-hidden")}>
       <CreateGroupDialog
         open={isCreateGroupOpen}
         onOpenChange={setIsCreateGroupOpen}
@@ -247,3 +247,6 @@ export default function Chat() {
     </div>
   );
 }
+
+
+

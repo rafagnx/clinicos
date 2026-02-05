@@ -1,0 +1,12 @@
+(node:10820) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+COLUMNS: updated_at, professional_id, end_date, created_at, id, start_date, organization_id, reason, created_by
+INDEXES: blocked_days_pkey, idx_blocked_days_professional, idx_blocked_days_dates, idx_blocked_days_org, idx_blocked_days_org_date
+HOLIDAY CONSTRAINTS: holidays_pkey, holidays_organization_id_fkey, holidays_created_by_fkey

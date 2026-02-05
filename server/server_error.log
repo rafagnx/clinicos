@@ -1,0 +1,5 @@
+[2026-02-05T16:21:49.729Z] Error creating Appointment: invalid input syntax for type integer: "all" 
+Detail: undefined 
+Code: 22P02 
+Data: {"date":"2026-02-12","start_time":"09:00","end_time":"18:00","professional_id":"all","reason":"FÉRIAS","type":"bloqueio","organization_id":"434b055b-09be-4d7e-92ca-4f32590c94fc"} 
+

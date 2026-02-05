@@ -50,7 +50,7 @@ export default function MedicalRecords() {
   );
 
   return (
-    <div className={cn("p-4 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col")}>
+    <div className={cn("p-4 lg:p-4 max-w-[1600px] mx-auto space-y-4 min-h-screen relative overflow-hidden flex flex-col")}>
 
       {/* Header Liquid Scale */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -232,4 +232,7 @@ export default function MedicalRecords() {
     </div>
   );
 }
+
+
+
 
