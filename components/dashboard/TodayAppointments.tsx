@@ -94,7 +94,7 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                         {apt.start_time?.includes('T') ? new Date(apt.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.start_time || "--:--").substring(0, 5)}
                                     </p>
                                     <p className={cn("text-[10px] font-black tracking-widest opacity-40 uppercase")}>
-                                        DE {apt.end_time?.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
+                                        ATÉ {apt.end_time?.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
                                     </p>
                                 </div>
                                 <div className="flex-1 min-w-0 space-y-1">
