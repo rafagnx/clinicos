@@ -69,6 +69,15 @@ const statusConfig = {
   },
 };
 
+const typeConfig: any = {
+  "Consulta": { color: "text-blue-500", border: "border-l-blue-500", bg: "bg-blue-500/10" },
+  "Retorno": { color: "text-amber-500", border: "border-l-amber-500", bg: "bg-amber-500/10" },
+  "Exame": { color: "text-purple-500", border: "border-l-purple-500", bg: "bg-purple-500/10" },
+  "Procedimento": { color: "text-emerald-500", border: "border-l-emerald-500", bg: "bg-emerald-500/10" },
+  "Encaixe": { color: "text-rose-500", border: "border-l-rose-500", bg: "bg-rose-500/10" },
+  "Compromisso": { color: "text-slate-500", border: "border-l-slate-500", bg: "bg-slate-500/10" },
+};
+
 // Função para determinar a cor do card baseado no profissional e tipo
 // Helper to safely parse time string (HH:mm or ISO)
 const parseTime = (timeStr: string) => {
@@ -923,7 +932,11 @@ export default function Agenda() {
                                     "text-[9px] truncate opacity-60 font-bold uppercase tracking-wider",
                                     isDark ? "text-slate-200" : "text-slate-700"
                                   )}>
-                                    {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
+                                    <span style={{ color: (typeConfig[apt.type] || typeConfig["Consulta"]).color.replace('text-', 'oklch(var(--') }}>
+                                      {apt.type || "Consulta"}
+                                    </span>
+                                    <span className="opacity-50 mx-1">•</span>
+                                    {apt.procedure_name || "Procedimento"}
                                   </span>
                                 </div>
                               </div>
