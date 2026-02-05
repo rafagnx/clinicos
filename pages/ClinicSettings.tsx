@@ -10,13 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard, Download } from "lucide-react";
+import { Building2, Upload, Loader2, CheckCircle2, Instagram, Facebook, Globe, Mail, Phone, MapPin, CreditCard, Download, Settings, Database, FileSpreadsheet, Lock, AlertTriangle, ChevronRight, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 import { supabase } from "@/lib/supabaseClient";
 import { ExportService } from "@/services/ExportService";
-import { Database, FileJson, FileSpreadsheet } from "lucide-react";
-
 
 export default function ClinicSettings() {
   const { isDark } = useOutletContext<{ isDark: boolean }>();
@@ -123,11 +122,11 @@ export default function ClinicSettings() {
   }, [existingSettings]);
 
   const getStatusLabel = () => {
-    if (organization?.subscription_status === 'active') return <span className="text-green-600 font-bold">ATIVO</span>;
-    if (organization?.subscription_status === 'manual_override') return <span className="text-amber-600 font-bold">PRO (Manual)</span>;
-    if (user?.email === 'rafamarketingdb@gmail.com') return <span className="text-purple-600 font-bold">MASTER</span>;
-    if (user?.email === 'marketingorofacial@gmail.com' || user?.email === 'kriscilainemiranda@gmail.com') return <span className="text-pink-600 font-bold">PRO (Partner)</span>;
-    if (organization?.name?.toLowerCase()?.includes('orofacial')) return <span className="text-pink-600 font-bold">PRO (Partner)</span>;
+    if (organization?.subscription_status === 'active') return <span className="text-emerald-500 font-black">ATIVO</span>;
+    if (organization?.subscription_status === 'manual_override') return <span className="text-amber-500 font-black">PRO (Manual)</span>;
+    if (user?.email === 'rafamarketingdb@gmail.com') return <span className="text-purple-500 font-black">MASTER</span>;
+    if (user?.email === 'marketingorofacial@gmail.com' || user?.email === 'kriscilainemiranda@gmail.com') return <span className="text-pink-500 font-black">PRO (Partner)</span>;
+    if (organization?.name?.toLowerCase()?.includes('orofacial')) return <span className="text-pink-500 font-black">PRO (Partner)</span>;
     return "Aguardando Assinatura";
   };
 
@@ -224,290 +223,296 @@ export default function ClinicSettings() {
   if (isUnauthorized) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="p-4 bg-rose-50 rounded-full">
-          <svg className="w-12 h-12 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+        <div className="p-4 bg-rose-500/10 rounded-full">
+          <AlertTriangle className="w-12 h-12 text-rose-500" />
         </div>
-        <h2 className="text-xl font-bold">Acesso Restrito</h2>
-        <p className="text-slate-500">Apenas administradores podem alterar as configurações da clínica.</p>
+        <h2 className="text-xl font-black">Acesso Restrito</h2>
+        <p className="text-slate-500 text-center max-w-sm">Apenas administradores podem alterar as configurações da clínica.</p>
       </div>
     );
   }
 
   if (isLoading || checkingAuth) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500 mb-4" />
+        <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Carregando sistema...</p>
       </div>
     );
   }
 
+  const tabTriggerClass = cn(
+    "data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white",
+    "data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/30",
+    "rounded-xl px-6 py-3 font-bold text-xs uppercase tracking-wider transition-all duration-300",
+    isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-800"
+  );
+
   return (
-    <div className={cn("p-4 lg:p-8 max-w-5xl mx-auto space-y-8", isDark ? "text-slate-100" : "")}>
-      <div>
-        <h1 className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>Configurações da Clínica</h1>
-        <div className="flex flex-col gap-1">
-          <p className={cn(isDark ? "text-slate-400" : "text-slate-500")}>Gerencie as informações públicas e integrações do seu estabelecimento</p>
-          {organization?.ownerEmail && (
-            <p className="text-xs text-slate-400 font-mono mt-1 flex items-center gap-2" title="Dono da conta">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-              Proprietário: <span className="text-slate-500 dark:text-slate-300 font-semibold">{organization.ownerEmail}</span>
-            </p>
-          )}
+    <div className={cn("p-4 md:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen relative overflow-hidden flex flex-col", isDark ? "text-slate-100" : "")}>
+
+      {/* Header Liquid Scale */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-slate-500/10 border border-slate-500/20 text-slate-500 text-[8px] font-black uppercase tracking-widest mb-1">
+            <Settings className="w-2.5 h-2.5" /> GESTÃO
+          </div>
+          <h1 className={cn("text-3xl md:text-4xl font-black mb-1 tracking-tighter leading-[0.9]", isDark ? "text-white" : "text-slate-900")}>
+            CONFIGURAÇÕES <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-gray-500">DA CLÍNICA</span>
+          </h1>
+          <p className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
+            Gerencie as informações públicas e integrações do seu estabelecimento.
+          </p>
         </div>
+
+        {organization?.ownerEmail && (
+          <div className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-xl border",
+            isDark ? "bg-slate-900/50 border-white/5" : "bg-white/50 border-slate-200"
+          )}>
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">PROPRIETÁRIO:</span>
+            <span className="text-xs font-bold">{organization.ownerEmail}</span>
+          </div>
+        )}
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="contact">Contato & Social</TabsTrigger>
-          <TabsTrigger value="whatsapp">WhatsApp (Meta)</TabsTrigger>
-
-          <TabsTrigger value="billing">Assinatura</TabsTrigger>
-          <TabsTrigger value="data">Dados</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="general" className="space-y-8 relative z-10">
+        <div className="overflow-x-auto pb-2 scrollbar-hide">
+          <TabsList className={cn("h-auto gap-2 p-1 bg-transparent")}>
+            <TabsTrigger value="general" className={tabTriggerClass}>Geral</TabsTrigger>
+            <TabsTrigger value="contact" className={tabTriggerClass}>Contato & Social</TabsTrigger>
+            <TabsTrigger value="whatsapp" className={tabTriggerClass}>WhatsApp (Meta)</TabsTrigger>
+            <TabsTrigger value="billing" className={tabTriggerClass}>Assinatura</TabsTrigger>
+            <TabsTrigger value="data" className={tabTriggerClass}>Dados</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Identidade Visual</CardTitle>
-              <CardDescription>Sua logo aparecerá em documentos e na interface do paciente</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center gap-6">
-                <div className="w-32 h-32 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden bg-slate-50">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn("p-8 rounded-[2rem] glass-premium border-white/10 relative overflow-hidden", isDark ? "bg-slate-950/40" : "bg-white/60")}
+          >
+            <div className="flex flex-col md:flex-row gap-10">
+              <div className="flex flex-col items-center space-y-4">
+                <div className={cn(
+                  "w-40 h-40 rounded-3xl border-4 border-dashed flex items-center justify-center overflow-hidden relative group transition-all",
+                  isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-slate-50"
+                )}>
                   {settings.logo_url ? (
-                    <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                    <img src={settings.logo_url} alt="Logo" className="w-full h-full object-contain p-4" />
                   ) : (
-                    <Building2 className="w-12 h-12 text-slate-300" />
+                    <Building2 className={cn("w-12 h-12 opacity-20", isDark ? "text-white" : "text-black")} />
                   )}
+
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <label className="cursor-pointer flex flex-col items-center text-white">
+                      <Upload className="w-6 h-6 mb-1" />
+                      <span className="text-[10px] uppercase font-black tracking-widest">Alterar</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                        accept="image/*"
+                      />
+                    </label>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Button variant="outline" className="relative" disabled={uploading}>
-                    {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                    Alterar Logo
-                    <input
-                      type="file"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      onChange={handleLogoUpload}
-                      accept="image/*"
-                    />
-                  </Button>
-                  <p className="text-xs text-slate-500">Recomendado: PNG ou SVG com fundo transparente</p>
-                </div>
+                <p className="text-[10px] text-center max-w-[150px] opacity-50">PNG ou SVG transparente. Máx 2MB.</p>
               </div>
 
-              <div className="grid gap-4">
+              <div className="flex-1 space-y-6">
                 <div className="space-y-2">
-                  <Label>Nome da Clínica</Label>
+                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Nome da Clínica</Label>
                   <Input
                     value={settings.clinic_name}
                     onChange={e => setSettings(prev => ({ ...prev, clinic_name: e.target.value }))}
+                    className={cn("h-12 text-lg font-bold", isDark ? "bg-slate-900/50 border-white/10" : "bg-white border-slate-200")}
                     placeholder="Ex: Clínica Odontológica Sorriso"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Endereço Completo</Label>
+                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Endereço Completo</Label>
                   <Textarea
                     value={settings.address}
                     onChange={e => setSettings(prev => ({ ...prev, address: e.target.value }))}
+                    className={cn("min-h-[100px] text-base font-medium resize-none", isDark ? "bg-slate-900/50 border-white/10" : "bg-white border-slate-200")}
                     placeholder="Rua, número, bairro, cidade - UF"
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="contact" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Canais de Comunicação</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> Telefone</Label>
-                <Input
-                  value={settings.phone}
-                  onChange={e => setSettings(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="(00) 00000-0000"
-                />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            {[
+              { icon: Phone, label: "Telefone", field: "phone", placeholder: "(00) 00000-0000" },
+              { icon: Mail, label: "E-mail", field: "email", placeholder: "contato@clinica.com" },
+              { icon: Globe, label: "Website", field: "website", placeholder: "https://www.clinica.com" },
+              { icon: Instagram, label: "Instagram", field: "instagram", placeholder: "@usuario" }
+            ].map((item, i) => (
+              <div key={i} className={cn("p-6 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-slate-950/40 border-slate-800" : "bg-white border-slate-100 shadow-sm")}>
+                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", isDark ? "bg-slate-900 text-slate-400" : "bg-slate-100 text-slate-600")}>
+                  <item.icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest opacity-50">{item.label}</Label>
+                  <Input
+                    value={settings[item.field as keyof typeof settings] as string}
+                    onChange={e => setSettings(prev => ({ ...prev, [item.field]: e.target.value }))}
+                    className="bg-transparent border-0 h-auto p-0 text-sm font-bold shadow-none focus-visible:ring-0"
+                    placeholder={item.placeholder}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Mail className="w-4 h-4" /> E-mail</Label>
-                <Input
-                  value={settings.email}
-                  onChange={e => setSettings(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="contato@clinica.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Globe className="w-4 h-4" /> Website</Label>
-                <Input
-                  value={settings.website}
-                  onChange={e => setSettings(prev => ({ ...prev, website: e.target.value }))}
-                  placeholder="https://www.clinica.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Instagram className="w-4 h-4" /> Instagram</Label>
-                <Input
-                  value={settings.instagram}
-                  onChange={e => setSettings(prev => ({ ...prev, instagram: e.target.value }))}
-                  placeholder="@usuario"
-                />
-              </div>
-            </CardContent>
-          </Card>
+            ))}
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="whatsapp" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Integração WhatsApp Cloud API</CardTitle>
-                  <CardDescription>Configure o envio automático de mensagens via Meta</CardDescription>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn("p-8 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-slate-950/40 border-slate-800" : "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100")}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                  <Zap className="w-6 h-6" />
                 </div>
-                <Switch
-                  checked={settings.meta_integration.enabled}
-                  onCheckedChange={val => setSettings(prev => ({
+                <div>
+                  <h3 className="font-bold text-lg leading-tight">WhatsApp Cloud API</h3>
+                  <p className="text-sm opacity-60">Integração oficial Meta</p>
+                </div>
+              </div>
+              <Switch
+                checked={settings.meta_integration.enabled}
+                onCheckedChange={val => setSettings(prev => ({
+                  ...prev,
+                  meta_integration: { ...prev.meta_integration, enabled: val }
+                }))}
+                className="data-[state=checked]:bg-[#25D366]"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 opacity-90">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60">Phone Number ID</Label>
+                <Input
+                  value={settings.meta_integration.whatsapp_number}
+                  onChange={e => setSettings(prev => ({
                     ...prev,
-                    meta_integration: { ...prev.meta_integration, enabled: val }
+                    meta_integration: { ...prev.meta_integration, whatsapp_number: e.target.value }
                   }))}
+                  className={cn("bg-white/50", isDark ? "bg-slate-900/50" : "")}
                 />
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Phone Number ID</Label>
-                  <Input
-                    value={settings.meta_integration.whatsapp_number}
-                    onChange={e => setSettings(prev => ({
-                      ...prev,
-                      meta_integration: { ...prev.meta_integration, whatsapp_number: e.target.value }
-                    }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>WhatsApp Business Account ID</Label>
-                  <Input
-                    value={settings.meta_integration.whatsapp_account_id}
-                    onChange={e => setSettings(prev => ({
-                      ...prev,
-                      meta_integration: { ...prev.meta_integration, whatsapp_account_id: e.target.value }
-                    }))}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Permanent Access Token</Label>
-                  <Input
-                    type="password"
-                    value={settings.meta_integration.access_token}
-                    onChange={e => setSettings(prev => ({
-                      ...prev,
-                      meta_integration: { ...prev.meta_integration, access_token: e.target.value }
-                    }))}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60">Business Account ID</Label>
+                <Input
+                  value={settings.meta_integration.whatsapp_account_id}
+                  onChange={e => setSettings(prev => ({
+                    ...prev,
+                    meta_integration: { ...prev.meta_integration, whatsapp_account_id: e.target.value }
+                  }))}
+                  className={cn("bg-white/50", isDark ? "bg-slate-900/50" : "")}
+                />
               </div>
-            </CardContent>
-          </Card>
+              <div className="md:col-span-2 space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest opacity-60">Permanent Access Token</Label>
+                <Input
+                  type="password"
+                  value={settings.meta_integration.access_token}
+                  onChange={e => setSettings(prev => ({
+                    ...prev,
+                    meta_integration: { ...prev.meta_integration, access_token: e.target.value }
+                  }))}
+                  className={cn("bg-white/50 font-mono text-xs", isDark ? "bg-slate-900/50" : "")}
+                />
+              </div>
+            </div>
+          </motion.div>
         </TabsContent>
 
-
-
         <TabsContent value="billing" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Plano e Assinatura</CardTitle>
-              <CardDescription>Gerencie seu plano de acesso ao ClinicOS</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className={cn("p-6 rounded-xl border flex flex-col md:flex-row items-center justify-between gap-6", isDark ? "bg-slate-900 border-slate-800" : "bg-slate-50 border-slate-200")}>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                    <CreditCard className="w-6 h-6" />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn("p-8 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200 shadow-xl shadow-slate-200/50")}
+          >
+            <div className="flex flex-col md:flex-row gap-8 items-center justify-between relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-2xl shadow-indigo-500/30">
+                  <CreditCard className="w-8 h-8" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-black text-2xl tracking-tight">ClinicOS PRO</h3>
+                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-lg uppercase tracking-widest">Premium</div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-lg">ClinicOS PRO</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Acesso completo + 7 Dias Grátis</p>
-                    <div className="mt-2 text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded inline-block">
-                      Status: {getStatusLabel()}
-                    </div>
+                  <div className="flex items-center gap-2 text-sm opacity-70">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <span>Status: {getStatusLabel()}</span>
                   </div>
                 </div>
-
-                {organization?.subscription_status !== 'active' && organization?.subscription_status !== 'manual_override' && user?.email !== 'rafamarketingdb@gmail.com' && user?.email !== 'marketingorofacial@gmail.com' && user?.email !== 'kriscilainemiranda@gmail.com' && !organization?.name?.toLowerCase()?.includes('orofacial') && (
-                  <div className="flex flex-col gap-3 w-full md:w-auto">
-                    <Button
-                      onClick={handleSubscribe}
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/20"
-                    >
-                      Assinar Agora (Teste Grátis)
-                    </Button>
-                    <Button variant="outline" onClick={handlePortal}>
-                      Gerenciar Faturas
-                    </Button>
-                  </div>
-                )}
               </div>
-            </CardContent>
-          </Card>
+
+              {organization?.subscription_status !== 'active' && organization?.subscription_status !== 'manual_override' && user?.email !== 'rafamarketingdb@gmail.com' && user?.email !== 'marketingorofacial@gmail.com' && user?.email !== 'kriscilainemiranda@gmail.com' && !organization?.name?.toLowerCase()?.includes('orofacial') && (
+                <div className="flex gap-4">
+                  <Button
+                    onClick={handleSubscribe}
+                    className="h-12 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20"
+                  >
+                    Assinar Agora
+                  </Button>
+                  <Button variant="outline" className="h-12 px-6 rounded-xl" onClick={handlePortal}>
+                    Faturas
+                  </Button>
+                </div>
+              )}
+            </div>
+          </motion.div>
         </TabsContent>
 
         <TabsContent value="data" className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
-                  Exportar Pacientes
-                </CardTitle>
-                <CardDescription>Baixe uma lista completa de seus pacientes em formato CSV (Excel).</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={handleExportPatients} variant="outline" className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar Lista de Pacientes
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="w-5 h-5 text-indigo-600" />
-                  Backup Completo
-                </CardTitle>
-                <CardDescription>Baixe todos os dados da sua clínica (pacientes, prontuários, agendamentos) em JSON.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={handleBackup} variant="outline" className="w-full border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300">
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar Backup do Sistema
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
-            <p className="font-semibold mb-1 flex items-center gap-2">
-              <CheckCircle2 className="w-3 h-3 text-green-500" />
-              Segurança de Dados
-            </p>
-            <p>Seus dados são segregados e protegidos. Apenas administradores desta organização têm permissão para exportar essas informações.</p>
+            {[
+              { title: "Exportar Pacientes", desc: "Baixe uma lista completa em CSV.", icon: FileSpreadsheet, action: handleExportPatients, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { title: "Backup Completo", desc: "Download de segurança em JSON.", icon: Database, action: handleBackup, color: "text-indigo-500", bg: "bg-indigo-500/10" }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.02 }}
+                className={cn("p-6 rounded-2xl border cursor-pointer group", isDark ? "bg-slate-900/50 border-slate-800 hover:bg-slate-800" : "bg-white border-slate-200 hover:border-indigo-200 hover:shadow-lg")}
+                onClick={item.action}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-colors", item.bg, item.color)}>
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <Download className="w-5 h-5 opacity-20 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <h3 className="font-bold text-lg mb-1">{item.title}</h3>
+                <p className="text-sm opacity-60 mb-4">{item.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </TabsContent>
+
       </Tabs>
 
-      <div className="flex items-center justify-end gap-4 pt-4 border-t">
+      <div className="flex justify-end pt-6 border-t border-white/10 relative z-10">
         <Button
           onClick={() => saveMutation.mutate(settings)}
           disabled={saveMutation.isPending}
-          className="min-w-[150px]"
+          className="h-12 px-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
         >
           {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
           Salvar Alterações

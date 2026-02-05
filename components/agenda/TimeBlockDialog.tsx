@@ -30,7 +30,15 @@ export default function TimeBlockDialog({ open, onOpenChange, onSuccess, profess
     // Agenda passes it, so we use the prop.
 
     const mutation = useMutation({
-        mutationFn: (data: any) => base44.entities.Appointment.create({ ...data, type: "bloqueio" }),
+        mutationFn: async (data: any) => {
+            if (data.professional_id === 'all') {
+                const promises = professionals.map(p =>
+                    base44.entities.Appointment.create({ ...data, professional_id: p.id, type: "bloqueio" })
+                );
+                return Promise.all(promises);
+            }
+            return base44.entities.Appointment.create({ ...data, type: "bloqueio" });
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["appointments"] });
             toast.success("Bloqueio criado com sucesso!");
@@ -41,6 +49,7 @@ export default function TimeBlockDialog({ open, onOpenChange, onSuccess, profess
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Ensure we don't send "all" to the backend directly which would cause a DB error
         mutation.mutate(formData);
     };
 

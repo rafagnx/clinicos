@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/lib/base44Client";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
@@ -13,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   ChevronLeft, ChevronRight, Plus, CalendarIcon, Clock,
-  MoreVertical, Loader2, Filter, Search, Send, X, Ban, RefreshCw, BarChart3, LayoutList, Calendar as CalendarLucide
+  MoreVertical, Loader2, Filter, Search, Send, X, Ban, RefreshCw, BarChart3, LayoutList, Calendar as CalendarLucide, Sparkles
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { Link, useOutletContext } from "react-router-dom"; // Added useOutletContext
 import { cn, createPageUrl } from "@/lib/utils";
+import { getHolidays } from "@/utils/holidays";
 import { supabase } from "@/lib/supabaseClient";
 
 import AppointmentForm from "@/components/agenda/AppointmentForm";
@@ -97,27 +99,27 @@ const parseTime = (timeStr: string) => {
 const getAppointmentCardColor = (apt, isDark) => {
   if (!apt) return "";
 
+  const glassBase = isDark ? "bg-slate-900/40 backdrop-blur-md" : "bg-white/40 backdrop-blur-md";
+
   // 1. By Status
-  if (apt.status === "finalizado") return "border-l-emerald-500 bg-emerald-50/50 hover:bg-emerald-100/50 dark:bg-emerald-900/10";
-  if (apt.status === "cancelado") return "border-l-slate-400 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50";
-  if (apt.status === "faltou") return "border-l-rose-500 bg-rose-50/50 hover:bg-rose-100/50 dark:bg-rose-900/10";
+  if (apt.status === "finalizado") return cn(glassBase, "border-l-emerald-500 shadow-emerald-500/10");
+  if (apt.status === "cancelado") return cn(glassBase, "border-l-slate-400 opacity-60 shadow-none");
+  if (apt.status === "faltou") return cn(glassBase, "border-l-rose-500 shadow-rose-500/10");
 
   // 2. By Type
-  if (apt.type === "Compromisso") return "border-l-slate-500 bg-slate-100 dark:bg-slate-800";
-  if (apt.type === "Retorno") return "border-l-amber-500 bg-amber-50 dark:bg-amber-900/10";
+  if (apt.type === "Compromisso") return cn(glassBase, "border-l-slate-500 grayscale");
+  if (apt.type === "Retorno") return cn(glassBase, "border-l-amber-500 shadow-amber-500/10");
 
-  // 3. By Procedure Category (heuristic) or Professional
-  // Default vibrant colors
-  const vibrantColors = [
-    "border-l-violet-500 bg-violet-50/60 hover:bg-violet-100/50 dark:bg-violet-900/20",
-    "border-l-pink-500 bg-pink-50/60 hover:bg-pink-100/50 dark:bg-pink-900/20",
-    "border-l-cyan-500 bg-cyan-50/60 hover:bg-cyan-100/50 dark:bg-cyan-900/20",
-    "border-l-indigo-500 bg-indigo-50/60 hover:bg-indigo-100/50 dark:bg-indigo-900/20",
+  // 3. By Professional (Vibrant Gradients)
+  const vibrantGrades = [
+    cn(glassBase, "border-l-blue-500 shadow-blue-500/10"),
+    cn(glassBase, "border-l-indigo-500 shadow-indigo-500/10"),
+    cn(glassBase, "border-l-purple-500 shadow-purple-500/10"),
+    cn(glassBase, "border-l-cyan-500 shadow-cyan-500/10"),
   ];
 
-  // Hash the ID to pick a stable color
   const hash = String(apt.professional_id || "").split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return vibrantColors[hash % vibrantColors.length];
+  return vibrantGrades[hash % vibrantGrades.length];
 };
 
 // Helper to deduplicate professionals
@@ -244,7 +246,7 @@ export default function Agenda() {
     }));
   }, [appointments, patients, professionals]);
 
-  // Fetch Blocked Days
+  // Fetch blocked days (keep existing)
   const { data: blockedDays = [] } = useQuery({
     queryKey: ["blocked-days", selectedDate, view, filters.professional_id],
     queryFn: async () => {
@@ -269,55 +271,50 @@ export default function Agenda() {
     },
   });
 
-  // Fetch Holidays
-  const { data: holidays = [] } = useQuery({
-    queryKey: ["holidays", selectedDate.getFullYear()],
-    queryFn: async () => {
-      try {
-        return await base44.holidays.list({ year: selectedDate.getFullYear() });
-      } catch (err) {
-        console.error('Error fetching holidays:', err);
-        return [];
-      }
-    }
-  });
+  // Local Holidays Calculation (Reliable)
+  const holidays = React.useMemo(() => {
+    return getHolidays(selectedDate.getFullYear());
+  }, [selectedDate]);
 
   // Helper functions for blocked days and holidays
   const isDayBlocked = (date: Date) => {
     if (!blockedDays || blockedDays.length === 0) return false;
-    const dateStr = format(date, 'yyyy-MM-dd');
+    const target = format(date, 'yyyy-MM-dd');
+
     return blockedDays.some((block: any) => {
-      // Fix Timezone: Parse as ISO but ignore time component safely
-      const blockStart = new Date(block.start_date + 'T00:00:00');
-      const blockEnd = new Date(block.end_date + 'T23:59:59');
-      // Normalize checkDate to avoid time issues
-      const checkDate = new Date(dateStr + 'T12:00:00');
-      return checkDate >= blockStart && checkDate <= blockEnd;
+      const s = block.start_date;
+      const e = block.end_date;
+      if (!s || !e) return false;
+
+      // Ensure we compare strings in YYYY-MM-DD format
+      const start = typeof s === 'string' ? s.split('T')[0] : format(new Date(s), 'yyyy-MM-dd');
+      const end = typeof e === 'string' ? e.split('T')[0] : format(new Date(e), 'yyyy-MM-dd');
+
+      return target >= start && target <= end;
     });
   };
 
   const getBlockReason = (date: Date) => {
-    if (!blockedDays) return null;
-    const dateStr = format(date, 'yyyy-MM-dd');
+    if (!blockedDays || blockedDays.length === 0) return null;
+    const target = format(date, 'yyyy-MM-dd');
+
     const block = blockedDays.find((b: any) => {
-      // Fix Timezone: Parse as ISO but ignore time component safely
-      const blockStart = new Date(b.start_date + 'T00:00:00');
-      const blockEnd = new Date(b.end_date + 'T23:59:59');
-      // Normalize checkDate to avoid time issues
-      const checkDate = new Date(dateStr + 'T12:00:00');
-      return checkDate >= blockStart && checkDate <= blockEnd;
+      const s = b.start_date;
+      const e = b.end_date;
+      if (!s || !e) return false;
+
+      const start = typeof s === 'string' ? s.split('T')[0] : format(new Date(s), 'yyyy-MM-dd');
+      const end = typeof e === 'string' ? e.split('T')[0] : format(new Date(e), 'yyyy-MM-dd');
+
+      return target >= start && target <= end;
     });
+
     return block?.reason || 'Bloqueado';
   };
 
   const getDayHoliday = (date: Date) => {
     if (!holidays || holidays.length === 0) return null;
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return holidays.find((h: any) => {
-      // Handle potential ISO string or plain date
-      const hDate = h.date.toString().split('T')[0];
-      return hDate === dateStr;
-    });
+    return holidays.find((h) => isSameDay(h.date, date));
   };
 
   // Mutations
@@ -378,250 +375,275 @@ export default function Agenda() {
           }}
         />
       ) : (
-        <div className={cn(
-          "flex flex-col h-full rounded-2xl shadow-sm border overflow-hidden",
-          isDark ? "bg-[#151A25] border-slate-800" : "bg-white border-slate-200"
-        )}>
-          {/* Header Premium */}
-          {/* Header Premium Reorganizado */}
-          <div className={cn(
-            "flex flex-col gap-4 p-5 border-b md:flex-row md:items-center md:justify-between sticky top-0 z-20 transition-colors",
-            isDark ? "bg-[#0B0E14] border-slate-800" : "bg-white border-slate-100"
-          )}>
-            {/* Esquerda: Título + Visualização */}
-            <div className="flex items-center gap-4 lg:gap-6">
-              <div className="flex items-center gap-3">
-                <h1 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Agenda</h1>
+        <div className={cn("p-4 lg:p-10 max-w-[1600px] mx-auto space-y-6 min-h-screen relative overflow-hidden flex flex-col")}>
+          {/* Header Liquid Scale */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10"
+          >
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest mb-1 backdrop-blur-md">
+                <CalendarLucide className="w-2.5 h-2.5" /> GESTÃO DE FLUXO
               </div>
-
-              <div className={cn(
-                "flex items-center p-1 rounded-lg border shadow-sm hidden md:flex",
-                isDark ? "bg-[#1C2333] border-slate-700" : "bg-slate-50 border-slate-200"
-              )}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setView("day")}
-                  className={cn(
-                    "rounded-md px-3 h-8 text-xs font-medium transition-all",
-                    view === "day"
-                      ? (isDark ? "bg-indigo-600 text-white shadow-md" : "bg-white text-indigo-600 shadow-sm")
-                      : (isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900")
-                  )}
-                >
-                  Dia
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setView("week")}
-                  className={cn(
-                    "rounded-md px-3 h-8 text-xs font-medium transition-all",
-                    view === "week"
-                      ? (isDark ? "bg-indigo-600 text-white shadow-md" : "bg-white text-indigo-600 shadow-sm")
-                      : (isDark ? "text-slate-400 hover:text-slate-200" : "text-slate-500 hover:text-slate-900")
-                  )}
-                >
-                  Semana
-                </Button>
-              </div>
+              <h1 className={cn("text-3xl md:text-5xl font-black mb-1 tracking-tighter leading-[0.85] filter drop-shadow-sm", isDark ? "text-white" : "text-slate-900")}>
+                AGENDA <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 animate-gradient-x select-none">INTEGRADA</span>
+              </h1>
+              <p className={cn("text-xs md:text-sm font-bold tracking-tight opacity-60 flex items-center gap-2", isDark ? "text-slate-400" : "text-slate-600")}>
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Otimize o tempo e maximize os resultados da clínica.
+              </p>
             </div>
 
-            {/* Direita: Controles e Ações */}
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto">
-
-              {/* Grupo Navegação Data */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* View Selector Glass */}
               <div className={cn(
-                "flex items-center p-1 rounded-lg border w-full md:w-auto",
-                isDark ? "border-slate-700 bg-[#1C2333]" : "border-slate-200 bg-white"
+                "flex p-1.5 rounded-2xl glass-premium border-white/5",
+                isDark ? "bg-slate-950/60" : "bg-white/60"
               )}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-transparent"
-                  onClick={() => handleDateChange(-1)}
-                  title="Dia Anterior"
+                <button
+                  onClick={() => setView("day")}
+                  className={cn(
+                    "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative overflow-hidden group/btn",
+                    view === "day"
+                      ? "text-white shadow-lg"
+                      : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
+                  )}
                 >
-                  <ChevronLeft className="w-4 h-4 text-slate-500" />
-                </Button>
-
-                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" className={cn("h-8 min-w-[140px] justify-center font-medium text-sm hover:bg-transparent", isDark ? "text-slate-200" : "text-slate-700")}>
-                      <CalendarIcon className="w-3.5 h-3.5 mr-2 opacity-70" />
-                      {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="center">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      locale={ptBR}
-                      initialFocus
+                  <span className="relative z-10">Dia</span>
+                  {view === "day" && (
+                    <motion.div
+                      layoutId="view-bg"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
-                  </PopoverContent>
-                </Popover>
-
-                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-transparent"
-                  onClick={() => handleDateChange(1)}
-                  title="Próximo Dia"
+                  )}
+                </button>
+                <button
+                  onClick={() => setView("week")}
+                  className={cn(
+                    "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 relative overflow-hidden group/btn",
+                    view === "week"
+                      ? "text-white shadow-lg"
+                      : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
+                  )}
                 >
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
-                </Button>
+                  <span className="relative z-10">Semana</span>
+                  {view === "week" && (
+                    <motion.div
+                      layoutId="view-bg"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </button>
+              </div>
 
-                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "flex items-center gap-1 p-1 rounded-xl glass-premium border-white/5",
+                  isDark ? "bg-slate-950/40" : "bg-white/40"
+                )}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-white/10 rounded-lg"
+                    onClick={() => handleDateChange(-1)}
+                  >
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
+                  </Button>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" className={cn("h-8 min-w-[120px] justify-center font-bold text-[10px] uppercase tracking-widest hover:bg-white/10 rounded-lg", isDark ? "text-slate-200" : "text-slate-700")}>
+                        {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="center">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && setSelectedDate(date)}
+                        locale={ptBR}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-white/10 rounded-lg"
+                    onClick={() => handleDateChange(1)}
+                  >
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                  </Button>
+                </div>
 
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedDate(new Date())}
-                  className={cn("h-7 px-2 text-xs font-medium uppercase tracking-wider rounded text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20")}
-                  title="Ir para Hoje"
+                  className={cn("h-10 px-4 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all",
+                    isDark ? "text-blue-400 hover:bg-blue-500/10" : "text-blue-600 hover:bg-blue-50")}
                 >
                   Hoje
                 </Button>
               </div>
+            </div>
+          </motion.div>
 
-              {/* Separador Mobile Hidden */}
-              <div className="hidden md:block h-6 w-px bg-slate-200 dark:bg-slate-700"></div>
-
-              {/* Grupo Filtros e Ações */}
-              <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
-
-                {/* Legenda Colapsável */}
-                <div className="hidden lg:block">
-                  <AgendaLegend />
-                </div>
-
-                <AdvancedFilters
-                  professionals={professionals}
-                  filters={filters}
-                  setFilters={setFilters}
+          {/* Toolbar Sub-Header */}
+          <div className={cn(
+            "rounded-[1.5rem] p-4 glass-premium border-white/5 flex flex-wrap items-center justify-between gap-4 relative z-10 transition-colors",
+            isDark ? "bg-slate-950/40" : "bg-white/60"
+          )}>
+            <div className="flex items-center gap-4 flex-1 min-w-[200px]">
+              <div className="relative flex-1 max-w-sm group">
+                <Search className={cn(
+                  "absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+                  isDark ? "text-slate-500 group-focus-within:text-blue-400" : "text-slate-400 group-focus-within:text-blue-600"
+                )} />
+                <input
+                  type="text"
+                  placeholder="Buscar paciente, procedimento..."
+                  className={cn(
+                    "pl-11 pr-4 h-11 rounded-xl text-xs font-medium w-full border transition-all focus:outline-none placeholder:text-[10px] placeholder:uppercase placeholder:tracking-wider",
+                    isDark
+                      ? "bg-slate-900/60 border-white/5 focus:bg-slate-900/80 focus:border-blue-500/50 text-white placeholder:text-slate-600"
+                      : "bg-white/60 border-slate-200/50 focus:bg-white focus:border-blue-500/50 text-slate-900 placeholder:text-slate-400"
+                  )}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-
-                <Link to={createPageUrl("AgendaReports")}>
-                  <Button variant="outline" size="icon" title="Relatórios" className={cn("h-10 w-10 border-dashed", isDark ? "border-slate-700 hover:bg-slate-800" : "border-slate-300 hover:bg-slate-50")}>
-                    <BarChart3 className="w-4 h-4 text-slate-500" />
-                  </Button>
-                </Link>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className={cn(
-                      "gap-2 shadow-lg transition-all hover:scale-105 active:scale-95 h-10 px-6",
-                      isDark ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20" : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-300"
-                    )}>
-                      <Plus className="w-4 h-4" />
-                      <span className="font-medium">Novo</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className={isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : ""}>
-                    <DropdownMenuItem onClick={() => {
-                      setSelectedAppointment(null);
-                      setIsFormOpen(true);
-                    }} className="gap-2 cursor-pointer">
-                      <CalendarLucide className="w-4 h-4" /> Agendamento
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsTimeBlockOpen(true)} className="gap-2 cursor-pointer">
-                      <Clock className="w-4 h-4" /> Bloqueio de Horário
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                    <DropdownMenuItem onClick={() => setIsBlockDayOpen(true)} className="gap-2 text-rose-500 focus:text-rose-600 cursor-pointer">
-                      <Ban className="w-4 h-4" /> Bloquear Dia/Período
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
+              <div className="hidden xl:block">
+                <AgendaLegend />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <AdvancedFilters
+                professionals={professionals}
+                filters={filters}
+                setFilters={setFilters}
+              />
+
+              <Link to={createPageUrl("AgendaReports")}>
+                <Button variant="ghost" size="icon" title="Relatórios" className="h-11 w-11 text-slate-500 hover:bg-white/10 rounded-xl border border-transparent hover:border-white/5">
+                  <BarChart3 className="w-5 h-5" />
+                </Button>
+              </Link>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="h-11 px-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Sparkles className="w-3.5 h-3.5 mr-2 relative z-10" />
+                    <span className="relative z-10">Novo Agendamento</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[200px]", isDark ? "bg-slate-900/95 backdrop-blur-xl text-slate-200" : "bg-white/95 backdrop-blur-xl")}>
+                  <DropdownMenuItem onClick={() => {
+                    setSelectedAppointment(null);
+                    setIsFormOpen(true);
+                  }} className="gap-3 cursor-pointer p-2.5 rounded-xl text-xs font-bold uppercase tracking-wider focus:bg-blue-500/10 focus:text-blue-500">
+                    <CalendarLucide className="w-4 h-4" /> Agendamento
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsTimeBlockOpen(true)} className="gap-3 cursor-pointer p-2.5 rounded-xl text-xs font-bold uppercase tracking-wider focus:bg-blue-500/10 focus:text-blue-500">
+                    <Clock className="w-4 h-4" /> Bloqueio de Horário
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className={isDark ? "bg-white/5 my-1" : "bg-slate-100 my-1"} />
+                  <DropdownMenuItem onClick={() => setIsBlockDayOpen(true)} className="gap-3 text-rose-500 focus:text-rose-600 focus:bg-rose-500/10 cursor-pointer p-2.5 rounded-xl text-xs font-bold uppercase tracking-wider">
+                    <Ban className="w-4 h-4" /> Bloquear Dia
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
           {/* Calendar Grid Container */}
-          <div className={cn("flex-1 overflow-auto relative scrollbar-thin", isDark ? "scrollbar-thumb-slate-700 scrollbar-track-transparent" : "scrollbar-thumb-slate-300")}>
-            <div className="min-w-[800px] bg-transparent pb-10">
+          <div className={cn("flex-1 overflow-hidden relative rounded-[2rem] border glass-premium flex flex-col shadow-2xl shadow-black/5", isDark ? "bg-slate-950/40 border-white/5" : "bg-white/60 border-white/40")}>
 
-              {/* Calendar Header Row */}
-              <div className={cn(
-                "grid grid-cols-[80px_1fr] sticky top-0 z-30 border-b backdrop-blur-sm",
-                isDark ? "bg-[#0B0E14]/90 border-slate-800" : "bg-white/95 border-slate-100"
-              )}>
-                <div className={cn("p-4 text-xs font-semibold uppercase tracking-wider text-center border-r flex items-center justify-center", isDark ? "text-slate-500 border-slate-800" : "text-slate-400 border-slate-100")}>
-                  Horário
-                </div>
-                <div className={cn("grid", view === "day" ? "grid-cols-1" : "grid-cols-7")}>
-                  {view === "day" ? (
-                    <div className="p-3 flex flex-col items-center justify-center">
-                      <div className={cn("text-xs font-medium uppercase tracking-widest mb-1", isDark ? "text-indigo-400" : "text-indigo-600")}>
-                        {format(selectedDate, "MMMM", { locale: ptBR })}
-                      </div>
-                      <div className={cn("text-2xl font-bold", isDark ? "text-white" : "text-slate-900")}>
-                        {format(selectedDate, "EEEE, d", { locale: ptBR })}
-                      </div>
-                      {getDayHoliday(selectedDate) && (
-                        <span className="mt-1 text-sm font-semibold text-amber-500">
-                          🎉 {getDayHoliday(selectedDate)?.name}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    Array.from({ length: 7 }).map((_, i) => {
-                      const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), i);
-                      const isToday = isSameDay(date, new Date());
-                      const holiday = getDayHoliday(date);
-
-                      return (
-                        <div
-                          key={i}
-                          className={cn(
-                            "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1 transition-colors relative overflow-hidden",
-                            isDark ? "border-slate-800" : "border-slate-100",
-                            isToday ? (isDark ? "bg-indigo-500/10" : "bg-indigo-50/50") : "",
-                            holiday ? (isDark ? "bg-amber-900/10" : "bg-amber-50/40") : ""
-                          )}
-                        >
-                          <span className={cn(
-                            "text-[10px] font-bold uppercase tracking-wider",
-                            isToday ? "text-indigo-500" : (isDark ? "text-slate-500" : "text-slate-400"),
-                            holiday ? "text-amber-600 dark:text-amber-500" : ""
-                          )}>
-                            {format(date, "EEE", { locale: ptBR })}
-                          </span>
-                          <div className={cn(
-                            "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all relative z-10",
-                            isToday
-                              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110"
-                              : (isDark ? "text-slate-300" : "text-slate-700"),
-                            holiday && !isToday ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" : ""
-                          )}>
-                            {format(date, "d")}
-                          </div>
-
-                          {holiday && (
-                            <span className="text-[9px] font-medium text-amber-600 dark:text-amber-400 truncate max-w-full px-1" title={holiday.name}>
-                              {holiday.name.split(' ')[0]}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
+            {/* Calendar Header Row */}
+            <div className={cn(
+              "grid grid-cols-[80px_1fr] border-b backdrop-blur-md z-20 relative",
+              isDark ? "bg-[#0B0E14]/80 border-white/5" : "bg-white/80 border-slate-100"
+            )}>
+              <div className={cn("p-4 text-[10px] font-black uppercase tracking-widest text-center border-r flex items-center justify-center opacity-50", isDark ? "text-slate-400 border-white/5" : "text-slate-500 border-slate-100")}>
+                Horário
               </div>
+              <div className={cn("grid", view === "day" ? "grid-cols-1" : "grid-cols-7")}>
+                {view === "day" ? (
+                  <div className="p-4 flex flex-col items-center justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-1", isDark ? "text-blue-400" : "text-blue-600")}>
+                      {format(selectedDate, "MMMM", { locale: ptBR })}
+                    </div>
+                    <div className={cn("text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                      {format(selectedDate, "EEEE, d", { locale: ptBR })}
+                    </div>
+                    {getDayHoliday(selectedDate) && (
+                      <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-amber-500 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> {getDayHoliday(selectedDate)?.name}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  Array.from({ length: 7 }).map((_, i) => {
+                    const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), i);
+                    const isToday = isSameDay(date, new Date());
+                    const holiday = getDayHoliday(date);
 
-              {/* Calendar Body (Time Slots) */}
-              <div className="relative">
+                    return (
+                      <div
+                        key={i}
+                        className={cn(
+                          "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1.5 transition-all relative overflow-hidden group",
+                          isDark ? "border-white/5" : "border-slate-100",
+                          isToday ? (isDark ? "bg-blue-500/5" : "bg-blue-50/50") : "hover:bg-white/5"
+                        )}
+                      >
+                        <span className={cn(
+                          "text-[9px] font-black uppercase tracking-[0.15em]",
+                          isToday ? "text-blue-500" : (isDark ? "text-slate-500" : "text-slate-400"),
+                          holiday ? "text-amber-500" : ""
+                        )}>
+                          {format(date, "EEE", { locale: ptBR })}
+                        </span>
+                        <div className={cn(
+                          "w-8 h-8 flex items-center justify-center rounded-xl text-sm font-black transition-all relative z-10",
+                          isToday
+                            ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30 scale-110"
+                            : (isDark ? "text-slate-300 group-hover:bg-white/10" : "text-slate-700 group-hover:bg-slate-100"),
+                          holiday && !isToday ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" : ""
+                        )}>
+                          {format(date, "d")}
+                        </div>
+
+                        {holiday && (
+                          <span className="text-[8px] font-black text-amber-500/80 dark:text-amber-400/80 truncate max-w-full px-1 uppercase tracking-tighter" title={holiday.name}>
+                            {holiday.name.split(' ')[0]}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Calendar Body (Time Slots) */}
+            <div className={cn("relative overflow-auto flex-1 scrollbar-thin", isDark ? "scrollbar-thumb-slate-800 scrollbar-track-transparent" : "scrollbar-thumb-slate-200 scrollbar-track-slate-50")}>
+              <div className="absolute inset-x-0 min-h-[1250px]"> {/* Ensure scrollable area */}
                 {timeSlots.map((time, i) => (
-                  <div key={time} className={cn("grid grid-cols-[80px_1fr] group min-h-[50px]", i === timeSlots.length - 1 ? "" : "border-b", isDark ? "border-slate-800/50" : "border-slate-100")}>
+                  <div key={time} className={cn("grid grid-cols-[80px_1fr] group min-h-[50px] relative", i === timeSlots.length - 1 ? "" : "border-b", isDark ? "border-white/5" : "border-slate-100")}>
                     {/* Time Label */}
-                    <div className={cn("relative p-2 text-xs font-medium text-center border-r flex items-start justify-center pt-3", isDark ? "text-slate-500 border-slate-800 bg-[#11141D]" : "text-slate-400 border-slate-100 bg-slate-50/30")}>
-                      {time.endsWith("00") ? <span className={isDark ? "text-slate-400" : "text-slate-600"}>{time}</span> : <span className="opacity-0 group-hover:opacity-50 transition-opacity">{time}</span>}
+                    <div className={cn(
+                      "relative p-2 text-xs font-medium text-center border-r flex items-start justify-center pt-3 select-none",
+                      isDark ? "text-slate-600 border-white/5 bg-[#0B0E14]/30" : "text-slate-300 border-slate-100 bg-slate-50/50"
+                    )}>
+                      {time.endsWith("00") ? <span className={isDark ? "text-slate-500 font-bold" : "text-slate-400 font-bold"}>{time}</span> : <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px]">{time}</span>}
                     </div>
 
                     {/* Slot Cells */}
@@ -630,12 +652,24 @@ export default function Agenda() {
                         (() => {
                           const blocked = isDayBlocked(selectedDate);
                           const holiday = getDayHoliday(selectedDate);
+                          const reason = blocked ? getBlockReason(selectedDate) : "";
+                          const getEmoji = (r: string) => {
+                            const lower = r.toLowerCase();
+                            if (lower.includes('férias') || lower.includes('ferias')) return '🏖️';
+                            if (lower.includes('reforma') || lower.includes('obra')) return '🛠️';
+                            if (lower.includes('curso') || lower.includes('congresso') || lower.includes('estudo')) return '📚';
+                            if (lower.includes('pessoal') || lower.includes('folga')) return '🏠';
+                            if (lower.includes('luto')) return '🖤';
+                            return '⛔';
+                          };
+                          const emoji = getEmoji(reason);
+
                           return (
                             <div
                               className={cn("relative transition-colors border-l-0",
-                                isDark ? "hover:bg-slate-800/30" : "hover:bg-slate-50",
-                                blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : "",
-                                holiday && !blocked ? (isDark ? "bg-amber-900/5 hover:bg-amber-900/10" : "bg-amber-50/30 hover:bg-amber-50/50") : ""
+                                isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50",
+                                blocked ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : "",
+                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : ""
                               )}
                               onClick={() => {
                                 if (blocked) return;
@@ -643,22 +677,44 @@ export default function Agenda() {
                                 setIsFormOpen(true);
                               }}
                             >
-                              {blocked && getBlockReason(selectedDate) && time === "09:00" && (
-                                <div className="absolute inset-x-0 top-0 p-2 text-center z-10">
-                                  <span className="text-xs font-medium text-slate-500 bg-white/80 dark:bg-black/50 px-2 py-1 rounded-md shadow-sm border border-slate-200 dark:border-slate-800">
-                                    ⛔ {getBlockReason(selectedDate)}
+                              {blocked && time === "08:00" && (
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                    {reason}
                                   </span>
                                 </div>
                               )}
-                              {holiday && time === "08:00" && !blocked && (
-                                <div className="absolute inset-x-0 top-0 p-1 text-center z-0 pointer-events-none opacity-50">
-                                  <span className="text-xs font-medium text-amber-500 uppercase tracking-widest">
+
+                              {blocked && time === "09:00" && (
+                                <div className="absolute inset-x-4 top-2 text-center z-10">
+                                  <span className={cn(
+                                    "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
+                                    isDark ? "bg-slate-800 text-slate-400 border-slate-700" : "bg-white text-slate-500 border-slate-200"
+                                  )}>
+                                    {emoji} {reason}
+                                  </span>
+                                </div>
+                              )}
+
+                              {!blocked && holiday && time === "08:00" && (
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                    {holiday.name}
+                                  </span>
+                                </div>
+                              )}
+                              {!blocked && holiday && time === "09:00" && (
+                                <div className="absolute inset-x-4 top-2 text-center z-10">
+                                  <span className={cn(
+                                    "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
+                                    isDark ? "bg-slate-800 text-slate-400 border-slate-700" : "bg-white text-slate-500 border-slate-200"
+                                  )}>
                                     🎉 {holiday.name}
                                   </span>
                                 </div>
                               )}
                               {/* Half-hour guideline */}
-                              <div className={cn("absolute top-1/2 w-full border-t border-dashed pointer-events-none opacity-20", isDark ? "border-slate-700" : "border-slate-300")}></div>
+                              <div className={cn("absolute top-1/2 w-full border-t border-dashed pointer-events-none opacity-10", isDark ? "border-white" : "border-slate-400")}></div>
                             </div>
                           );
                         })()
@@ -667,16 +723,27 @@ export default function Agenda() {
                           const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
                           const blocked = isDayBlocked(date);
                           const holiday = getDayHoliday(date);
+                          const reason = blocked ? getBlockReason(date) : "";
+                          const getEmoji = (r: string) => {
+                            const lower = r.toLowerCase();
+                            if (lower.includes('férias') || lower.includes('ferias')) return '🏖️';
+                            if (lower.includes('reforma') || lower.includes('obra')) return '🛠️';
+                            if (lower.includes('curso') || lower.includes('congresso') || lower.includes('estudo')) return '📚';
+                            if (lower.includes('pessoal') || lower.includes('folga')) return '🏠';
+                            if (lower.includes('luto')) return '🖤';
+                            return '⛔';
+                          };
+                          const emoji = getEmoji(reason);
 
                           return (
                             <div
                               key={j}
                               className={cn(
                                 "border-l relative transition-colors cursor-pointer",
-                                isDark ? "border-slate-800/50 hover:bg-slate-800/30" : "border-slate-100 hover:bg-slate-50",
+                                isDark ? "border-white/5" : "border-slate-100",
                                 j === 0 && "border-l-0",
-                                blocked ? (isDark ? "bg-slate-900/40 hover:bg-slate-900/40 cursor-not-allowed" : "bg-gray-100/60 hover:bg-gray-100/60 cursor-not-allowed") : "",
-                                holiday && !blocked ? (isDark ? "bg-amber-900/5 hover:bg-amber-900/10" : "bg-amber-50/30 hover:bg-amber-50/50") : ""
+                                blocked ? (isDark ? "bg-[#1E293B]/60 cursor-not-allowed" : "bg-slate-100/80 cursor-not-allowed") : "",
+                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50")
                               )}
                               onClick={() => {
                                 if (blocked) return;
@@ -685,17 +752,39 @@ export default function Agenda() {
                                 setIsFormOpen(true);
                               }}
                             >
-                              {blocked && getBlockReason(date) && time === "09:00" && (
-                                <div className="absolute inset-x-0 top-0 p-2 text-center z-10 pointer-events-none">
-                                  <span className="text-[10px] font-medium text-slate-500 bg-white/80 dark:bg-black/50 px-1.5 py-0.5 rounded-md shadow-sm border border-slate-200 dark:border-slate-800 truncate max-w-full inline-block">
-                                    ⛔ {getBlockReason(date)}
+                              {blocked && time === "08:00" && (
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                    {reason}
                                   </span>
                                 </div>
                               )}
-                              {holiday && time === "08:00" && !blocked && (
-                                <div className="absolute inset-x-0 top-0 p-1 text-center z-0 pointer-events-none opacity-50">
-                                  <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest truncate w-full block">
+
+                              {blocked && time === "09:00" && (
+                                <div className="absolute inset-x-1 top-1 text-center z-10 pointer-events-none">
+                                  <span className={cn(
+                                    "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm",
+                                    isDark ? "bg-slate-800 text-slate-400 border border-slate-700" : "bg-white text-slate-500 border border-slate-200"
+                                  )}>
+                                    {emoji} {reason}
+                                  </span>
+                                </div>
+                              )}
+
+                              {!blocked && holiday && time === "08:00" && (
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
                                     {holiday.name}
+                                  </span>
+                                </div>
+                              )}
+                              {!blocked && holiday && time === "09:00" && (
+                                <div className="absolute inset-x-1 top-1 text-center z-10 pointer-events-none">
+                                  <span className={cn(
+                                    "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm",
+                                    isDark ? "bg-slate-800 text-slate-400 border border-slate-700" : "bg-white text-slate-500 border border-slate-200"
+                                  )}>
+                                    🎉 {holiday.name}
                                   </span>
                                 </div>
                               )}
@@ -707,23 +796,16 @@ export default function Agenda() {
                   </div>
                 ))}
 
-
                 {/* Render Appointments Absolute Overlay */}
                 {filteredAppointments.map((apt) => {
                   if (!apt.start_time) return null;
 
                   const { h, m, str: timeDisplay } = parseTime(apt.start_time);
-
-                  // Correct Strategy: Calculate dateStr from start_time in LOCAL context if missing or invalid
                   let dateStr = apt.date;
                   if (!dateStr || dateStr.includes('T')) {
-                    // Convert UTC string to Date object (Browser handles conversion to Local)
                     const localDate = new Date(apt.start_time);
-                    // Format as YYYY-MM-DD in Local time
                     dateStr = format(localDate, 'yyyy-MM-dd');
                   }
-
-                  const startDateTime = new Date(`${dateStr}T${timeDisplay}`);
 
                   // Determine end time
                   let durationMinutes = 30; // default
@@ -734,14 +816,11 @@ export default function Agenda() {
                     durationMinutes = apt.duration;
                   }
 
-                  // Handle overnight or negative duration safety
                   if (durationMinutes < 15) durationMinutes = 30;
 
-                  // Calculate position
-                  // Base time is 7:00. 
+                  // Base time is 7:00
                   const minutesSince7 = (h - 7) * 60 + m;
-                  // If before 7am, skip or clamp? Let's hide if too early for now, or clamp to 0.
-                  if (minutesSince7 < 0) return null; // Or render at top
+                  if (minutesSince7 < 0) return null;
 
                   const slots = minutesSince7 / 30;
                   const ROW_HEIGHT = 50;
@@ -753,11 +832,10 @@ export default function Agenda() {
 
                   if (view === "week") {
                     if (dateStr) {
-                      // Handle "2026-01-29T..." vs "2026-01-29"
                       const cleanDate = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
                       const [y, mm, d] = cleanDate.split("-").map(Number);
                       const localDate = new Date(y, mm - 1, d);
-                      const dayIndex = localDate.getDay(); // 0 (Sun) - 6 (Sat)
+                      const dayIndex = localDate.getDay();
 
                       const colWidth = 100 / 7;
                       left = `${dayIndex * colWidth}%`;
@@ -765,20 +843,15 @@ export default function Agenda() {
                     }
                   }
 
-                  // Adjust layout to look like "chips"
                   const style = {
-                    top: `${top + 2}px`, // Slight offset
-                    height: `${height - 4}px`, // Slight gap
-                    left: `calc(${left} + 4px)`,
-                    width: `calc(${width} - 8px)`
+                    top: `${top + 1}px`,
+                    height: `${height - 2}px`,
+                    left: `calc(${left} + 2px)`,
+                    width: `calc(${width} - 4px)`
                   };
-
-                  // Safety check for max height (don't overflow day)
-                  // max slots = 25 (7:00 to 19:00+). 
 
                   const status = statusConfig[apt.status] || statusConfig.agendado;
                   const professional = apt.professional || professionals?.find((p: any) => p.id === apt.professional_id);
-
                   const cardColorClass = getAppointmentCardColor(apt, isDark);
 
                   return (
@@ -788,13 +861,15 @@ export default function Agenda() {
                       style={{ top: 0, bottom: 0, left: 0, right: 0 }}
                     >
                       <div className="relative w-full h-full pointer-events-none">
-                        <Card
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
                           className={cn(
                             "absolute cursor-pointer overflow-hidden flex flex-col pointer-events-auto",
-                            "shadow-sm hover:shadow-lg hover:scale-[1.02] hover:z-50 transition-all duration-200",
-                            "rounded-lg border-l-4 border-y border-r-0 backdrop-blur-sm",
+                            "shadow-lg hover:shadow-2xl hover:z-50 transition-all duration-300",
+                            "rounded-xl border-l-[4px] border-y-0 border-r-0 backdrop-blur-md",
                             cardColorClass,
-                            isDark ? "border-slate-700/50" : "border-slate-200/60"
+                            isDark ? "border-white/5 hover:bg-white/10" : "border-slate-200/40 hover:bg-white/60"
                           )}
                           style={style}
                           onClick={(e) => {
@@ -803,76 +878,56 @@ export default function Agenda() {
                             setIsFormOpen(true);
                           }}
                         >
-                          <div className="p-1.5 flex flex-col h-full gap-0.5 relative z-10">
-                            <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="p-2 flex flex-col h-full gap-0.5 relative z-10">
+                            <div className="flex items-center gap-2 min-w-0">
                               <span className={cn(
-                                "text-[10px] font-bold px-1.5 py-0.5 rounded-md tracking-tight shadow-sm",
-                                isDark ? "bg-black/40 text-white" : "bg-white/80 text-slate-700"
+                                "text-[9px] font-black px-1 py-0.5 rounded-md tracking-wider shadow-sm border",
+                                isDark ? "bg-white/10 text-slate-300 border-white/5" : "bg-slate-900/5 text-slate-700 border-slate-900/5"
                               )}>
                                 {timeDisplay}
                               </span>
-                              <span className={cn(
-                                "text-xs font-bold truncate leading-none",
-                                isDark ? "text-slate-100" : "text-slate-800"
+                              <h4 className={cn(
+                                "text-[11px] font-black truncate leading-none tracking-tight",
+                                isDark ? "text-white" : "text-slate-900"
                               )}>
-                                {apt.patient?.full_name || apt.patient?.name || "Paciente"}
+                                {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
-                                  <span className={cn("text-[10px] ml-1 opacity-75 font-normal", isDark ? "text-slate-300" : "text-slate-600")}>
-                                    - {professional.name || professional.full_name || "Dr(a)."}
+                                  <span className="opacity-50 font-medium ml-1">
+                                    • {professional.name?.split(' ')[0]}
                                   </span>
                                 )}
-                              </span>
+                              </h4>
                             </div>
 
-                            {height > 40 && (
-                              <div className="flex flex-col gap-0.5 mt-0.5 pointer-events-none">
-                                {/* Line 1: Badges - Temperature & Profile */}
-                                <div className="flex flex-wrap gap-1 mb-0.5 items-center">
-                                  {/* Temperature Badge (New & Legacy Support) */}
+                            {height > 35 && (
+                              <div className="flex flex-col gap-1 mt-1 pointer-events-none">
+                                <div className="flex flex-wrap gap-1 items-center">
                                   {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
-                                    <Badge variant="secondary" className={cn(
-                                      "text-[9px] px-1 h-3.5 border-0 rounded-sm font-bold shadow-sm items-center gap-0.5 pointer-events-auto",
-                                      (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "bg-rose-500 text-white shadow-rose-500/20 hover:bg-rose-600" :
-                                        apt.patient.temperature === 'warm' ? "bg-orange-400 text-white shadow-orange-400/20 hover:bg-orange-500" :
-                                          "bg-cyan-500 text-white shadow-cyan-500/20 hover:bg-cyan-600"
+                                    <div className={cn(
+                                      "text-[7px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter shadow-sm items-center gap-0.5 flex",
+                                      (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "bg-red-500/10 text-red-500 border border-red-500/20" :
+                                        apt.patient.temperature === 'warm' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
+                                          "bg-blue-500/10 text-blue-500 border border-blue-500/20"
                                     )}>
-                                      {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? '🔥 Quente' :
-                                        apt.patient.temperature === 'warm' ? '🌡️ Morno' : '❄️ Frio'}
-                                    </Badge>
-                                  )}
-
-                                  {/* Profile Badge */}
-                                  {apt.patient?.temperament && (
-                                    <Badge variant="secondary" className={cn("text-[9px] px-1 h-3.5 border-0 rounded-sm font-medium items-center gap-0.5 pointer-events-auto", isDark ? "bg-indigo-900/40 text-indigo-300" : "bg-indigo-50 text-indigo-700")}>
-                                      🧠 {apt.patient.temperament}
-                                    </Badge>
-                                  )}
-
-                                  {/* Source Badge */}
-                                  {apt.patient?.marketing_source && (
-                                    <Badge variant="secondary" className={cn("text-[9px] px-1 h-3.5 border-0 rounded-sm font-medium items-center gap-0.5 pointer-events-auto", isDark ? "bg-emerald-900/40 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
-                                      📢 {apt.patient.marketing_source === 'trafego_pago' ? 'Ads' : 'Ind.'}
-                                    </Badge>
+                                      {(apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? 'HOT' :
+                                        apt.patient.temperature === 'warm' ? 'WARM' : 'COLD'}
+                                    </div>
                                   )}
                                 </div>
 
-                                {/* Line 2: Status & Procedure */}
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <Badge variant="outline" className={cn("text-[8px] px-1 py-0 h-3.5 border-0 shadow-none font-medium rounded-sm bg-opacity-70 backdrop-blur-md uppercase tracking-wider shrink-0", status.class)}>
-                                    {status.label}
-                                  </Badge>
                                   <span className={cn(
-                                    "text-[9px] truncate opacity-90 font-medium",
-                                    isDark ? "text-slate-300" : "text-slate-600"
+                                    "text-[9px] truncate opacity-60 font-bold uppercase tracking-wider",
+                                    isDark ? "text-slate-200" : "text-slate-700"
                                   )}>
-                                    • {apt.procedure_name || "Consulta"}
+                                    {apt.procedure_name || "Consulta"}
                                   </span>
                                 </div>
                               </div>
                             )}
 
                             {/* Hover Actions */}
-                            <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -924,7 +979,7 @@ export default function Agenda() {
                               </DropdownMenu>
                             </div>
                           </div>
-                        </Card>
+                        </motion.div>
                       </div>
                     </div>
                   );
@@ -932,37 +987,17 @@ export default function Agenda() {
               </div>
             </div>
           </div>
-
         </div>
       )}
 
-
-      {/* Dialogs */}
+      {/* GLOBAL MODALS / DIALOGS (Liquid Scale Refined) */}
       <AppointmentForm
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         appointment={selectedAppointment}
         professionals={professionals}
       />
-
-      <RescheduleDialog
-        open={isRescheduleOpen}
-        onOpenChange={setIsRescheduleOpen}
-        appointment={selectedAppointment}
-      />
-
-      <TimeBlockDialog
-        open={isTimeBlockOpen}
-        onOpenChange={setIsTimeBlockOpen}
-        professionals={professionals}
-      />
-
-      <SendNotificationDialog
-        open={isNotificationOpen}
-        onOpenChange={setIsNotificationOpen}
-        appointment={selectedAppointment}
-      />
-
+      <TimeBlockDialog open={isTimeBlockOpen} onOpenChange={setIsTimeBlockOpen} professionals={professionals} />
       <BlockDayModal
         isOpen={isBlockDayOpen}
         onClose={() => setIsBlockDayOpen(false)}
@@ -978,6 +1013,8 @@ export default function Agenda() {
         }}
         professionals={professionals}
       />
+      <RescheduleDialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen} appointment={selectedAppointment} />
+      <SendNotificationDialog open={isNotificationOpen} onOpenChange={setIsNotificationOpen} appointment={selectedAppointment} />
     </>
   );
 }

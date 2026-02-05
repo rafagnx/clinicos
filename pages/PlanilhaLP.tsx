@@ -7,13 +7,26 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from "@/lib/supabaseClient";
 
 // --- Components ---
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Redirect if already logged in
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                navigate('/Dashboard');
+            }
+        };
+        checkAuth();
+    }, [navigate]);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -31,25 +44,28 @@ const Navbar = () => {
 
     return (
         <nav className={cn(
-            "fixed top-0 left-0 right-0 z-[100] transition-all duration-300 border-b",
-            scrolled ? "bg-slate-950/80 backdrop-blur-md border-slate-800 py-4 shadow-lg shadow-purple-900/10" : "bg-transparent py-6 border-transparent"
+            "fixed top-0 left-0 right-0 z-[100] transition-all duration-500",
+            scrolled ? "bg-slate-950/40 backdrop-blur-2xl border-b border-white/10 py-3 shadow-2xl" : "bg-transparent py-6"
         )}>
             <div className="container mx-auto px-6 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <img src="/logo-clinica.png" alt="Logo" className="w-8 h-8 rounded-lg bg-white p-1" />
+                <div className="flex items-center gap-2 group cursor-pointer">
+                    <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
+                        <img src="/logo-clinica.png" alt="Logo" className="relative w-9 h-9 rounded-lg bg-white p-1.5 shadow-2xl" />
+                    </div>
                     <div className="text-2xl font-black tracking-tighter text-white">
                         Clinic<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">OS</span>
                     </div>
                 </div>
 
                 {/* Desktop Menu */}
-                <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <div className="hidden md:flex items-center gap-10 text-sm font-bold text-slate-400">
                     {navLinks.map((link) => (
-                        <a key={link.name} href={link.href} className="hover:text-white transition-colors">{link.name}</a>
+                        <a key={link.name} href={link.href} className="hover:text-white transition-all hover:scale-105 active:scale-95">{link.name}</a>
                     ))}
                     <Link to="/register">
-                        <Button className="bg-white text-slate-950 hover:bg-slate-200 font-bold rounded-full px-6 transition-all hover:scale-105">
-                            Criar Conta Grátis
+                        <Button className="glass-premium hover:bg-white hover:text-slate-950 text-white font-black rounded-full px-8 h-12 transition-all hover:scale-110 active:scale-90 border-white/20 shadow-xl shadow-blue-500/10">
+                            COMEÇAR AGORA
                         </Button>
                     </Link>
                 </div>
@@ -58,7 +74,7 @@ const Navbar = () => {
                 <div className="md:hidden">
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="text-white p-2"
+                        className="text-white p-2 hover:bg-white/10 rounded-full transition-colors"
                     >
                         {mobileMenuOpen ? <X /> : <Menu />}
                     </button>
@@ -100,84 +116,91 @@ const Navbar = () => {
 
 const Hero = () => {
     return (
-        <section className="relative min-h-screen pt-32 pb-20 overflow-hidden bg-slate-950">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(59,130,246,0.15),rgba(15,23,42,1))]"></div>
-            <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px]"></div>
+        <section className="relative min-h-screen pt-40 pb-32 overflow-hidden bg-slate-950 flex flex-col items-center justify-center">
+            {/* BACKGROUND KINETIC ENGINE */}
+            <div className="absolute inset-0 z-0">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-mesh animate-mesh opacity-40"></div>
+                <div className="absolute top-[20%] right-[10%] w-96 h-96 bg-blue-600/30 rounded-full blur-[150px] animate-pulse-slow"></div>
+                <div className="absolute bottom-[20%] left-[10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[180px] animate-pulse-slow delay-1000"></div>
 
-            {/* Grid Pattern Overlay */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] pointer-events-none"></div>
+                {/* Noise texture overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+            </div>
 
-            <div className="container mx-auto px-6 relative z-10 text-center">
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/50 text-blue-400 text-xs font-bold uppercase tracking-wider mb-8 hover:border-blue-500/50 transition-colors cursor-default backdrop-blur-sm shadow-xl">
-                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                        O Sistema O.S. nº 1 para Estética
-                    </div>
-                </motion.div>
-
-                <motion.h1
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tight leading-[1.1] mb-8"
-                >
-                    Sua Clínica <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 animate-gradient-x">
-                        High Ticket
-                    </span>
-                </motion.h1>
-
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light"
-                >
-                    O único sistema com <strong>CRM Comportamental</strong> integrado. Identifique o perfil do paciente, rastreie o ROI dos Ads e transforme consultas em <span className="text-white font-medium border-b border-blue-500/30">experiências premium</span>.
-                </motion.p>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-20"
-                >
-                    <Link to="/register">
-                        <Button size="lg" className="h-16 px-10 text-lg font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:shadow-[0_0_50px_rgba(37,99,235,0.6)] transition-all transform hover:-translate-y-1">
-                            Testar Grátis Agora <ArrowRight className="ml-2 w-5 h-5" />
-                        </Button>
-                    </Link>
-                    <Link to="/login">
-                        <Button size="lg" variant="outline" className="h-16 px-8 text-lg font-medium border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 hover:text-white rounded-full backdrop-blur-sm">
-                            Já tenho conta
-                        </Button>
-                    </Link>
-                </motion.div>
-
-                {/* Main Desktop Preview */}
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, delay: 0.8 }}
-                    className="relative max-w-5xl mx-auto"
-                >
-                    <div className="relative group">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                        <div className="relative bg-slate-900 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                            <img
-                                src="/desktop-hero.png"
-                                alt="ClinicOS Dashboard Desktop"
-                                className="w-full h-auto transform hover:scale-[1.01] transition-transform duration-700"
-                            />
+            <div className="container mx-auto px-6 relative z-10">
+                <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="mb-8"
+                    >
+                        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full glass-premium border-white/20 text-blue-300 text-xs font-black uppercase tracking-[0.2em] shadow-2xl backdrop-blur-3xl">
+                            <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+                            Nº 1 SISTEMA HIGH TICKET
                         </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                        className="text-6xl md:text-8xl lg:text-[10rem] font-black text-white tracking-[-0.04em] leading-[0.85] mb-12 drop-shadow-2xl"
+                    >
+                        CLÍNICA <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-blue-500/50">
+                            SUPREMA
+                        </span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 1.5, delay: 0.6 }}
+                        className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-16 leading-relaxed font-medium tracking-tight"
+                    >
+                        Esqueça sistemas amadores. O único <span className="text-white">CRM Comportamental</span> focado em ROI e experiência premium do paciente.
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8, delay: 0.8 }}
+                        className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24"
+                    >
+                        <Link to="/register">
+                            <Button className="h-20 px-12 text-xl font-black bg-white text-slate-950 rounded-2xl shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:shadow-[0_25px_50px_rgba(59,130,246,0.3)] transition-all hover:scale-105 active:scale-95 group overflow-hidden relative">
+                                <span className="relative z-10 flex items-center gap-3">
+                                    TESTE GRÁTIS AGORA <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                            </Button>
+                        </Link>
+                        <Link to="/login">
+                            <Button variant="outline" className="h-20 px-12 text-xl font-bold border-white/10 bg-white/5 text-white rounded-2xl backdrop-blur-2xl hover:bg-white/10 transition-all hover:border-white/20">
+                                JÁ SOU MEMBRO
+                            </Button>
+                        </Link>
+                    </motion.div>
+
+                    {/* MASSIVE PREVIEW DYNAMICS */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.2, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+                        className="relative w-full aspect-video md:aspect-[21/9] rounded-[3rem] overflow-hidden border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] bg-slate-900 group"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10"></div>
+                        <img
+                            src="/desktop-hero.png"
+                            alt="ClinicOS Dashboard"
+                            className="w-full h-full object-cover object-top filter grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
+                        />
+
+                        {/* Hover Light Follow (Simulated with Gradient overlay) */}
+                        <div className="absolute inset-0 z-20 opacity-0 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none bg-[radial-gradient(circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(59,130,246,0.4),transparent_50%)]"></div>
+                    </motion.div>
+                </div>
             </div>
 
             {/* Floating High Ticket Cards */}
@@ -231,29 +254,36 @@ const Features = () => {
     ];
 
     return (
-        <section id="recursos" className="py-32 bg-slate-950 relative z-10">
+        <section id="recursos" className="py-40 bg-slate-950 relative z-10 overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+
             <div className="container mx-auto px-6">
-                <div className="text-center mb-20">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Tudo em <span className="text-blue-500">Um Lugar</span></h2>
-                    <p className="text-slate-400 max-w-xl mx-auto text-lg">Substitua 5 ferramentas desconexas pelo ClinicOS.</p>
+                <div className="text-center mb-24">
+                    <h2 className="text-4xl md:text-7xl font-black text-white mb-8 tracking-tighter uppercase leading-[0.9]">
+                        PODER <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">ABSOLUTO</span> <br />
+                        PARA SUA CLÍNICA
+                    </h2>
+                    <p className="text-slate-400 max-w-2xl mx-auto text-xl font-medium tracking-tight">
+                        Substitua 5 ferramentas desconexas pelo único sistema desenhado para faturamento de 7 dígitos.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {features.map((item, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            className="group p-8 rounded-3xl bg-slate-900/50 border border-slate-800 hover:border-blue-500/30 transition-all duration-300 hover:bg-slate-900 hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden backdrop-blur-sm"
+                            className="group p-10 rounded-[2.5rem] glass-premium border-white/10 hover:border-white/20 transition-all duration-500 hover:bg-white/5 hover:-translate-y-4 relative overflow-hidden"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 text-blue-400 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <item.icon className="w-7 h-7" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/10 text-blue-400 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-2xl">
+                                <item.icon className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-4">{item.title}</h3>
-                            <p className="text-slate-400 leading-relaxed text-sm">
+                            <h3 className="text-2xl font-black text-white mb-4 tracking-tight uppercase group-hover:text-blue-300 transition-colors">{item.title}</h3>
+                            <p className="text-slate-400 leading-relaxed font-medium">
                                 {item.desc}
                             </p>
                         </motion.div>
@@ -505,57 +535,69 @@ const Testimonials = () => {
     ];
 
     return (
-        <section id="depoimentos" className="py-32 bg-slate-950 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+        <section id="depoimentos" className="py-40 bg-slate-950 relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
+
+            {/* Animated Glow in background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px] animate-pulse-slow"></div>
 
             <div className="container mx-auto px-6">
-                <div className="text-center mb-16">
+                <div className="text-center mb-24">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-bold uppercase tracking-wider mb-6">
-                            <Star className="w-3 h-3 fill-current" />
-                            Depoimentos Reais
+                        <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full glass-premium border-purple-500/30 text-purple-400 text-xs font-black uppercase tracking-[0.2em] mb-8">
+                            <Star className="w-4 h-4 fill-current" />
+                            CLIENTES SUPREMOS
                         </div>
-                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-                            O Que Nossos <span className="text-purple-500">Clientes</span> Dizem
+                        <h2 className="text-4xl md:text-7xl font-black text-white mb-8 tracking-tighter uppercase leading-[0.9]">
+                            QUEM <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">ESCALA</span> <br />
+                            Diz a Verdade
                         </h2>
-                        <p className="text-slate-400 max-w-xl mx-auto text-lg">
-                            Mais de 500 clínicas já transformaram sua gestão com o ClinicOS.
+                        <p className="text-slate-400 max-w-2xl mx-auto text-xl font-medium tracking-tight">
+                            Mais de 500 clínicas abandonaram o amadorismo com o ClinicOS.
                         </p>
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
                     {testimonials.map((item, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 hover:border-purple-500/30 transition-all group"
+                            transition={{ duration: 0.8, type: "spring" }}
+                            className="glass-premium border-white/5 hover:border-purple-500/30 rounded-[2.5rem] p-10 transition-all duration-500 group relative overflow-hidden"
                         >
-                            <div className="flex gap-1 mb-4">
+                            <div className="absolute top-0 right-0 p-8">
+                                <Quote className="w-12 h-12 text-purple-500/10 group-hover:text-purple-500/30 transition-colors duration-500" />
+                            </div>
+
+                            <div className="flex gap-1 mb-6">
                                 {[...Array(item.rating)].map((_, i) => (
-                                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
                                 ))}
                             </div>
-                            <Quote className="w-8 h-8 text-purple-500/30 mb-3" />
-                            <p className="text-slate-300 mb-6 leading-relaxed italic">
+
+                            <p className="text-xl text-slate-200 mb-10 leading-relaxed font-medium italic relative z-10">
                                 "{item.quote}"
                             </p>
-                            <div className="flex items-center gap-4">
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-12 h-12 rounded-full border-2 border-purple-500/50"
-                                />
+
+                            <div className="flex items-center gap-5 relative z-10">
+                                <div className="relative group/avatar">
+                                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur opacity-40 group-hover/avatar:opacity-100 transition duration-500"></div>
+                                    <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="relative w-16 h-16 rounded-full border-2 border-white/20 object-cover"
+                                    />
+                                </div>
                                 <div>
-                                    <div className="font-bold text-white">{item.name}</div>
-                                    <div className="text-sm text-slate-500">{item.role}</div>
+                                    <div className="text-xl font-black text-white tracking-tight">{item.name}</div>
+                                    <div className="text-sm font-bold text-purple-400/80 uppercase tracking-widest">{item.role}</div>
                                 </div>
                             </div>
                         </motion.div>

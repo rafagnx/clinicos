@@ -73,7 +73,12 @@ export default function AppointmentForm({
         status: "agendado",
         scheduled_by: "",
         promotion_id: "none",
-        source: ""
+        source: "",
+        // Patient Behavioral fields (High Ticket)
+        temperature: "",
+        temperament: "",
+        conscience_level: "",
+        main_motivation: ""
     });
 
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -157,10 +162,21 @@ export default function AppointmentForm({
                     time: initialTime,
                     scheduled_by: appointment.scheduled_by || "",
                     promotion_id: appointment.promotion_id || "none",
-                    source: appointment.source || ""
+                    source: appointment.source || "",
+                    temperature: appointment.patient?.temperature || "",
+                    temperament: appointment.patient?.temperament || "",
+                    conscience_level: appointment.patient?.conscience_level || "",
+                    main_motivation: appointment.patient?.main_motivation || ""
                 });
                 if (appointment.patient) {
                     setSelectedPatient(appointment.patient);
+                    setFormData(prev => ({
+                        ...prev,
+                        temperature: appointment.patient.temperature || "",
+                        temperament: appointment.patient.temperament || "",
+                        conscience_level: appointment.patient.conscience_level || "",
+                        main_motivation: appointment.patient.main_motivation || ""
+                    }));
                 }
 
                 // Only skip to step 2 if we have a patient or if it's an existing appointment being edited
@@ -184,7 +200,11 @@ export default function AppointmentForm({
                     status: "agendado",
                     scheduled_by: "",
                     promotion_id: "none",
-                    source: ""
+                    source: "",
+                    temperature: "",
+                    temperament: "",
+                    conscience_level: "",
+                    main_motivation: ""
                 });
                 setSelectedPatient(null);
                 setStep(1);
@@ -380,7 +400,22 @@ export default function AppointmentForm({
         onError: () => toast.error("Erro ao remover agendamento")
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        // Sync patient behavioral data if changed
+        if (selectedPatient?.id) {
+            try {
+                await base44.entities.Patient.update(selectedPatient.id, {
+                    temperature: formData.temperature,
+                    temperament: formData.temperament,
+                    conscience_level: formData.conscience_level,
+                    main_motivation: formData.main_motivation
+                });
+                queryClient.invalidateQueries({ queryKey: ["patients"] });
+            } catch (err) {
+                console.warn("Failed to sync patient behavioral data", err);
+            }
+        }
+
         if (appointment?.id) {
             updateMutation.mutate(formData);
         } else {
@@ -393,7 +428,11 @@ export default function AppointmentForm({
         setFormData(prev => ({
             ...prev,
             patient_id: patient.id,
-            patient_name: patient.full_name || patient.name
+            patient_name: patient.full_name || patient.name,
+            temperature: patient.temperature || "",
+            temperament: patient.temperament || "",
+            conscience_level: patient.conscience_level || "",
+            main_motivation: patient.main_motivation || ""
         }));
         setStep(2);
     };
@@ -477,6 +516,80 @@ export default function AppointmentForm({
                                     </Button>
                                 )}
                             </div>
+
+                            {/* --- High Ticket Behavioral Profile Section --- */}
+                            {selectedPatient && (
+                                <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-4 dark:bg-indigo-900/10 dark:border-indigo-900/30">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest cursor-default">HT</Label>
+                                        </div>
+                                        <span className="text-xs font-bold text-indigo-800 uppercase tracking-widest dark:text-indigo-400">Perfil Comportamental (High Ticket)</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-bold text-indigo-600/70">Temperatura</Label>
+                                            <Select value={formData.temperature} onValueChange={(v) => setFormData(p => ({ ...p, temperature: v }))}>
+                                                <SelectTrigger className="h-9 text-xs bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/50">
+                                                    <SelectValue placeholder="Temp." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="hot">🔥 Quente</SelectItem>
+                                                    <SelectItem value="warm">⚡ Morno</SelectItem>
+                                                    <SelectItem value="cold">❄️ Frio</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-bold text-indigo-600/70">Temperamento</Label>
+                                            <Select value={formData.temperament} onValueChange={(v) => setFormData(p => ({ ...p, temperament: v }))}>
+                                                <SelectTrigger className="h-9 text-xs bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/50">
+                                                    <SelectValue placeholder="Temp." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="analitico">🧠 Analítico</SelectItem>
+                                                    <SelectItem value="executor">🚀 Executor</SelectItem>
+                                                    <SelectItem value="comunicador">💬 Comunicador</SelectItem>
+                                                    <SelectItem value="planejador">📋 Planejador</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-bold text-indigo-600/70">Principal Motivação</Label>
+                                            <Select value={formData.main_motivation} onValueChange={(v) => setFormData(p => ({ ...p, main_motivation: v }))}>
+                                                <SelectTrigger className="h-9 text-xs bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/50">
+                                                    <SelectValue placeholder="Motivação" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="dor">💊 Dor</SelectItem>
+                                                    <SelectItem value="prazer">✨ Prazer</SelectItem>
+                                                    <SelectItem value="status">💎 Status</SelectItem>
+                                                    <SelectItem value="seguranca">🛡️ Segurança</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] uppercase font-bold text-indigo-600/70">Consciência de Compra</Label>
+                                            <Select value={formData.conscience_level} onValueChange={(v) => setFormData(p => ({ ...p, conscience_level: v }))}>
+                                                <SelectTrigger className="h-9 text-xs bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/50">
+                                                    <SelectValue placeholder="Consciência" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="unaware">Inconsciente</SelectItem>
+                                                    <SelectItem value="problem_aware">Problema</SelectItem>
+                                                    <SelectItem value="solution_aware">Solução</SelectItem>
+                                                    <SelectItem value="product_aware">Produto</SelectItem>
+                                                    <SelectItem value="most_aware">Totalmente</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="space-y-2">
                                 <Label>Profissional *</Label>

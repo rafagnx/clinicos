@@ -18,7 +18,8 @@ const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config(); // Loads from root .env
+dotenv.config({ path: path.join(__dirname, '.env') }); // Also check server/.env if needed
 
 // FIX FOR RENDER SSL ISSUES with internal libraries like better-auth
 // This allows connections to Postgres with self-signed certs (common in Render internal network)
@@ -353,10 +354,17 @@ app.get('/debug-database-counts', async (req, res) => {
                 (SELECT count(*) FROM medical_records) as total_medical_records,
                 (SELECT count(*) FROM patients) as total_patients,
                 (SELECT count(*) FROM organization) as total_orgs,
-                (SELECT count(*) FROM procedure_types) as total_procedures
+                (SELECT count(*) FROM procedure_types) as total_procedures,
+                (SELECT count(*) FROM blocked_days) as total_blocked_days
         `);
         const orgs = await pool.query('SELECT id, name, slug FROM organization');
-        res.json({ stats: stats.rows[0], organizations: orgs.rows, env: process.env.NODE_ENV });
+        const blocks = await pool.query('SELECT * FROM blocked_days ORDER BY created_at DESC LIMIT 10');
+        res.json({
+            stats: stats.rows[0],
+            organizations: orgs.rows,
+            recent_blocks: blocks.rows,
+            env: process.env.NODE_ENV
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -716,7 +724,7 @@ const initSchema = async () => {
             `);
 
             await client.query(`
-                 CREATE TABLE IF NOT EXISTS "holidays" (
+                CREATE TABLE IF NOT EXISTS "holidays" (
                     id SERIAL PRIMARY KEY,
                     date DATE NOT NULL,
                     name TEXT NOT NULL,
@@ -724,57 +732,87 @@ const initSchema = async () => {
                     organization_id TEXT,
                     created_by TEXT,
                     created_at TIMESTAMP DEFAULT NOW()
-                 );
+                );
+                
+                -- Add unique constraint to holidays if missing
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'holidays_org_date_type_unique') THEN
+                        ALTER TABLE "holidays" ADD CONSTRAINT holidays_org_date_type_unique UNIQUE(organization_id, date, type);
+                    END IF;
+                END $$;
             `);
 
             await client.query(`
-                 CREATE TABLE IF NOT EXISTS "blocked_days" (
+                -- Ensure blocked_days table exists
+                CREATE TABLE IF NOT EXISTS "blocked_days" (
                     id SERIAL PRIMARY KEY,
-                    date DATE NOT NULL,
+                    date DATE,
                     professional_id TEXT,
                     reason TEXT,
                     organization_id TEXT,
                     created_by TEXT,
                     created_at TIMESTAMP DEFAULT NOW()
-                 );
+                );
+
+                -- Ensure blocked_days has range columns
+                DO $$
+                BEGIN
+                    BEGIN ALTER TABLE "blocked_days" ADD COLUMN "start_date" DATE; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "blocked_days" ADD COLUMN "end_date" DATE; EXCEPTION WHEN duplicate_column THEN END;
+                    BEGIN ALTER TABLE "blocked_days" ADD COLUMN "updated_at" TIMESTAMP DEFAULT NOW(); EXCEPTION WHEN duplicate_column THEN END;
+                    
+                    -- Make columns nullable for clinic-wide support
+                    ALTER TABLE "blocked_days" ALTER COLUMN "professional_id" DROP NOT NULL;
+                    ALTER TABLE "blocked_days" ALTER COLUMN "reason" DROP NOT NULL;
+                    ALTER TABLE "blocked_days" ALTER COLUMN "organization_id" DROP NOT NULL;
+
+                    -- Backfill
+                    UPDATE "blocked_days" SET start_date = date WHERE start_date IS NULL AND date IS NOT NULL;
+                    UPDATE "blocked_days" SET end_date = date WHERE end_date IS NULL AND date IS NOT NULL;
+                END $$;
+
+                CREATE INDEX IF NOT EXISTS idx_blocked_days_org ON "blocked_days"(organization_id);
+                CREATE INDEX IF NOT EXISTS idx_blocked_days_dates ON "blocked_days"(start_date, end_date);
             `);
 
             await client.query(`
                 CREATE TABLE IF NOT EXISTS "conversations"(
-                id SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
+                    id SERIAL PRIMARY KEY,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
                 CREATE TABLE IF NOT EXISTS "messages"(
-                id SERIAL PRIMARY KEY,
-                created_at TIMESTAMP DEFAULT NOW()
-            );
+                    id SERIAL PRIMARY KEY,
+                    created_at TIMESTAMP DEFAULT NOW()
+                );
                 CREATE TABLE IF NOT EXISTS "conversation_members"(
-                "conversation_id" INTEGER,
-                "user_id" TEXT,
-                "role" TEXT DEFAULT 'member',
-                "joined_at" TIMESTAMP DEFAULT NOW(),
-                PRIMARY KEY("conversation_id", "user_id")
-            );
+                    "conversation_id" INTEGER,
+                    "user_id" TEXT,
+                    "joined_at" TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY ("conversation_id", "user_id")
+                );
+            `);
 
-            --Ensure conversations has group columns
+            await client.query(`
+                --Ensure conversations has group columns
                 DO $$
-            BEGIN
-            BEGIN
+                BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "is_group" BOOLEAN DEFAULT FALSE;
                     EXCEPTION WHEN duplicate_column THEN END;
-            BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "name" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-            BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "image" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-            BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "admin_ids" TEXT[];
                     EXCEPTION WHEN duplicate_column THEN END;
-            BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "organization_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
-            BEGIN
+                    BEGIN
                         ALTER TABLE "conversations" ADD COLUMN "professional_id" TEXT;
                     EXCEPTION WHEN duplicate_column THEN END;
             BEGIN
@@ -1696,44 +1734,19 @@ app.get('/api/admin/invites/:orgId', requireAuth, async (req, res) => {
 
 // POST Blocked Days (Create)
 // GET Blocked Days
-app.get('/api/blocked-days', requireAuth, async (req, res) => {
-    const { professionalId, startDate, endDate } = req.query;
-    const { organizationId } = req.auth;
+// Blocked Days handlers are defined below after the POST handler for better organization.
 
-    try {
-        let query = `
-            SELECT * FROM blocked_days
-            WHERE organization_id = $1
-                `;
-        const params = [organizationId];
-        let paramIndex = 2;
-
-        if (professionalId && professionalId !== 'all' && professionalId !== 'undefined' && professionalId !== 'null') {
-            query += ` AND professional_id = $${paramIndex++} `;
-            params.push(professionalId);
-        }
-
-        if (startDate && endDate) {
-            query += ` AND((start_date <= $${paramIndex + 1} AND end_date >= $${paramIndex}))`;
-            params.push(startDate, endDate);
-        }
-
-        query += ` ORDER BY start_date ASC`;
-
-        const result = await pool.query(query, params);
-        res.json(result.rows);
-    } catch (error) {
-        console.error('[Blocked Days] Fetch error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
 app.post('/api/blocked-days', requireAuth, async (req, res) => {
     const { professionalId, startDate, endDate, reason, confirmConflicts } = req.body;
     const { user, organizationId } = req.auth;
 
-    if (!professionalId || !startDate || !endDate || !reason) {
-        return res.status(400).json({ error: 'professionalId, startDate, endDate, and reason are required' });
+    // Normalize professionalId: handle 'all', null, or empty as NULL for clinic-wide
+    const isClinicWide = !professionalId || professionalId === 'all';
+    const targetProfessionalId = isClinicWide ? null : professionalId;
+
+    if (!startDate || !endDate || !reason) {
+        return res.status(400).json({ error: 'startDate, endDate, and reason are required' });
     }
 
     // Validate dates
@@ -1743,15 +1756,22 @@ app.post('/api/blocked-days', requireAuth, async (req, res) => {
 
     try {
         // Check for conflicting appointments
-        const conflictsResult = await pool.query(`
+        let conflictQuery = `
             SELECT id, patient_id, start_time, end_time, status
             FROM appointments
-            WHERE professional_id = $1
-            AND organization_id = $2
-            AND DATE(start_time) >= $3
-            AND DATE(start_time) <= $4
+            WHERE organization_id = $1
+            AND DATE(start_time) >= $2
+            AND DATE(start_time) <= $3
             AND status NOT IN('cancelado', 'faltou')
-            `, [professionalId, organizationId, startDate, endDate]);
+        `;
+        const conflictParams = [organizationId, startDate, endDate];
+
+        if (!isClinicWide) {
+            conflictQuery += ` AND professional_id = $4 `;
+            conflictParams.push(targetProfessionalId);
+        }
+
+        const conflictsResult = await pool.query(conflictQuery, conflictParams);
 
         // If conflicts exist and user hasn't confirmed, return conflicts
         if (conflictsResult.rows.length > 0 && !confirmConflicts) {
@@ -1767,11 +1787,46 @@ app.post('/api/blocked-days', requireAuth, async (req, res) => {
             (professional_id, organization_id, start_date, end_date, reason, created_by)
         VALUES($1, $2, $3, $4, $5, $6)
         RETURNING *
-            `, [professionalId, organizationId, startDate, endDate, reason, user.id]);
+            `, [targetProfessionalId, organizationId, startDate, endDate, reason, user.id]);
 
         res.status(201).json(insertResult.rows[0]);
     } catch (error) {
         console.error('[Blocked Days] Create error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET Blocked Days
+app.get('/api/blocked-days', requireAuth, async (req, res) => {
+    const { professionalId, startDate, endDate } = req.query;
+    const { organizationId } = req.auth;
+
+    try {
+        let query = `SELECT * FROM blocked_days WHERE organization_id = $1 `;
+        const params = [organizationId];
+        let paramIndex = 2;
+
+        if (professionalId && professionalId !== 'all' && professionalId !== 'undefined' && professionalId !== 'null') {
+            query += ` AND (professional_id = $${paramIndex++} OR professional_id IS NULL) `;
+            params.push(professionalId);
+        }
+
+        if (startDate && endDate) {
+            // Logic for range intersection: 
+            // (blockStart <= periodEnd) AND (blockEnd >= periodStart)
+            query += ` AND (
+                start_date <= $${paramIndex + 1} 
+                AND end_date >= $${paramIndex}
+            )`;
+            params.push(startDate, endDate);
+        }
+
+        query += ` ORDER BY start_date ASC`;
+
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('[Blocked Days] Fetch error:', error);
         res.status(500).json({ error: error.message });
     }
 });

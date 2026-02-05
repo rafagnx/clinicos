@@ -28,28 +28,33 @@ export default function StatsCard({
 
     return (
         <Card className={cn(
-            "p-6 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 duration-300 group",
-            isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80 border-slate-200/60"
+            "p-6 glass-premium border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden",
+            isDark ? "bg-slate-950/40" : "bg-white/40"
         )}>
-            <div className="flex items-start justify-between">
+            {/* Scintillating Light Overlay */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[radial-gradient(circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.1),transparent_70%)] pointer-events-none"></div>
+
+            <div className="flex items-start justify-between relative z-10">
                 <div>
                     <p className={cn(
-                        "text-sm font-semibold uppercase tracking-wide transition-colors",
-                        isDark ? "text-slate-400 group-hover:text-indigo-400" : "text-slate-500 group-hover:text-indigo-600"
+                        "text-[10px] font-black uppercase tracking-[0.15em] transition-colors mb-1",
+                        isDark ? "text-slate-500 group-hover:text-blue-400" : "text-slate-400 group-hover:text-blue-600"
                     )}>
                         {title}
                     </p>
-                    <div className="flex items-end gap-3 mt-2">
+                    <div className="flex items-end gap-2 mt-1">
                         <p className={cn(
-                            "text-3xl font-bold bg-clip-text text-transparent",
-                            isDark ? "bg-gradient-to-br from-white to-slate-400" : "bg-gradient-to-br from-slate-800 to-slate-600"
+                            "text-4xl font-black tracking-tighter",
+                            isDark ? "text-white" : "text-slate-900"
                         )}>
                             {value}
                         </p>
                         {trend && (
                             <div className={cn(
-                                "flex items-center text-xs font-bold px-1.5 py-0.5 rounded mb-1",
-                                trendUp ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                "flex items-center text-[10px] font-black px-2 py-0.5 rounded-full mb-1 border",
+                                trendUp
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                             )}>
                                 {trendUp ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
                                 {trend}
@@ -58,17 +63,15 @@ export default function StatsCard({
                     </div>
                 </div>
                 <div className={cn(
-                    "p-3 rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110",
-                    colorClasses[color] || colorClasses.blue
+                    "w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
+                    isDark ? "bg-white/5 text-white border border-white/10" : "bg-slate-900 text-white shadow-xl"
                 )}>
-                    {Icon && <Icon className="w-6 h-6" />}
+                    {Icon && <Icon className="w-5 h-5" />}
                 </div>
             </div>
-            {/* Ambient Glow */}
-            <div className={cn(
-                "absolute -right-6 -bottom-6 w-24 h-24 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none blur-2xl",
-                colorClasses[color]?.split(" ")[0].replace("bg-", "bg-")
-            )} />
+
+            {/* Kinetic Bottom Line */}
+            <div className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-blue-500 to-purple-600 group-hover:w-full transition-all duration-700"></div>
         </Card>
     );
 }

@@ -344,27 +344,44 @@ export default function Layout() {
 
   // Subscription Lock Logic
   const SubscriptionLock = () => (
-    <div className="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl border border-slate-200 dark:border-slate-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5" />
+    <div className="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-2xl flex items-center justify-center p-6">
+      {/* Background kinetic effect inside lock */}
+      <div className="absolute inset-0 z-0 opacity-20">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-mesh animate-mesh" />
+      </div>
+
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="glass-premium p-12 md:p-16 rounded-[3rem] max-w-xl w-full text-center border-white/10 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500" />
+
         <div className="relative z-10">
-          <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Sparkles className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 border border-red-500/20 shadow-2xl">
+            <Sparkles className="w-12 h-12 text-red-500 animate-pulse-soft" />
           </div>
-          <h2 className="text-2xl font-bold mb-3 text-slate-900 dark:text-white">Sua assinatura expirou</h2>
-          <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
-            O período de teste ou sua assinatura chegou ao fim. Para continuar gerenciando sua clínica com excelência, reative seu plano.
+          <h2 className="text-4xl md:text-5xl font-black mb-6 text-white tracking-tighter uppercase leading-[0.9]">
+            ACESSO <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-purple-500">RESTRITO</span>
+          </h2>
+          <p className="text-slate-400 text-lg mb-10 leading-relaxed font-medium">
+            Seu período de alta performance expirou. Para manter sua clínica no topo e gerenciar seus pacientes com excelência, reative seu plano pro agora.
           </p>
-          <Button asChild className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-6 text-lg rounded-xl shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02]">
+
+          <Button asChild className="w-full h-16 bg-white text-slate-950 hover:bg-slate-200 font-black text-xl rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95">
             <Link to="/ClinicSettings">
-              Reativar Acesso Agora
+              REATIVAR ACESSO IMEDIATO
             </Link>
           </Button>
-          <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
-            Precisa de ajuda? <a href="#" className="underline hover:text-indigo-500">Fale com o suporte</a>
-          </p>
+
+          <div className="mt-8 flex items-center justify-center gap-6">
+            <a href="#" className="text-xs font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest">Suporte 24h</a>
+            <div className="w-1 h-1 rounded-full bg-slate-700" />
+            <a href="#" className="text-xs font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-widest">Planos e Preços</a>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 
@@ -407,6 +424,7 @@ export default function Layout() {
           activeOrgId={activeOrgId}
           isSubscriptionActive={isSubscriptionActive}
           SubscriptionLock={SubscriptionLock}
+          organization={organization}
         />
       </ChatProvider>
     </ThemeContext.Provider>
@@ -418,7 +436,7 @@ export default function Layout() {
 function LayoutContent({
   user, isDark, sidebarOpen, setSidebarOpen, isCollapsed, setIsCollapsed,
   toggleTheme, unreadCount, notifications, finalNavigation, activeOrgId,
-  isSubscriptionActive, SubscriptionLock
+  isSubscriptionActive, SubscriptionLock, organization
 }) {
   const { activeRecipient, isOpen, isMinimized, closeChat, toggleMinimize, updateStatus, getStatus, currentUser } = useChat();
   const location = useLocation();
@@ -439,9 +457,15 @@ function LayoutContent({
     <>
       {!isSubscriptionActive && <SubscriptionLock />}
       <div className={cn(
-        "h-screen overflow-hidden font-sans transition-colors duration-300 flex",
-        isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100" : "bg-gradient-to-br from-slate-50 via-white to-slate-50 text-slate-900"
+        "h-screen overflow-hidden font-sans transition-colors duration-300 flex relative",
+        isDark ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
       )}>
+        {/* GLOBAL KINETIC BACKGROUND */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vh] bg-mesh animate-mesh opacity-[0.08]" />
+          <div className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[150px] animate-pulse-slow" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] bg-purple-600/5 rounded-full blur-[130px] animate-pulse-slow delay-700" />
+        </div>
         {/* Mobile Sidebar Backdrop */}
         <AnimatePresence>
           {sidebarOpen && !hideLayout && (
@@ -467,8 +491,8 @@ function LayoutContent({
             className={cn(
               "fixed top-0 bottom-0 left-0 z-50 h-[100dvh] flex flex-col transition-all duration-300",
               isDark
-                ? "bg-[#0B0F17] border-r border-[#1E293B] shadow-2xl shadow-black/40 text-slate-200"
-                : "bg-white/90 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl shadow-slate-200/50"
+                ? "glass-premium border-r border-white/10 bg-slate-950/40"
+                : "glass-premium border-r border-slate-200/50 bg-white/40"
             )}
           >
             {/* Header with Logo */}
@@ -537,38 +561,39 @@ function LayoutContent({
                           <Link
                             to={createPageUrl(item.href)}
                             className={cn(
-                              "group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
-                              isCollapsed ? "justify-center px-0" : "mx-2",
+                              "group relative flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-500",
+                              isCollapsed ? "justify-center px-0" : "mx-3",
                               isActive
                                 ? (isDark
-                                  ? "bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white shadow-lg shadow-indigo-500/20"
-                                  : "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-md shadow-indigo-200/50")
+                                  ? "bg-white/10 text-white shadow-2xl shadow-indigo-500/30 backdrop-blur-md border border-white/20"
+                                  : "bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40")
                                 : (isDark
                                   ? "text-slate-400 hover:text-white hover:bg-white/5"
-                                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                                  : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/50")
                             )}
                             onClick={() => setSidebarOpen(false)}
                           >
                             <div className={cn(
-                              "relative p-2 rounded-lg transition-all duration-300",
-                              isActive && `bg-gradient-to-br ${item.gradient} shadow-lg`
+                              "relative p-2 rounded-xl transition-all duration-500",
+                              isActive ? "rotate-0 scale-110" : "group-hover:rotate-6 group-hover:scale-110",
+                              !isActive && (isDark ? "bg-slate-900 border border-white/5" : "bg-white border border-slate-200 shadow-sm")
                             )}>
                               <item.icon className={cn(
                                 "w-5 h-5 transition-all duration-300",
-                                isActive ? "text-white" : (isDark ? "text-slate-400 group-hover:text-white" : "text-slate-600 group-hover:text-slate-900")
+                                isActive ? "text-white" : (isDark ? "text-slate-400 group-hover:text-white" : "text-slate-600 group-hover:text-indigo-600")
                               )} />
+
                               {isActive && (
                                 <div className={cn(
-                                  "absolute inset-0 rounded-lg blur-xl opacity-50 bg-gradient-to-br",
-                                  item.gradient
+                                  "absolute inset-0 rounded-xl blur-lg opacity-60 bg-white animate-pulse-soft"
                                 )} />
                               )}
                             </div>
-                            {!isCollapsed && <span className="relative z-10">{item.name}</span>}
+                            {!isCollapsed && <span className="relative z-10 tracking-tight">{item.name}</span>}
                             {!isCollapsed && isActive && (
                               <motion.div
                                 layoutId="activeNav"
-                                className="absolute right-2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                className="absolute left-0 w-1.5 h-6 rounded-r-full bg-white"
                                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
                               />
                             )}
@@ -630,8 +655,8 @@ function LayoutContent({
             {/* Footer User Profile */}
             {user && (
               <div className={cn(
-                "p-4 border-t relative overflow-hidden transition-colors duration-300",
-                isDark ? "border-slate-800/50 bg-[#0B0F17]" : "border-slate-200/50 bg-white"
+                "p-4 border-t relative overflow-hidden transition-all duration-500",
+                isDark ? "border-white/5 bg-slate-950/50" : "border-slate-200/50 bg-white/50"
               )}>
                 {/* Neon Glow Background for Container */}
                 {user.email === 'rafamarketingdb@gmail.com' && (
@@ -748,29 +773,29 @@ function LayoutContent({
         {/* Main Content */}
         <div className={cn(
           "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out",
-          !hideLayout && (isCollapsed ? "md:ml-20" : "md:ml-[280px]")
+          !hideLayout && (isCollapsed ? "md:ml-20" : "md:ml-[260px]")
         )}>
           {/* Top Header */}
           {!hideLayout && (
             <header className={cn(
-              "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 relative overflow-hidden transition-colors duration-300",
+              "h-16 flex items-center justify-between px-6 border-b sticky top-0 z-40 relative overflow-hidden transition-all duration-500",
               isDark
-                ? "bg-slate-950/80 backdrop-blur-xl border-slate-800 shadow-lg shadow-black/20"
-                : "bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-lg shadow-slate-200/20"
+                ? "bg-slate-950/40 backdrop-blur-2xl border-white/5"
+                : "bg-white/40 backdrop-blur-2xl border-slate-200/50"
             )}>
               {/* Subtle gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
+              <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent" />
 
-              <div className="flex items-center gap-4 relative z-10">
-                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="md:hidden">
-                  <Menu className="w-5 h-5" />
+              <div className="flex items-center gap-6 relative z-10">
+                <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="md:hidden text-indigo-500">
+                  <Menu className="w-6 h-6" />
                 </Button>
 
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="hidden md:flex hover:bg-indigo-500/10 transition-colors"
+                  className="hidden md:flex bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-500 rounded-xl transition-all hover:scale-110 active:scale-90"
                 >
                   {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                 </Button>
@@ -824,7 +849,7 @@ function LayoutContent({
 
           {/* Content Viewport */}
           <main className={cn("flex-1 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-indigo-200 hover:scrollbar-thumb-indigo-300 dark:scrollbar-thumb-slate-700", !hideLayout && "p-6")}>
-            <Outlet context={{ isDark }} />
+            <Outlet context={{ isDark, organization }} />
           </main>
         </div>
 

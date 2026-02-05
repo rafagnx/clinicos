@@ -24,26 +24,34 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
 
     const header = (
         <div className={cn(
-            "p-5 border-b",
-            isDark ? "bg-gradient-to-r from-blue-900/10 to-indigo-900/10 border-slate-800" : "bg-gradient-to-r from-blue-50 to-indigo-50 border-slate-100"
+            "p-6 md:p-8 border-b border-white/5 relative overflow-hidden group",
+            isDark ? "bg-slate-950/40" : "bg-white/40"
         )}>
-            <h3 className={cn("font-bold", isDark ? "text-white" : "text-slate-800")}>📅 Agenda do Dia</h3>
-            <p className={cn("text-sm mt-1", isDark ? "text-slate-400" : "text-slate-600")}>
-                {appointments?.length || 0} consultas agendadas
-            </p>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+            <div className="relative z-10 flex items-center justify-between">
+                <div>
+                    <h3 className={cn("text-2xl font-black tracking-tighter leading-none", isDark ? "text-white" : "text-slate-900")}>AGENDA DO DIA</h3>
+                    <p className={cn("text-[10px] font-black mt-2 uppercase tracking-[0.2em] text-blue-500")}>
+                        {appointments?.length || 0} COMPROMISSOS AGENDADOS
+                    </p>
+                </div>
+                <div className="hidden sm:block">
+                    <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                </div>
+            </div>
         </div>
     );
 
     if (!appointments || appointments.length === 0) {
         return (
             <Card className={cn(
-                "backdrop-blur-sm border-0 shadow-lg overflow-hidden transition-all duration-300",
-                isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80"
+                "glass-premium border-white/10 overflow-hidden transition-all duration-500 rounded-[2rem]",
+                isDark ? "bg-slate-950/40" : "bg-white/40"
             )}>
                 {header}
-                <div className={cn("p-12 text-center", isDark ? "text-slate-500" : "text-slate-400")}>
-                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhuma consulta para hoje</p>
+                <div className={cn("p-16 text-center", isDark ? "text-slate-500" : "text-slate-400")}>
+                    <Clock className="w-16 h-16 mx-auto mb-4 opacity-20 animate-pulse-slow" />
+                    <p className="font-bold tracking-tight text-xl">Nenhuma consulta para hoje</p>
                 </div>
             </Card>
         );
@@ -51,8 +59,8 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
 
     return (
         <Card className={cn(
-            "backdrop-blur-sm border-0 shadow-lg overflow-hidden transition-all duration-300",
-            isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/80"
+            "glass-premium border-white/10 overflow-hidden transition-all duration-500 rounded-[2rem]",
+            isDark ? "bg-slate-950/40" : "bg-white/40"
         )}>
             {header}
             <div className={cn("divide-y", isDark ? "divide-slate-800" : "divide-slate-50")}>
@@ -72,57 +80,68 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
 
                     return (
                         <div key={apt.id} className={cn(
-                            "p-4 transition-all border-l-4 border-transparent",
+                            "p-5 transition-all border-l-[6px] border-transparent group/item",
                             isDark
-                                ? "hover:bg-slate-800/50 hover:border-blue-500"
-                                : "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 hover:border-blue-500"
+                                ? "hover:bg-white/5 hover:border-blue-500"
+                                : "hover:bg-slate-50/50 hover:border-blue-500 shadow-sm"
                         )}>
-                            <div className="flex items-center gap-4">
-                                <div className={cn("text-center min-w-[70px] rounded-xl p-2", isDark ? "bg-slate-950" : "bg-slate-50")}>
-                                    <p className={cn("text-lg font-bold", isDark ? "text-slate-200" : "text-slate-800")}>
+                            <div className="flex items-center gap-6">
+                                <div className={cn(
+                                    "text-center min-w-[80px] rounded-2xl p-2.5 glass-premium border-white/5 shadow-inner transition-transform group-hover/item:scale-105",
+                                    isDark ? "bg-slate-950/80" : "bg-white"
+                                )}>
+                                    <p className={cn("text-xl font-black tracking-tighter", isDark ? "text-white" : "text-slate-900")}>
                                         {apt.start_time?.includes('T') ? new Date(apt.start_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.start_time || "--:--").substring(0, 5)}
                                     </p>
-                                    <p className={cn("text-xs font-medium", isDark ? "text-slate-500" : "text-slate-500")}>
-                                        {apt.end_time?.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
+                                    <p className={cn("text-[10px] font-black tracking-widest opacity-40 uppercase")}>
+                                        DE {apt.end_time?.includes('T') ? new Date(apt.end_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : (apt.end_time || "--:--").substring(0, 5)}
                                     </p>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className={cn("font-semibold truncate", isDark ? "text-slate-200" : "text-slate-800")}>{patientName}</p>
-                                    <p className={cn("text-sm truncate flex items-center gap-1", isDark ? "text-slate-400" : "text-slate-600")}>
-                                        <User className="w-3 h-3" />
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    <p className={cn("text-lg font-black tracking-tight truncate group-hover/item:text-blue-400 transition-colors", isDark ? "text-white" : "text-slate-900")}>
+                                        {patientName}
+                                    </p>
+                                    <div className={cn("flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-50")}>
+                                        <User className="w-3 h-3 text-blue-500" />
                                         {professionalName}
-                                    </p>
+                                    </div>
                                 </div>
-                                <Badge variant="outline" className={`${status.class} border-0 font-semibold shadow-sm`}>
-                                    {status.label}
-                                </Badge>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className={cn("h-8 w-8", isDark ? "text-slate-400 hover:text-white hover:bg-slate-800" : "")}>
-                                            <MoreVertical className="w-4 h-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className={cn(isDark ? "bg-slate-900 border-slate-800 text-slate-200" : "")}>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "confirmado")}>
-                                            Confirmar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "aguardando")}>
-                                            Paciente chegou
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "em_atendimento")}>
-                                            Iniciar atendimento
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "finalizado")}>
-                                            Finalizar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "faltou")} className="text-rose-600">
-                                            Marcar falta
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => onStatusChange(apt.id, "cancelado")} className="text-slate-500">
-                                            Cancelar
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                        "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm",
+                                        status.class,
+                                        "border-white/10"
+                                    )}>
+                                        {status.label}
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className={cn("h-10 w-10 rounded-xl", isDark ? "text-slate-500 hover:text-white hover:bg-white/10" : "hover:bg-slate-100")}>
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className={cn("rounded-2xl glass-premium border-white/10 p-2", isDark ? "bg-slate-900 text-slate-200" : "bg-white")}>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest" onClick={() => onStatusChange(apt.id, "confirmado")}>
+                                                Confirmar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest" onClick={() => onStatusChange(apt.id, "aguardando")}>
+                                                Paciente chegou
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest" onClick={() => onStatusChange(apt.id, "em_atendimento")}>
+                                                Iniciar atendimento
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest" onClick={() => onStatusChange(apt.id, "finalizado")}>
+                                                Finalizar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest text-rose-500" onClick={() => onStatusChange(apt.id, "faltou")}>
+                                                Marcar falta
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="rounded-xl font-bold text-[11px] uppercase tracking-widest text-slate-500" onClick={() => onStatusChange(apt.id, "cancelado")}>
+                                                Cancelar
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
                         </div>
                     );

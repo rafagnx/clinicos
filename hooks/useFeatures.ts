@@ -20,7 +20,10 @@ export const useFeatures = () => {
         staleTime: 1000 * 60 * 5 // 5 min cache
     });
 
-    const { data: user } = useQuery<any>({ queryKey: ["auth-user"] });
+    const { data: user } = useQuery<any>({
+        queryKey: ["auth-user"],
+        queryFn: () => base44.auth.me().catch(() => null),
+    });
 
     const hasFeature = (featureName: string) => {
         // 1. System Admin / Specific Email Override (Dev/Demo)

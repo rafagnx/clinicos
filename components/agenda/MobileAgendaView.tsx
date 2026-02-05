@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     Calendar, Clock, MapPin, MoreVertical,
-    ChevronLeft, ChevronRight, Plus, Ban
+    ChevronLeft, ChevronRight, Plus, Ban, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ interface MobileAgendaViewProps {
     onNewAppointment: () => void;
 }
 
-const statusConfig = {
+const statusConfig: any = {
     agendado: { label: "Agendado", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
     confirmado: { label: "Confirmado", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
     aguardando: { label: "Aguardando", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" },
@@ -47,131 +47,136 @@ export default function MobileAgendaView({
     });
 
     return (
-        <div className={cn("min-h-full flex flex-col", isDark ? "bg-[#151A25]" : "bg-white")}>
+        <div className={cn("min-h-full flex flex-col relative", isDark ? "bg-[#0B0E14]" : "bg-slate-50")}>
+            <div className={cn("fixed inset-0 pointer-events-none opacity-20", isDark ? "bg-grid-white/[0.05]" : "bg-grid-black/[0.05]")} />
 
-            {/* Header: Date Navigation */}
+            {/* Header: Date Navigation - Liquid Glass */}
             <div className={cn(
-                "sticky top-0 z-20 flex items-center justify-between p-4 border-b shadow-sm",
-                isDark ? "bg-[#0B0E14] border-slate-800" : "bg-white border-slate-100"
+                "sticky top-0 z-20 flex items-center justify-between p-4 border-b backdrop-blur-xl transition-colors",
+                isDark ? "bg-[#0B0E14]/80 border-white/5" : "bg-white/80 border-slate-200/50"
             )}>
-                <Button variant="ghost" size="icon" onClick={() => onDateChange(-1)}>
+                <Button variant="ghost" size="icon" onClick={() => onDateChange(-1)} className="rounded-xl hover:bg-white/10">
                     <ChevronLeft className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
                 </Button>
 
-                <div className="flex flex-col items-center" onClick={onToday}>
-                    <h2 className={cn("text-lg font-bold capitalize", isDark ? "text-white" : "text-slate-900")}>
+                <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onToday}>
+                    <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
                         {format(date, "EEEE", { locale: ptBR })}
                     </h2>
-                    <span className={cn("text-xs font-medium uppercase tracking-wider", isDark ? "text-slate-500" : "text-slate-500")}>
+                    <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em] opacity-60", isDark ? "text-slate-400" : "text-slate-500")}>
                         {format(date, "d 'de' MMMM", { locale: ptBR })}
                     </span>
                 </div>
 
-                <Button variant="ghost" size="icon" onClick={() => onDateChange(1)}>
+                <Button variant="ghost" size="icon" onClick={() => onDateChange(1)} className="rounded-xl hover:bg-white/10">
                     <ChevronRight className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
                 </Button>
             </div>
 
             {/* List Content */}
-            <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-24">
+            <div className="flex-1 px-4 py-6 space-y-4 overflow-y-auto pb-32 relative z-10">
                 {sortedAppointments.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
-                        <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mb-4", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                            <Calendar className={cn("w-8 h-8", isDark ? "text-slate-500" : "text-slate-400")} />
+                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 min-h-[50vh]">
+                        <div className={cn(
+                            "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl backdrop-blur-sm border",
+                            isDark ? "bg-slate-900/50 border-white/5" : "bg-white/50 border-slate-200"
+                        )}>
+                            <Calendar className={cn("w-8 h-8 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
                         </div>
-                        <p className={cn("font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
+                        <p className={cn("text-sm font-bold uppercase tracking-widest opacity-50 mb-4", isDark ? "text-slate-400" : "text-slate-600")}>
                             Sem agendamentos
                         </p>
                         <Button
-                            variant="link"
-                            className="text-indigo-500 mt-2"
+                            variant="default"
+                            size="sm"
+                            className="rounded-full px-6 font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform shadow-lg shadow-blue-500/20"
                             onClick={onNewAppointment}
                         >
                             Agendar agora
                         </Button>
                     </div>
                 ) : (
-                    sortedAppointments.map((apt) => {
+                    sortedAppointments.map((apt, i) => {
                         const status = statusConfig[apt.status] || statusConfig.agendado;
                         const time = apt.start_time?.substring(0, 5) || "--:--";
+                        const isFirst = i === 0;
 
                         return (
                             <Card
                                 key={apt.id}
                                 onClick={() => onSelectAppointment(apt)}
                                 className={cn(
-                                    "flex items-stretch overflow-hidden border-l-4 shadow-sm active:scale-[0.98] transition-all",
-                                    isDark ? "bg-[#1C2333] border-slate-800 border-l-indigo-500" : "bg-white border-slate-100 border-l-indigo-500"
+                                    "flex items-stretch overflow-hidden border-0 shadow-lg active:scale-[0.98] transition-all duration-300 group relative",
+                                    isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md",
+                                    isFirst && "ring-2 ring-blue-500/20"
                                 )}
                             >
+                                {/* Gradient Indicator Bar */}
+                                <div className={cn(
+                                    "w-1.5 absolute left-0 top-0 bottom-0 bg-gradient-to-b",
+                                    (apt.patient?.temperature === "hot" || apt.patient?.funnel_status === "hot") ? "from-rose-500 to-orange-500" :
+                                        (apt.patient?.temperature === "warm" || apt.patient?.funnel_status === "warm") ? "from-amber-500 to-yellow-500" :
+                                            "from-blue-500 to-indigo-500"
+                                )} />
+
                                 {/* Time Column */}
                                 <div className={cn(
-                                    "w-16 flex flex-col items-center justify-center border-r px-2 py-3",
-                                    isDark ? "border-slate-800 bg-slate-900/30" : "border-slate-50 bg-slate-50"
+                                    "w-20 flex flex-col items-center justify-center px-2 py-4 border-r ml-1.5",
+                                    isDark ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
                                 )}>
-                                    <span className={cn("text-sm font-bold", isDark ? "text-white" : "text-slate-900")}>{time}</span>
-                                    <Clock className={cn("w-3 h-3 mt-1", isDark ? "text-slate-600" : "text-slate-400")} />
+                                    <span className={cn("text-sm font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>{time}</span>
+                                    <Badge variant="outline" className={cn("mt-1.5 h-4 px-1 text-[8px] font-black uppercase border-0 bg-opacity-10", isDark ? "bg-white text-slate-400" : "bg-black text-slate-500")}>
+                                        {format(new Date(), "HH:mm") > time && apt.status !== 'finalizado' ? 'ATRASADO' : 'HORÁRIO'}
+                                    </Badge>
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 p-3 min-w-0">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h3 className={cn("font-bold truncate text-sm", isDark ? "text-slate-100" : "text-slate-800")}>
+                                <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
+                                    <div className="flex justify-between items-start mb-1.5">
+                                        <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
                                             {apt.patient?.full_name || "Paciente sem nome"}
                                         </h3>
                                     </div>
 
-                                    {/* Patient Tags Row */}
-                                    <div className="flex flex-wrap gap-1.5 mb-2">
-                                        {apt.patient?.funnel_status && (
-                                            <Badge className={cn(
-                                                "h-5 text-[10px] px-1.5 border-0 font-bold uppercase",
-                                                apt.patient.funnel_status === "hot" ? "bg-rose-500 hover:bg-rose-600 text-white" :
-                                                    apt.patient.funnel_status === "warm" ? "bg-orange-500 hover:bg-orange-600 text-white" :
-                                                        "bg-blue-500 hover:bg-blue-600 text-white"
+                                    {/* Patient Tags Row - High Ticket Indicators */}
+                                    <div className="flex flex-wrap gap-1.5 mb-2.5">
+                                        {(apt.patient?.temperature || apt.patient?.funnel_status) && (
+                                            <div className={cn(
+                                                "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
+                                                (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
+                                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
+                                                        "bg-blue-500/10 text-blue-500 border border-blue-500/20"
                                             )}>
-                                                {apt.patient.funnel_status === "hot" ? "🔥 Quente" :
-                                                    apt.patient.funnel_status === "warm" ? "⚡ Morno" : "❄️ Frio"}
-                                            </Badge>
+                                                {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "HOT" :
+                                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "WARM" : "COLD"}
+                                            </div>
                                         )}
-                                        {apt.patient?.personality && (
-                                            <Badge variant="secondary" className="h-5 text-[10px] px-1.5 border-0 font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-                                                🧠 {apt.patient.personality}
-                                            </Badge>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center gap-1 mb-2 text-xs">
-                                        <span className={cn("font-medium", isDark ? "text-slate-300" : "text-slate-600")}>
-                                            {apt.professional?.full_name || "Profissional"}
-                                        </span>
-                                        <span className={cn("mx-1", isDark ? "text-slate-600" : "text-slate-300")}>•</span>
-                                        <span className={cn("truncate", isDark ? "text-slate-400" : "text-slate-500")}>
-                                            {apt.procedure_name || "Consulta"}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="outline" className={cn("text-[10px] h-5 border-0 font-bold uppercase px-2", status.color)}>
+                                        <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
                                             {status.label}
                                         </Badge>
                                     </div>
-                                </div>
 
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                        <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
+                                        <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
+                                            {apt.procedure_name || "Consulta"}
+                                        </span>
+                                    </div>
+                                </div>
                             </Card>
                         );
                     })
                 )}
             </div>
 
-            {/* Floating Action Button */}
+            {/* Floating Action Button - Liquid Gradient */}
             <div className="fixed bottom-6 right-6 z-30">
                 <Button
                     size="icon"
-                    className="w-14 h-14 rounded-full shadow-xl bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="w-14 h-14 rounded-2xl shadow-2xl shadow-indigo-500/40 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10 group"
                     onClick={onNewAppointment}
                 >
-                    <Plus className="w-6 h-6" />
+                    <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
                 </Button>
             </div>
         </div>

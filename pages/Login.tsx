@@ -15,6 +15,16 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
+    React.useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = '/Dashboard';
+            }
+        };
+        checkAuth();
+    }, []);
+
     const handleLogin = async (e?: React.FormEvent, isRetry = false) => {
         if (e) e.preventDefault();
         setIsLoading(true);

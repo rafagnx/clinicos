@@ -151,250 +151,223 @@ export default function Patients() {
 
   return (
     <div className={cn("p-6 lg:p-10 max-w-[1600px] mx-auto space-y-8 min-h-screen")}>
-      {/* Premium Header */}
-      <div className={cn(
-        "relative overflow-hidden rounded-3xl p-8 border transition-all duration-300",
-        isDark
-          ? "bg-gradient-to-br from-slate-900 via-indigo-950/30 to-slate-900 border-slate-800"
-          : "bg-gradient-to-br from-white via-indigo-50/50 to-purple-50/30 border-slate-200"
-      )}>
-        {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className={cn("text-4xl font-display font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-              Pacientes
-            </h1>
-            <p className={cn("text-lg max-w-2xl", isDark ? "text-slate-400" : "text-slate-600")}>
-              Gerencie sua base de pacientes com inteligência e praticidade.
-            </p>
+      {/* Header Liquid Scale */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8px] font-black uppercase tracking-widest mb-1">
+            <Users className="w-2.5 h-2.5" /> GESTÃO ESTRATÉGICA
           </div>
+          <h1 className={cn("text-3xl md:text-4xl font-black mb-1 tracking-tighter leading-[0.9]", isDark ? "text-white" : "text-slate-900")}>
+            MEUS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">PACIENTES</span>
+          </h1>
+          <p className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
+            Sua base estratégica de ativos clínicos para retenção.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className={cn(
-                  "border-dashed backdrop-blur-sm transition-all",
-                  isDark
-                    ? "border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-700 hover:text-white"
-                    : "border-slate-300 bg-white/50 text-slate-600 hover:bg-white hover:text-slate-900"
-                )}>
-                  <MoreHorizontal className="w-4 h-4 mr-2" />
-                  Ações
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className={cn("w-56", isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : "")}>
-                <DropdownMenuItem onClick={() => navigate(createPageUrl("ImportPatients"))} className="gap-2 cursor-pointer">
-                  <Upload className="w-4 h-4 text-slate-500" />
-                  Importar Excel
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    // ... export logic
-                  }}
-                  className="gap-2 cursor-pointer"
-                >
-                  <Download className="w-4 h-4 text-slate-500" />
-                  Exportar CSV
-                </DropdownMenuItem>
-                <>
-                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                  <DropdownMenuItem
-                    onClick={() => setShowBulkDelete(!showBulkDelete)}
-                    className="gap-2 text-rose-500 focus:text-rose-600 focus:bg-rose-50/10 cursor-pointer"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {showBulkDelete ? "Sair da Seleção" : "Gerenciar Exclusão"}
-                  </DropdownMenuItem>
-                </>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        <div className="flex flex-wrap gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className={cn(
+                "h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                isDark ? "text-slate-400 hover:bg-white/5" : "text-slate-500 hover:bg-black/5"
+              )}>
+                <MoreHorizontal className="w-4 h-4 mr-2" />
+                Ações
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className={cn("rounded-xl border-white/5", isDark ? "bg-slate-900 text-slate-200" : "")}>
+              <DropdownMenuItem onClick={() => navigate(createPageUrl("ImportPatients"))} className="gap-2 cursor-pointer py-2 text-[10px] font-black uppercase tracking-widest">
+                <Upload className="w-3.5 h-3.5" /> Importar Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {/* export */ }} className="gap-2 cursor-pointer py-2 text-[10px] font-black uppercase tracking-widest">
+                <Download className="w-3.5 h-3.5" /> Exportar CSV
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className={isDark ? "bg-slate-800" : ""} />
+              <DropdownMenuItem
+                onClick={() => setShowBulkDelete(!showBulkDelete)}
+                className="gap-2 text-rose-500 focus:text-rose-400 cursor-pointer py-2 text-[10px] font-black uppercase tracking-widest"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {showBulkDelete ? "Sair da Seleção" : "Gerenciar Exclusão"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-            <Button
-              onClick={handleAddNew}
-              className={cn(
-                "shadow-lg transition-all hover:scale-105 active:scale-95",
-                isDark
-                  ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20"
-                  : "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-300"
-              )}
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Novo Paciente
-            </Button>
-          </div>
+          <Button
+            onClick={handleAddNew}
+            className="h-10 px-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95 group relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <UserPlus className="w-3.5 h-3.5 mr-2 relative z-10" />
+            <span className="relative z-10">Novo Paciente</span>
+          </Button>
         </div>
       </div>
 
-      {/* Filters Bar */}
+      {/* Filters Bar Liquid Scale */}
       <div className={cn(
-        "sticky top-20 z-30 p-4 rounded-2xl border backdrop-blur-xl shadow-sm transition-all",
-        isDark
-          ? "bg-slate-900/80 border-slate-800 shadow-black/20"
-          : "bg-white/80 border-slate-200 shadow-slate-200/50"
+        "rounded-2xl p-4 glass-premium border-white/5 flex flex-wrap items-center justify-between gap-4 relative z-10",
+        isDark ? "bg-slate-950/40" : "bg-white/40"
       )}>
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex gap-3 flex-1 w-full md:max-w-2xl">
-            <div className="relative flex-1 group">
-              <Search className={cn(
-                "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
-                isDark ? "text-slate-500 group-focus-within:text-indigo-400" : "text-slate-400 group-focus-within:text-indigo-600"
-              )} />
-              <Input
-                placeholder="Buscar por nome, CPF, telefone..."
-                className={cn(
-                  "pl-10 transition-all",
-                  isDark
-                    ? "bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-800 focus:border-indigo-500/50"
-                    : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500/50"
-                )}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative flex-1 max-w-md group">
+            <Search className={cn(
+              "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+              isDark ? "text-slate-500 group-focus-within:text-blue-400" : "text-slate-400 group-focus-within:text-blue-600"
+            )} />
+            <Input
+              placeholder="Buscar por nome, CPF, telefone..."
+              className={cn(
+                "pl-10 h-10 rounded-xl text-sm w-full transition-all border-none focus:ring-0",
+                isDark
+                  ? "bg-slate-950/40 text-white placeholder:text-slate-500"
+                  : "bg-white/50 text-slate-900"
+              )}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
 
-            <Popover open={showAdvanced} onOpenChange={setShowAdvanced}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className={cn(
-                  "px-3",
-                  showAdvanced && (isDark ? "bg-slate-800 text-indigo-400 border-indigo-500/50" : "bg-indigo-50 text-indigo-700 border-indigo-200"),
-                  isDark ? "border-slate-700 hover:bg-slate-800 text-slate-300" : "border-slate-200 hover:bg-slate-50 text-slate-600"
-                )}>
-                  <SlidersHorizontal className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className={cn("w-80 p-5 space-y-4", isDark ? "bg-[#1C2333] border-slate-700" : "")} align="start">
-                <div className="space-y-4">
+          <Popover open={showAdvanced} onOpenChange={setShowAdvanced}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className={cn(
+                "h-10 w-10 p-0 rounded-xl transition-all",
+                showAdvanced && (isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-50 text-blue-600"),
+                isDark ? "text-slate-400 hover:bg-white/5" : "text-slate-500 hover:bg-black/5"
+              )}>
+                <SlidersHorizontal className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className={cn("rounded-2xl border-white/5 p-4", isDark ? "bg-slate-900 text-slate-200" : "")} align="start">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest opacity-50">CPF</Label>
+                  <Input
+                    placeholder="000.000.000-00"
+                    value={advancedSearch.cpf}
+                    onChange={e => setAdvancedSearch(prev => ({ ...prev, cpf: e.target.value }))}
+                    className={cn("h-9 rounded-lg text-xs", isDark ? "bg-slate-950/50 border-white/5" : "bg-slate-50")}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label className={isDark ? "text-slate-300" : ""}>CPF</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-50">Desde</Label>
                     <Input
-                      placeholder="000.000.000-00"
-                      value={advancedSearch.cpf}
-                      onChange={e => setAdvancedSearch(prev => ({ ...prev, cpf: e.target.value }))}
-                      className={isDark ? "bg-slate-900 border-slate-700" : ""}
+                      type="date"
+                      value={advancedSearch.dateFrom}
+                      onChange={e => setAdvancedSearch(prev => ({ ...prev, dateFrom: e.target.value }))}
+                      className={cn("h-9 rounded-lg text-xs", isDark ? "bg-slate-950/50 border-white/5" : "bg-slate-50")}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className={isDark ? "text-slate-300" : ""}>Desde</Label>
-                      <Input
-                        type="date"
-                        value={advancedSearch.dateFrom}
-                        onChange={e => setAdvancedSearch(prev => ({ ...prev, dateFrom: e.target.value }))}
-                        className={isDark ? "bg-slate-900 border-slate-700" : ""}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className={isDark ? "text-slate-300" : ""}>Até</Label>
-                      <Input
-                        type="date"
-                        value={advancedSearch.dateTo}
-                        onChange={e => setAdvancedSearch(prev => ({ ...prev, dateTo: e.target.value }))}
-                        className={isDark ? "bg-slate-900 border-slate-700" : ""}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-50">Até</Label>
+                    <Input
+                      type="date"
+                      value={advancedSearch.dateTo}
+                      onChange={e => setAdvancedSearch(prev => ({ ...prev, dateTo: e.target.value }))}
+                      className={cn("h-9 rounded-lg text-xs", isDark ? "bg-slate-950/50 border-white/5" : "bg-slate-50")}
+                    />
                   </div>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
-                    onClick={() => setAdvancedSearch({ cpf: "", dateFrom: "", dateTo: "" })}
-                  >
-                    Limpar Filtros
-                  </Button>
                 </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
-            <TabsList className={cn("w-full md:w-auto p-1", isDark ? "bg-slate-800" : "bg-slate-100")}>
-              {["Todos", "Ativo", "Inativo"].map((tab) => (
-                <TabsTrigger
-                  key={tab.toLowerCase()}
-                  value={tab.toLowerCase()}
-                  className={cn(
-                    "flex-1 md:flex-none capitalize",
-                    isDark
-                      ? "data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-400"
-                      : "data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  )}
+                <Button
+                  variant="ghost"
+                  className="w-full text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-400 hover:bg-rose-500/10"
+                  onClick={() => setAdvancedSearch({ cpf: "", dateFrom: "", dateTo: "" })}
                 >
-                  {tab}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                  Limpar Filtros
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        {/* Bulk Action Bar */}
-        {showBulkDelete && (
-          <div className={cn(
-            "mt-4 pt-4 border-t flex items-center justify-between animate-slide-down",
-            isDark ? "border-slate-800" : "border-slate-100"
-          )}>
-            <div className="flex items-center gap-3">
-              <span className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
-                {selectedPatients.length} selecionado(s)
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedPatients(filteredPatients.map(p => p.id))}
-                className="text-xs text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-              >
-                Selecionar Todos ({filteredPatients.length})
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedPatients([])}
-                className="text-xs text-slate-500"
-              >
-                Limpar
-              </Button>
-            </div>
-            {selectedPatients.length > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-                disabled={bulkDeleteMutation.isPending}
-                className="shadow-lg shadow-rose-500/20"
-              >
-                {bulkDeleteMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
-                    Excluindo...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-3.5 h-3.5 mr-2" />
-                    Excluir Selecionados
-                  </>
+        <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
+          <TabsList className={cn("h-10 p-1 rounded-xl glass-premium border-white/5", isDark ? "bg-slate-950/40" : "bg-white/40")}>
+            {["Todos", "Ativo", "Inativo"].map((tab) => (
+              <TabsTrigger
+                key={tab.toLowerCase()}
+                value={tab.toLowerCase()}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                  isDark
+                    ? "data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-500"
+                    : "data-[state=active]:bg-slate-900 data-[state=active]:text-white text-slate-500"
                 )}
-              </Button>
-            )}
-          </div>
-        )}
+              >
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
+
+      {/* Bulk Action Bar */}
+      {showBulkDelete && (
+        <div className={cn(
+          "mt-4 pt-4 border-t flex items-center justify-between animate-slide-down",
+          isDark ? "border-slate-800" : "border-slate-100"
+        )}>
+          <div className="flex items-center gap-3">
+            <span className={cn("text-sm font-medium", isDark ? "text-slate-400" : "text-slate-600")}>
+              {selectedPatients.length} selecionado(s)
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedPatients(filteredPatients.map(p => p.id))}
+              className="text-xs text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+            >
+              Selecionar Todos ({filteredPatients.length})
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedPatients([])}
+              className="text-xs text-slate-500"
+            >
+              Limpar
+            </Button>
+          </div>
+          {selectedPatients.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleteMutation.isPending}
+              className="shadow-lg shadow-rose-500/20"
+            >
+              {bulkDeleteMutation.isPending ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                  Excluir Selecionados
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* List View */}
       <div className="flex flex-col gap-3">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 opacity-50">
             <Loader2 className="w-10 h-10 animate-spin mb-4 text-indigo-500" />
-            <p className={isDark ? "text-slate-400" : "text-slate-500"}>Carregando pacientes...</p>
+            <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>Carregando pacientes...</p>
           </div>
         ) : isError ? (
           <div className="text-center py-20 text-rose-500">
             <UserX className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>Erro ao carregar dados.</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">Erro ao carregar dados.</p>
           </div>
         ) : filteredPatients.length === 0 ? (
           <div className={cn(
-            "flex flex-col items-center justify-center py-32 rounded-3xl border-2 border-dashed",
+            "flex flex-col items-center justify-center py-32 rounded-3xl border-2 border-dashed transition-colors",
             isDark ? "border-slate-800 bg-slate-900/50" : "border-slate-200 bg-slate-50/50"
           )}>
             <div className={cn(
@@ -403,10 +376,10 @@ export default function Patients() {
             )}>
               <Users className={cn("w-10 h-10", isDark ? "text-slate-600" : "text-slate-300")} />
             </div>
-            <h3 className={cn("text-xl font-bold mb-2", isDark ? "text-white" : "text-slate-900")}>
+            <h3 className={cn("text-xl font-black mb-2 tracking-tight", isDark ? "text-white" : "text-slate-900")}>
               Nenhum paciente encontrado
             </h3>
-            <p className={cn("text-slate-500", isDark ? "text-slate-400" : "")}>
+            <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-slate-400" : "text-slate-500")}>
               Tente ajustar seus filtros de busca.
             </p>
           </div>
@@ -418,10 +391,10 @@ export default function Patients() {
               <div
                 key={patient.id}
                 className={cn(
-                  "group relative flex items-center gap-4 p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer",
+                  "group relative flex items-center gap-4 p-5 rounded-2xl glass-premium border-white/5 transition-all duration-500 hover:bg-white/5 hover:translate-x-2 cursor-pointer shadow-sm",
                   isDark
-                    ? "bg-slate-900/50 border-slate-800 hover:bg-slate-800/50"
-                    : "bg-white border-slate-100 hover:border-slate-200 shadow-sm"
+                    ? "bg-slate-950/20"
+                    : "bg-white/20"
                 )}
                 onClick={() => {
                   if (!showBulkDelete) {
@@ -450,42 +423,53 @@ export default function Patients() {
                   </AvatarFallback>
                 </Avatar>
 
-                {/* Info */}
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                  <div className="md:col-span-4">
-                    <h3 className={cn("font-bold text-lg leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
-                      {patient.full_name || "Sem Nome"}
-                    </h3>
-                    {patient.cpf && (
-                      <p className="text-xs text-slate-500 font-mono mt-0.5">{patient.cpf}</p>
-                    )}
-                  </div>
+                {/* Info Container */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <h3 className={cn("text-sm font-black tracking-tight leading-tight", isDark ? "text-white" : "text-slate-900")}>
+                        {patient.full_name || "Sem Nome"}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        {patient.cpf && (
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{patient.cpf}</span>
+                        )}
+                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest opacity-70 flex items-center gap-1">
+                          <Phone className="w-2.5 h-2.5" />
+                          {patient.phone || "N/A"}
+                        </span>
+                      </div>
+                    </div>
 
-                  <div className="md:col-span-3 flex items-center gap-2 text-sm text-slate-500">
-                    <Phone className="w-4 h-4 opacity-70" />
-                    <span>{patient.phone || "Sem telefone"}</span>
-                  </div>
+                    <div className="flex flex-wrap items-center gap-6">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Última Consulta</span>
+                        <span className={cn("text-[10px] font-black flex items-center gap-1.5", isDark ? "text-slate-400" : "text-slate-600")}>
+                          <Calendar className="w-3 h-3 opacity-50" />
+                          {lastAppt ? format(parseISO(lastAppt.date), "dd/MM/yyyy") : "N/A"}
+                        </span>
+                      </div>
 
-                  <div className="md:col-span-3 flex items-center gap-2 text-sm text-slate-500">
-                    <Clock className="w-4 h-4 opacity-70" />
-                    <span>
-                      {lastAppt
-                        ? `Última: ${format(parseISO(lastAppt.date), "dd/MM/yyyy")}`
-                        : "Sem consultas"}
-                    </span>
-                  </div>
+                      <div className="flex flex-col items-end min-w-[80px]">
+                        <span className="text-[8px] font-black uppercase tracking-widest opacity-40 mb-1">Status Base</span>
+                        <Badge variant="secondary" className={cn(
+                          "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 h-auto rounded-full border",
+                          (patient.status === 'ativo' || !patient.status)
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                        )}>
+                          {patient.status || "Ativo"}
+                        </Badge>
+                      </div>
 
-                  <div className="md:col-span-2 flex justify-end">
-                    <Badge variant="secondary" className={cn(
-                      "capitalize px-3 py-1",
-                      (patient.status === 'ativo' || !patient.status) ? "bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                    )}>
-                      {patient.status || "Ativo"}
-                    </Badge>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-500 hover:bg-white/10">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-
               </div>
             );
           })

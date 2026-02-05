@@ -23,7 +23,10 @@ export default function UserOnboarding() {
         email: ""
     });
 
-    const { data: user } = useQuery({ queryKey: ["auth-user"] });
+    const { data: user } = useQuery({
+        queryKey: ["auth-user"],
+        queryFn: () => base44.auth.me().catch(() => null)
+    });
 
     // Check if user is already a professional
     const { data: professionalProfile, isLoading } = useQuery({

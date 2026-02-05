@@ -20,12 +20,16 @@ export default function UpcomingAppointmentsWidget({ isDark, appointments, patie
 
     return (
         <Card className={cn(
-            "p-5 backdrop-blur-sm shadow-lg h-full transition-all duration-300",
-            isDark ? "bg-slate-900/50 border-slate-800" : "bg-white/90 border-0"
+            "p-8 glass-premium border-white/10 h-full transition-all duration-500 rounded-[2rem] group relative overflow-hidden",
+            isDark ? "bg-slate-950/40" : "bg-white/40"
         )}>
-            <div className="flex items-center gap-2 mb-4">
-                <Calendar className={cn("w-5 h-5", isDark ? "text-blue-400" : "text-blue-600")} />
-                <h3 className={cn("font-semibold", isDark ? "text-white" : "text-slate-800")}>Próximas Consultas</h3>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-1000" />
+
+            <div className="flex items-center gap-3 mb-8 relative z-10">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                    <Calendar className={cn("w-5 h-5", isDark ? "text-blue-400" : "text-blue-600")} />
+                </div>
+                <h3 className={cn("text-xl font-black tracking-tighter uppercase", isDark ? "text-white" : "text-slate-800")}>PRÓXIMAS CONSULTAS</h3>
             </div>
 
             {upcoming.length === 0 ? (

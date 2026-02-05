@@ -129,7 +129,7 @@ export function ContentCalendar() {
 
     return (
         <div className="min-h-screen bg-background/50 p-4 md:p-6">
-            <div className="max-w-[1400px] mx-auto">
+            <div className="max-w-[1920px] mx-auto">
 
                 {/* Header Controls */}
                 <div className="flex items-center justify-between mb-6">
@@ -155,9 +155,9 @@ export function ContentCalendar() {
                     </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-4 h-full">
                     {/* Left Sidebar */}
-                    <div className="hidden lg:flex flex-col gap-6 shrink-0 w-64">
+                    <div className="hidden lg:flex flex-col gap-4 shrink-0 w-52">
                         {/* Categories */}
                         <div className="flex gap-4">
                             <div className="flex flex-col items-center">
@@ -216,7 +216,7 @@ export function ContentCalendar() {
                     </div>
 
                     {/* Right Sidebar */}
-                    <div className="hidden xl:flex flex-col gap-6 w-64 shrink-0">
+                    <div className="hidden xl:flex flex-col gap-4 w-60 shrink-0">
                         <UpcomingEvents events={events} />
                         <NotesSection notes={notes} onNotesChange={handleNotesChange} />
                     </div>
