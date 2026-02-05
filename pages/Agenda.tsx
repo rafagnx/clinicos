@@ -649,7 +649,7 @@ export default function Agenda() {
             <div className={cn("relative overflow-auto flex-1 scrollbar-thin", isDark ? "scrollbar-thumb-slate-800 scrollbar-track-transparent" : "scrollbar-thumb-slate-200 scrollbar-track-slate-50")}>
               <div className="absolute inset-x-0 min-h-[1250px]"> {/* Ensure scrollable area */}
                 {timeSlots.map((time, i) => (
-                  <div key={time} className={cn("grid grid-cols-[80px_1fr] group min-h-[50px] relative", i === timeSlots.length - 1 ? "" : "border-b", isDark ? "border-white/5" : "border-slate-100")}>
+                  <div key={time} className={cn("grid grid-cols-[80px_1fr] group min-h-[60px] relative", i === timeSlots.length - 1 ? "" : "border-b", isDark ? "border-white/5" : "border-slate-100")}>
                     {/* Time Label */}
                     <div className={cn(
                       "relative p-2 text-xs font-medium text-center border-r flex items-start justify-center pt-3 select-none",
@@ -892,20 +892,20 @@ export default function Agenda() {
                         >
                           <div className="p-1 flex flex-col h-full relative z-10 overflow-hidden">
                             {/* Header: Time & Name */}
-                            <div className="flex items-center gap-1.5 min-w-0 mb-0.5">
+                            <div className="flex items-center gap-2 min-w-0 mb-1">
                               <span className={cn(
-                                "text-[9px] font-black px-1 rounded transition-colors whitespace-nowrap",
+                                "text-[10px] font-black px-1.5 py-0.5 rounded transition-colors whitespace-nowrap",
                                 isDark ? "text-slate-400 bg-white/5" : "text-slate-500 bg-slate-100"
                               )}>
                                 {timeDisplay}
                               </span>
                               <h4 className={cn(
-                                "text-[10px] font-bold truncate leading-none",
+                                "text-[11px] font-bold truncate leading-none",
                                 isDark ? "text-white" : "text-slate-900"
                               )}>
                                 {apt.patient?.full_name?.split(' ')[0] || "Paciente"}
                                 {professional && (
-                                  <span className="opacity-60 font-medium ml-1 text-[10px] truncate max-w-[100px]">
+                                  <span className="opacity-60 font-medium ml-1 text-[10px] truncate max-w-[120px]">
                                     • {professional.name || professional.full_name || "Profissional"}
                                   </span>
                                 )}
@@ -913,12 +913,12 @@ export default function Agenda() {
                             </div>
 
                             {/* Details: Tags & Info - Fluid Layout */}
-                            {height > 30 && (
-                              <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0 text-[9px] leading-tight opacity-90">
+                            {height > 40 && (
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] leading-tight opacity-90">
                                 {/* Tags */}
                                 {(apt.patient?.temperature || apt.patient?.conscience_level === "Pronto para Compra") && (
                                   <span className={cn(
-                                    "font-black uppercase tracking-tighter text-[8px]",
+                                    "font-black uppercase tracking-tighter text-[9px]",
                                     (apt.patient.temperature === 'hot' || apt.patient.conscience_level === "Pronto para Compra") ? "text-red-500" :
                                       apt.patient.temperature === 'warm' ? "text-amber-500" : "text-blue-500"
                                   )}>
