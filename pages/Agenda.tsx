@@ -621,6 +621,7 @@ export default function Agenda() {
                     const blocked = isDayBlocked(date);
                     const reason = blocked ? getBlockReason(date) : "";
                     const isSpecial = holiday || blocked;
+                    const isReminder = holiday?.type === 'reminder';
 
                     return (
                       <div
@@ -628,12 +629,16 @@ export default function Agenda() {
                         className={cn(
                           "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1.5 transition-all relative overflow-hidden group",
                           isDark ? "border-white/5" : "border-slate-100",
-                          isToday ? (isDark ? "bg-blue-500/5" : "bg-blue-50/50") : (isSpecial ? (isDark ? "bg-amber-900/10" : "bg-amber-50/50") : "hover:bg-white/5")
+                          isToday
+                            ? (isDark ? "bg-blue-500/5" : "bg-blue-50/50")
+                            : (isSpecial && !isReminder
+                              ? (isDark ? "bg-amber-900/10" : "bg-amber-50/50")
+                              : "hover:bg-white/5")
                         )}
                       >
                         <span className={cn(
                           "text-[9px] font-black uppercase tracking-[0.15em]",
-                          isToday ? "text-blue-500" : (isSpecial ? "text-amber-500" : (isDark ? "text-slate-500" : "text-slate-400"))
+                          isToday ? "text-blue-500" : (isSpecial && !isReminder ? "text-amber-500" : (isReminder ? "text-green-500" : (isDark ? "text-slate-500" : "text-slate-400")))
                         )}>
                           {format(date, "EEE", { locale: ptBR })}
                         </span>
@@ -641,14 +646,20 @@ export default function Agenda() {
                           "w-8 h-8 flex items-center justify-center rounded-xl text-sm font-black transition-all relative z-10",
                           isToday
                             ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30 scale-110"
-                            : (isSpecial ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-700 shadow-sm border border-amber-200") :
-                              (isDark ? "text-slate-300 group-hover:bg-white/10" : "text-slate-700 group-hover:bg-slate-100"))
+                            : (isReminder
+                              ? (isDark ? "bg-green-900/40 text-green-400" : "bg-green-50 text-green-600 shadow-sm border border-green-200")
+                              : (isSpecial
+                                ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-700 shadow-sm border border-amber-200")
+                                : (isDark ? "text-slate-300 group-hover:bg-white/10" : "text-slate-700 group-hover:bg-slate-100")))
                         )}>
                           {format(date, "d")}
                         </div>
 
                         {isSpecial && (
-                          <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 truncate max-w-full px-1 uppercase tracking-widest mt-0.5">
+                          <span className={cn(
+                            "text-[9px] font-black truncate max-w-full px-1 uppercase tracking-widest mt-0.5",
+                            isReminder ? "text-green-500 dark:text-green-400" : "text-amber-500 dark:text-amber-400"
+                          )}>
                             {(holiday?.name || reason || "").split(' ')[0]}
                           </span>
                         )}
