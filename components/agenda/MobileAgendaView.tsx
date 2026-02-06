@@ -2,9 +2,27 @@ import React from "react";
 import { format, addDays, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-    Calendar, Clock, MapPin, MoreVertical,
-    ChevronLeft, ChevronRight, Plus, Ban, Sparkles, LayoutList, User
+    Calendar as LucideCalendar,
+    Clock,
+    MapPin,
+    MoreVertical,
+    ChevronLeft,
+    ChevronRight,
+    Plus,
+    Ban,
+    Sparkles,
+    LayoutList,
+    User,
+    Check,
+    Loader2,
+    CalendarIcon as LucideCalendarIcon
 } from "lucide-react";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -117,17 +135,39 @@ export default function MobileAgendaView({
                         <ChevronLeft className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
                     </Button>
 
-                    <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform" onClick={onToday}>
-                        <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
-                            {view === "week" ? "Esta Semana" : format(date, "EEEE", { locale: ptBR })}
-                        </h2>
-                        <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em] opacity-60", isDark ? "text-slate-400" : "text-slate-500")}>
-                            {view === "week"
-                                ? `${format(addDays(date, -date.getDay()), "d/MM")} - ${format(addDays(date, 6 - date.getDay()), "d/MM")}`
-                                : format(date, "d 'de' MMMM", { locale: ptBR })
-                            }
-                        </span>
-                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform">
+                                <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
+                                    {view === "week" ? "Esta Semana" : format(date, "EEEE", { locale: ptBR })}
+                                </h2>
+                                <div className="flex items-center gap-1.5 opacity-60">
+                                    <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em]", isDark ? "text-slate-400" : "text-slate-500")}>
+                                        {view === "week"
+                                            ? `${format(addDays(date, -date.getDay()), "d/MM")} - ${format(addDays(date, 6 - date.getDay()), "d/MM")}`
+                                            : format(date, "d 'de' MMMM", { locale: ptBR })
+                                        }
+                                    </span>
+                                    <LucideCalendar className="w-2.5 h-2.5" />
+                                </div>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 rounded-2xl border-white/10" align="center" side="bottom">
+                            <CalendarComponent
+                                mode="single"
+                                selected={date}
+                                onSelect={(newDate) => {
+                                    if (newDate) {
+                                        const diff = Math.floor((newDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+                                        onDateChange(diff);
+                                    }
+                                }}
+                                initialFocus
+                                locale={ptBR}
+                                className={isDark ? "bg-slate-900 text-white" : "bg-white"}
+                            />
+                        </PopoverContent>
+                    </Popover>
 
                     <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? 7 : 1)} className="rounded-xl hover:bg-white/10">
                         <ChevronRight className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
@@ -246,7 +286,7 @@ export default function MobileAgendaView({
                             "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl backdrop-blur-sm border",
                             isDark ? "bg-slate-900/50 border-white/5" : "bg-white/50 border-slate-200"
                         )}>
-                            <Calendar className={cn("w-8 h-8 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
+                            <LucideCalendar className={cn("w-8 h-8 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
                         </div>
                         <p className={cn("text-sm font-bold uppercase tracking-widest opacity-50 mb-4", isDark ? "text-slate-400" : "text-slate-600")}>
                             Sem agendamentos
