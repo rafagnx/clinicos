@@ -13,73 +13,23 @@
   <title>ClinicOS</title>
 </head>
 <script>
+  // 🛡️ ClinicOS: Auth Token Resilience 🛡️
   (function () {
     try {
-      // 🧹 SELF HEALING: Aggressive Token Cleanup 2.0 🧹
-      // Risks: User avatar might disappear from UI until re-login, but app will work.
-      // Goal: Prevent 431 Request Header Fields Too Large / ERR_CONNECTION_RESET
-      console.log('🛡️ ClinicOS: Checking auth token size...');
-      var cleaned = false;
-
-      // Deep Recursive Cleaner
-      function recursiveClean(obj) {
-        var modified = false;
-        for (var key in obj) {
-          if (typeof obj[key] === 'string' && obj[key].length > 1000) {
-            console.warn('🛡️ Stripping massive field: ' + key + ' (' + obj[key].length + ' chars)');
-            obj[key] = "";
-            modified = true;
-          } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-            if (recursiveClean(obj[key])) modified = true;
-          }
-        }
-        return modified;
-      }
-
+      // Goal: Prevent 431 Request Header Fields Too Large (Render limit)
+      // Normal JWTs are ~2-4KB. Anything > 14KB is dangerously large for Render/Proxies.
       for (var key in localStorage) {
         if (key.includes('supabase.auth.token') || key.includes('-auth-token') || key === 'clinicos-token') {
-          var raw = localStorage.getItem(key);
-          if (raw && raw.length > 8000) {
-            console.log('🛡️ Analyzing large token: ' + key + ' (' + raw.length + ' bytes)');
-            try {
-              var data = JSON.parse(raw);
-              var wasModified = false;
-
-              if (data && data.user) {
-                if (recursiveClean(data.user)) wasModified = true;
-              }
-
-              if (wasModified) {
-                localStorage.setItem(key, JSON.stringify(data));
-                console.log('✅ Token sanitized. New size: ' + localStorage.getItem(key).length);
-                cleaned = true;
-              }
-
-              // Only nuke if truly astronomical (>32KB is definitely a bug/leak)
-              var finalSize = localStorage.getItem(key).length;
-              if (finalSize > 32000) {
-                console.warn('⚠️ Token still HUGE (' + finalSize + '). Nuking.');
-                localStorage.removeItem(key);
-                cleaned = true;
-              }
-            } catch (e) {
-              if (raw.length > 16000) {
-                console.warn('⚠️ Non-JSON huge token. Deleting.');
-                localStorage.removeItem(key);
-                cleaned = true;
-              }
-            }
+          var val = localStorage.getItem(key);
+          if (val && val.length > 14000) {
+            console.warn('⚠️ Astronomical token detected (' + val.length + ' bytes). Clearing to prevent server rejection.');
+            localStorage.removeItem(key);
+            // Hint to the app that we need a "Clean Session"
+            sessionStorage.setItem('force_clean_session', 'true');
           }
         }
       }
-
-      if (cleaned) {
-        console.log('🔄 Cleaning complete.');
-        // window.location.reload(); 
-      }
-    } catch (e) {
-      console.error('Shield check failed', e);
-    }
+    } catch (e) { }
   })();
 </script>
 
