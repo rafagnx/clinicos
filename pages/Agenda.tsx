@@ -921,132 +921,146 @@ export default function Agenda() {
 
                             {/* Right: Content */}
                             <div className="flex-1 flex flex-col justify-center px-3 py-1 min-w-0 relative">
-                              {/* Row 1: Name or Block Reason */}
-                              <h4 className={cn(
-                                "text-[12px] font-black truncate leading-tight mb-0.5",
-                                isDark ? "text-white" : "text-slate-900"
-                              )}>
-                                {apt.type === 'bloqueio'
-                                  ? (apt.procedure_name || "BLOQUEIO")
-                                  : (apt.patient?.full_name?.split(' ').slice(0, 2).join(' ') || "Paciente")
-                                }
-                              </h4>
-
-                              {/* Row 2: Details (One line) - Hide for blocks if redundant */}
-                              {apt.type !== 'bloqueio' && (
-                                <div className="flex items-center gap-1.5 min-w-0 text-[10px] leading-tight opacity-90">
-                                  {professional && (
-                                    <span className={cn("truncate font-medium flex items-center gap-1 hidden sm:flex", isDark ? "text-slate-400" : "text-slate-600")}>
-                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                      {professional.name || professional.full_name?.split(' ')[0] || "Pro"}
-                                    </span>
-                                  )}
-
-                                  <span className="opacity-30 hidden sm:inline">•</span>
-
-                                  <span className={cn(
-                                    "font-black uppercase tracking-wider",
-                                    (() => {
-                                      const t = (apt.type || "Consulta").trim();
-                                      const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
-                                      return (typeConfig[key || t] || typeConfig["Consulta"]).color;
-                                    })()
-                                  )}>
-                                    {apt.type || "Consulta"}
+                              {apt.type === 'bloqueio' ? (
+                                <div className="relative w-full h-full flex flex-col justify-center overflow-hidden min-h-[30px]">
+                                  {/* Background Watermark */}
+                                  <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center text-[10px] sm:text-xs font-black uppercase tracking-[0.5em] opacity-10 select-none transform scale-150 whitespace-nowrap pointer-events-none">
+                                    BLOQUEIO
                                   </span>
+                                  {/* Foreground Badge */}
+                                  <div className="relative z-10 flex items-center gap-2">
+                                    <span className={cn(
+                                      "text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border shadow-sm backdrop-blur-md flex items-center gap-1.5",
+                                      isDark ? "bg-black/20 border-white/10 text-white" : "bg-white/20 border-white/40 text-white"
+                                    )}>
+                                      <Ban className="w-3 h-3" /> {apt.procedure_name || "Indisponível"}
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  {/* Row 1: Name */}
+                                  <h4 className={cn(
+                                    "text-[12px] font-black truncate leading-tight mb-0.5",
+                                    isDark ? "text-white" : "text-slate-900"
+                                  )}>
+                                    {(apt.patient?.full_name?.split(' ').slice(0, 2).join(' ') || "Paciente")}
+                                  </h4>
 
-                                  {apt.procedure_name && (
-                                    <>
-                                      <span className="opacity-30 hidden md:inline">•</span>
-                                      <span className={cn("truncate hidden md:inline opacity-70", isDark ? "text-slate-400" : "text-slate-600")}>
-                                        {apt.procedure_name}
+                                  {/* Row 2: Details */}
+                                  <div className="flex items-center gap-1.5 min-w-0 text-[10px] leading-tight opacity-90">
+                                    {professional && (
+                                      <span className={cn("truncate font-medium flex items-center gap-1 hidden sm:flex", isDark ? "text-slate-400" : "text-slate-600")}>
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                        {professional.name || professional.full_name?.split(' ')[0] || "Pro"}
                                       </span>
-                                    </>
-                                  )}
-                                </div>
+                                    )}
 
-                              )}
+                                    <span className="opacity-30 hidden sm:inline">•</span>
 
-                              {/* Row 3: Badges (Origin, Profile, Temperature) */}
-                              {apt.type !== 'bloqueio' && apt.patient && (
-                                <div className="flex flex-wrap gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                  {/* Origin Badge */}
-                                  {(apt.patient.origin || apt.source) && (
                                     <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                                      (apt.patient.origin || apt.source).toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
-                                        (apt.patient.origin || apt.source).toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
-                                          "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                                      "font-black uppercase tracking-wider",
+                                      (() => {
+                                        const t = (apt.type || "Consulta").trim();
+                                        const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
+                                        return (typeConfig[key || t] || typeConfig["Consulta"]).color;
+                                      })()
                                     )}>
-                                      {apt.patient.origin || apt.source}
+                                      {apt.type || "Consulta"}
                                     </span>
-                                  )}
 
-                                  {/* Profile Badge */}
-                                  {apt.patient.behavior_profile && (
-                                    <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                                      apt.patient.behavior_profile.toLowerCase() === 'analítico' ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" :
-                                        apt.patient.behavior_profile.toLowerCase() === 'emocional' ? "bg-pink-500/10 text-pink-600 dark:text-pink-400" :
-                                          apt.patient.behavior_profile.toLowerCase() === 'exigente' ? "bg-slate-800/10 text-slate-700 dark:text-slate-300" :
-                                            "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                    )}>
-                                      {apt.patient.behavior_profile.substring(0, 3)}
-                                    </span>
-                                  )}
+                                    {apt.procedure_name && (
+                                      <>
+                                        <span className="opacity-30 hidden md:inline">•</span>
+                                        <span className={cn("truncate hidden md:inline opacity-70", isDark ? "text-slate-400" : "text-slate-600")}>
+                                          {apt.procedure_name}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
 
-                                  {/* Temperature Badge */}
-                                  {(apt.patient.temperature || apt.patient.funnel_status) && (
-                                    <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                                      (apt.patient.temperature === 'hot' || apt.patient.funnel_status === 'hot') ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
-                                        (apt.patient.temperature === 'warm' || apt.patient.funnel_status === 'warm') ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" :
-                                          "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                                    )}>
-                                      {(apt.patient.temperature || apt.patient.funnel_status) === 'hot' ? 'QUENTE' : (apt.patient.temperature || apt.patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
-                                    </span>
-                                  )}
+                                  {/* Row 3: Badges */}
+                                  {apt.patient && (
+                                    <div className="flex flex-wrap gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                      {/* Origin Badge */}
+                                      {(apt.patient.origin || apt.source) && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                          (apt.patient.origin || apt.source).toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                                            (apt.patient.origin || apt.source).toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
+                                              "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                                        )}>
+                                          {apt.patient.origin || apt.source}
+                                        </span>
+                                      )}
 
-                                  {/* Temperament Badge */}
-                                  {apt.patient.temperament && (
-                                    <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                                    )}>
-                                      {apt.patient.temperament === 'analitico' ? '🧠 ANALÍTICO' :
-                                        apt.patient.temperament === 'executor' ? '🚀 EXECUTOR' :
-                                          apt.patient.temperament === 'comunicador' ? '💬 COMUNICADOR' :
-                                            apt.patient.temperament === 'planejador' ? '📋 PLANEJADOR' :
-                                              apt.patient.temperament.toUpperCase()}
-                                    </span>
-                                  )}
+                                      {/* Profile Badge */}
+                                      {apt.patient.behavior_profile && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                          apt.patient.behavior_profile.toLowerCase() === 'analítico' ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" :
+                                            apt.patient.behavior_profile.toLowerCase() === 'emocional' ? "bg-pink-500/10 text-pink-600 dark:text-pink-400" :
+                                              apt.patient.behavior_profile.toLowerCase() === 'exigente' ? "bg-slate-800/10 text-slate-700 dark:text-slate-300" :
+                                                "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                        )}>
+                                          {apt.patient.behavior_profile.substring(0, 3)}
+                                        </span>
+                                      )}
 
-                                  {/* Motivation Badge */}
-                                  {apt.patient.main_motivation && (
-                                    <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                    )}>
-                                      {apt.patient.main_motivation === 'dor' ? '💊 DOR' :
-                                        apt.patient.main_motivation === 'prazer' ? '✨ PRAZER' :
-                                          apt.patient.main_motivation === 'status' ? '💎 STATUS' :
-                                            apt.patient.main_motivation === 'seguranca' ? '🛡️ SEGURANÇA' :
-                                              apt.patient.main_motivation.toUpperCase()}
-                                    </span>
-                                  )}
+                                      {/* Temperature Badge */}
+                                      {(apt.patient.temperature || apt.patient.funnel_status) && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                          (apt.patient.temperature === 'hot' || apt.patient.funnel_status === 'hot') ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                                            (apt.patient.temperature === 'warm' || apt.patient.funnel_status === 'warm') ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" :
+                                              "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                        )}>
+                                          {(apt.patient.temperature || apt.patient.funnel_status) === 'hot' ? 'QUENTE' : (apt.patient.temperature || apt.patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
+                                        </span>
+                                      )}
 
-                                  {/* Conscience Level Badge */}
-                                  {apt.patient.conscience_level && (
-                                    <span className={cn(
-                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
-                                    )}>
-                                      {apt.patient.conscience_level === 'unaware' ? 'INCONSCIENTE' :
-                                        apt.patient.conscience_level === 'problem_aware' ? 'PROBLEMA' :
-                                          apt.patient.conscience_level === 'solution_aware' ? 'SOLUÇÃO' :
-                                            apt.patient.conscience_level === 'product_aware' ? 'PRODUTO' :
-                                              apt.patient.conscience_level === 'most_aware' ? 'TOTALMENTE' :
-                                                apt.patient.conscience_level.toUpperCase()}
-                                    </span>
+                                      {/* Temperament Badge */}
+                                      {apt.patient.temperament && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                        )}>
+                                          {apt.patient.temperament === 'analitico' ? '🧠 ANALÍTICO' :
+                                            apt.patient.temperament === 'executor' ? '🚀 EXECUTOR' :
+                                              apt.patient.temperament === 'comunicador' ? '💬 COMUNICADOR' :
+                                                apt.patient.temperament === 'planejador' ? '📋 PLANEJADOR' :
+                                                  apt.patient.temperament.toUpperCase()}
+                                        </span>
+                                      )}
+
+                                      {/* Motivation Badge */}
+                                      {apt.patient.main_motivation && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                        )}>
+                                          {apt.patient.main_motivation === 'dor' ? '💊 DOR' :
+                                            apt.patient.main_motivation === 'prazer' ? '✨ PRAZER' :
+                                              apt.patient.main_motivation === 'status' ? '💎 STATUS' :
+                                                apt.patient.main_motivation === 'seguranca' ? '🛡️ SEGURANÇA' :
+                                                  apt.patient.main_motivation.toUpperCase()}
+                                        </span>
+                                      )}
+
+                                      {/* Conscience Level Badge */}
+                                      {apt.patient.conscience_level && (
+                                        <span className={cn(
+                                          "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                                        )}>
+                                          {apt.patient.conscience_level === 'unaware' ? 'INCONSCIENTE' :
+                                            apt.patient.conscience_level === 'problem_aware' ? 'PROBLEMA' :
+                                              apt.patient.conscience_level === 'solution_aware' ? 'SOLUÇÃO' :
+                                                apt.patient.conscience_level === 'product_aware' ? 'PRODUTO' :
+                                                  apt.patient.conscience_level === 'most_aware' ? 'TOTALMENTE' :
+                                                    apt.patient.conscience_level.toUpperCase()}
+                                        </span>
+                                      )}
+                                    </div>
                                   )}
-                                </div>
+                                </>
                               )}
                             </div>
 
