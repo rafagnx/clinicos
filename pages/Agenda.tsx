@@ -76,6 +76,7 @@ const typeConfig: any = {
   "Procedimento": { color: "text-emerald-500", border: "border-l-emerald-500", bg: "bg-emerald-500/10" },
   "Encaixe": { color: "text-rose-500", border: "border-l-rose-500", bg: "bg-rose-500/10" },
   "Compromisso": { color: "text-slate-500", border: "border-l-slate-500", bg: "bg-slate-500/10" },
+  "bloqueio": { color: "text-slate-700 dark:text-slate-300", border: "border-l-slate-600 dark:border-l-slate-400", bg: "bg-slate-100 dark:bg-slate-800" },
 };
 
 // Função para determinar a cor do card baseado no profissional e tipo

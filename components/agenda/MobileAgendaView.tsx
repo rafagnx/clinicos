@@ -291,7 +291,7 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
             <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
                 <div className="flex justify-between items-start mb-1.5">
                     {apt.type === 'bloqueio' ? (
-                        <h3 className={cn("font-bold truncate text-sm leading-tight flex items-center gap-2", isDark ? "text-slate-400" : "text-slate-500")}>
+                        <h3 className={cn("font-bold truncate text-sm leading-tight flex items-center gap-2", isDark ? "text-slate-300" : "text-slate-700")}>
                             <Ban className="w-3.5 h-3.5 text-rose-500" />
                             BLOQUEIO: {apt.procedure_name || "Indisponível"}
                         </h3>
