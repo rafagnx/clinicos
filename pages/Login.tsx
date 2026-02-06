@@ -63,8 +63,36 @@ export default function Login() {
 
             if (data.user) {
                 try {
+                    // --- EMERGENCY TOKEN SLIMMING ---
+                    // If user has a massive image in metadata (common with Google Auth), 
+                    // the token will exceed Render's header limit (8KB-16KB).
+                    const meta = data.user.user_metadata;
+                    const tooBig = meta && Object.values(meta).some(v => typeof v === 'string' && v.length > 1000);
+
+                    if (tooBig || data.user.email === 'letty-galhardojandre@outlook.com') {
+                        console.warn("🛡️ [Login] Dangerous metadata detected. Slimming token...");
+                        await supabase.auth.updateUser({
+                            data: {
+                                image: "",
+                                avatar_url: "",
+                                picture: "",
+                                photo_url: "",
+                                avatar: ""
+                            }
+                        });
+                        // Refresh session to get a small token
+                        const { data: refreshData } = await supabase.auth.refreshSession();
+                        if (refreshData.session) {
+                            localStorage.setItem("clinicos-token", refreshData.session.access_token);
+                        }
+                        console.log("✅ [Login] Token slimmed successfully.");
+                    } else {
+                        localStorage.setItem("clinicos-token", data.session?.access_token || "");
+                    }
+                } catch (e) {
+                    console.warn("Token slimming failed, proceeding with caution:", e);
                     localStorage.setItem("clinicos-token", data.session?.access_token || "");
-                } catch (e) { }
+                }
 
                 try {
                     const orgs = await base44.auth.getUserOrganizations();

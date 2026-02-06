@@ -49,23 +49,17 @@ import AdminReports from './pages/admin/AdminReports'
 
 const queryClient = new QueryClient()
 
-// --- SELF HEALING: Remove huge images from Supabase tokens ---
+// --- SELF HEALING: Reset Astronomical Tokens ---
+// Goal: Prevent 431 Request Header Fields Too Large (Render/Vercel)
 try {
     for (const key in localStorage) {
-        if (key.includes('-auth-token')) {
+        if (key.includes('-auth-token') || key === 'clinicos-token') {
             const raw = localStorage.getItem(key);
-            if (raw && raw.length > 950000) { // Check if huge (near 1MB limit)
-                try {
-                    const data = JSON.parse(raw);
-                    // Check for base64 image in metadata
-                    if (data?.user?.user_metadata?.image?.startsWith('data:image')) {
-                        console.warn('🧹 Detected huge image in auth token. Cleaning up to prevent 431/Net errors...');
-                        delete data.user.user_metadata.image;
-                        localStorage.setItem(key, JSON.stringify(data));
-                        // Force reload if we cleaned it, to ensure clean state? 
-                        // No, let's just clean it. Next request will be fine.
-                    }
-                } catch (e) { /* ignore */ }
+            // Tokens over 12KB are rejected by most proxies. Standard is ~2-4KB.
+            if (raw && raw.length > 12000) {
+                console.warn('🛡️ Removing astronomical token (' + raw.length + ' bytes) to prevent server rejection.');
+                localStorage.removeItem(key);
+                window.location.reload(); // Force clean start
             }
         }
     }
