@@ -402,6 +402,9 @@ export default function Agenda() {
           professionals={professionals}
           selectedProfessionalId={filters.professional_id}
           onProfessionalChange={(id) => setFilters(prev => ({ ...prev, professional_id: id }))}
+          isLoading={isLoadingApts}
+          onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, status })}
+          onDelete={(id) => deleteMutation.mutate(id)}
         />
       ) : (
         <div className={cn("px-4 md:px-6 lg:px-4 pb-4 md:pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto space-y-4 md:space-y-6 min-h-screen relative overflow-hidden flex flex-col")}>

@@ -35,6 +35,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 interface MobileAgendaViewProps {
     date: Date;
@@ -54,6 +56,9 @@ interface MobileAgendaViewProps {
     professionals?: any[];
     selectedProfessionalId?: string;
     onProfessionalChange?: (id: string) => void;
+    isLoading?: boolean;
+    onUpdateStatus?: (id: number | string, status: string) => void;
+    onDelete?: (id: number | string) => void;
 }
 
 const statusConfig: any = {
@@ -83,7 +88,10 @@ export default function MobileAgendaView({
     onBlockDay,
     professionals = [],
     selectedProfessionalId = "all",
-    onProfessionalChange
+    onProfessionalChange,
+    isLoading = false,
+    onUpdateStatus,
+    onDelete
 }: MobileAgendaViewProps) {
 
     // Generic date extractor from ISO or space-separated string
@@ -280,7 +288,19 @@ export default function MobileAgendaView({
 
             {/* List Content */}
             <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-32 relative z-10">
-                {(sortedAppointments.length === 0 && view === 'day') ? (
+                {isLoading ? (
+                    <div className="space-y-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="flex gap-4 p-4 rounded-3xl bg-white/40 dark:bg-slate-900/40 border border-white/10">
+                                <Skeleton className="w-16 h-12 rounded-2xl" />
+                                <div className="flex-1 space-y-2">
+                                    <Skeleton className="w-3/4 h-4 rounded-lg" />
+                                    <Skeleton className="w-1/2 h-3 rounded-lg" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (sortedAppointments.length === 0 && view === 'day') ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 min-h-[50vh]">
                         <div className={cn(
                             "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl backdrop-blur-sm border",
@@ -374,7 +394,14 @@ export default function MobileAgendaView({
                                         return (
                                             <>
                                                 {(groupedByDay[dayStr] || []).map((apt: any) => (
-                                                    <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
+                                                    <AppointmentCard
+                                                        key={apt.id}
+                                                        apt={apt}
+                                                        isDark={isDark}
+                                                        onSelect={onSelectAppointment}
+                                                        onUpdateStatus={onUpdateStatus}
+                                                        onDelete={onDelete}
+                                                    />
                                                 ))}
                                                 {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
                                                     <div className={cn(
@@ -394,7 +421,14 @@ export default function MobileAgendaView({
                         ))
                     ) : (
                         sortedAppointments.map((apt) => (
-                            <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
+                            <AppointmentCard
+                                key={apt.id}
+                                apt={apt}
+                                isDark={isDark}
+                                onSelect={onSelectAppointment}
+                                onUpdateStatus={onUpdateStatus}
+                                onDelete={onDelete}
+                            />
                         ))
                     )
                 )}
@@ -433,88 +467,150 @@ export default function MobileAgendaView({
     );
 }
 
-function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean, onSelect: (apt: any) => void }) {
+function AppointmentCard({
+    apt,
+    isDark,
+    onSelect,
+    onUpdateStatus,
+    onDelete
+}: {
+    apt: any,
+    isDark: boolean,
+    onSelect: (apt: any) => void,
+    onUpdateStatus?: (id: number | string, status: string) => void,
+    onDelete?: (id: number | string) => void
+}) {
     const status = statusConfig[apt.status] || statusConfig.agendado;
     const time = apt.start_time?.substring(0, 5) || "--:--";
+    const x = useMotionValue(0);
+    const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]);
+    const rightBg = useTransform(x, [0, 100], ["rgba(34, 197, 94, 0)", "rgba(34, 197, 94, 1)"]);
+    const leftBg = useTransform(x, [-100, 0], ["rgba(239, 68, 68, 1)", "rgba(239, 68, 68, 0)"]);
+
+    const handleDragEnd = (_: any, info: any) => {
+        if (info.offset.x > 100) {
+            onUpdateStatus?.(apt.id, 'finalizado');
+            x.set(0);
+        } else if (info.offset.x < -100) {
+            if (confirm("Deseja realmente remover este agendamento?")) {
+                onDelete?.(apt.id);
+            }
+            x.set(0);
+        } else {
+            x.set(0);
+        }
+    };
 
     return (
-        <Card
-            onClick={() => onSelect(apt)}
-            className={cn(
-                "flex items-stretch overflow-hidden border-0 shadow-lg active:scale-[0.98] transition-all duration-300 group relative",
-                apt.type === 'bloqueio'
-                    ? (isDark ? "bg-slate-700/90 backdrop-blur-md" : "bg-slate-400/90 backdrop-blur-md")
-                    : (isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md")
-            )}
-        >
-            {/* Gradient Indicator Bar */}
-            <div className={cn(
-                "w-1.5 absolute left-0 top-0 bottom-0 bg-gradient-to-b",
-                (apt.patient?.temperature === "hot" || apt.patient?.funnel_status === "hot") ? "from-rose-500 to-orange-500" :
-                    (apt.patient?.temperature === "warm" || apt.patient?.funnel_status === "warm") ? "from-amber-500 to-yellow-500" :
-                        "from-blue-500 to-indigo-500"
-            )} />
-
-            {/* Time Column */}
-            <div className={cn(
-                "w-20 flex flex-col items-center justify-center px-2 py-4 border-r ml-1.5",
-                isDark ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
-            )}>
-                <span className={cn("text-sm font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>{time}</span>
-                <Badge variant="outline" className={cn("mt-1.5 h-4 px-1 text-[8px] font-black uppercase border-0 bg-opacity-10", isDark ? "bg-white text-slate-400" : "bg-black text-slate-500")}>
-                    {format(new Date(), "HH:mm") > time && apt.status !== 'finalizado' ? 'ATRASADO' : 'HORÁRIO'}
-                </Badge>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
-                <div className="flex justify-between items-start mb-1.5">
-                    {apt.type === 'bloqueio' ? (
-                        <h3 className={cn("font-bold truncate text-sm leading-tight flex items-center gap-2", isDark ? "text-slate-300" : "text-slate-700")}>
-                            <Ban className="w-3.5 h-3.5 text-rose-500" />
-                            BLOQUEIO: {apt.procedure_name || "Indisponível"}
-                        </h3>
-                    ) : (
-                        <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
-                            {apt.patient?.full_name || "Paciente sem nome"}
-                            {apt.professional && (
-                                <span className="opacity-60 text-[10px] font-normal ml-1 block">
-                                    com {apt.professional.name || apt.professional.full_name || "Profissional"}
-                                </span>
-                            )}
-                        </h3>
-                    )}
+        <div className="relative overflow-hidden rounded-3xl mb-3">
+            {/* Swipe Action - Right (Check-in) */}
+            <motion.div
+                style={{ backgroundColor: rightBg }}
+                className="absolute inset-0 flex items-center pl-6 text-white font-black z-0 rounded-3xl"
+            >
+                <div className="flex flex-col items-center gap-1">
+                    <Check className="w-5 h-5" />
+                    <span className="text-[10px] uppercase tracking-widest">Atender</span>
                 </div>
+            </motion.div>
 
-                {/* Patient Tags Row - High Ticket Indicators */}
-                {apt.type !== 'bloqueio' && (
-                    <div className="flex flex-wrap gap-1.5 mb-2.5">
-                        {(apt.patient?.temperature || apt.patient?.funnel_status) && (
-                            <div className={cn(
-                                "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
-                                (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
-                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
-                                        "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                            )}>
-                                {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "QUENTE" :
-                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "MORNO" : "FRIO"}
-                            </div>
-                        )}
-                        <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
-                            {status.label}
+            {/* Swipe Action - Left (Delete) */}
+            <motion.div
+                style={{ backgroundColor: leftBg }}
+                className="absolute inset-0 flex items-center justify-end pr-6 text-white font-black z-0 rounded-3xl"
+            >
+                <div className="flex flex-col items-center gap-1">
+                    <Ban className="w-5 h-5" />
+                    <span className="text-[10px] uppercase tracking-widest">Remover</span>
+                </div>
+            </motion.div>
+
+            <motion.div
+                drag="x"
+                dragConstraints={{ left: -120, right: 120 }}
+                onDragEnd={handleDragEnd}
+                style={{ x }}
+                className="relative z-10"
+            >
+                <Card
+                    onClick={() => onSelect(apt)}
+                    className={cn(
+                        "flex items-stretch overflow-hidden border-0 shadow-lg transition-all duration-300 group relative",
+                        apt.type === 'bloqueio'
+                            ? (isDark ? "bg-slate-700/90 backdrop-blur-md" : "bg-slate-400/90 backdrop-blur-md")
+                            : (isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md")
+                    )}
+                >
+                    {/* Gradient Indicator Bar */}
+                    <div className={cn(
+                        "w-1.5 absolute left-0 top-0 bottom-0 bg-gradient-to-b",
+                        (apt.patient?.temperature === "hot" || apt.patient?.funnel_status === "hot") ? "from-rose-500 to-orange-500" :
+                            (apt.patient?.temperature === "warm" || apt.patient?.funnel_status === "warm") ? "from-amber-500 to-yellow-500" :
+                                "from-blue-500 to-indigo-500"
+                    )} />
+
+                    {/* Time Column */}
+                    <div className={cn(
+                        "w-20 flex flex-col items-center justify-center px-2 py-4 border-r ml-1.5",
+                        isDark ? "border-white/5 bg-slate-950/30" : "border-slate-100 bg-slate-50/50"
+                    )}>
+                        <span className={cn("text-sm font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>{time}</span>
+                        <Badge variant="outline" className={cn("mt-1.5 h-4 px-1 text-[8px] font-black uppercase border-0 bg-opacity-10", isDark ? "bg-white text-slate-400" : "bg-black text-slate-500")}>
+                            {format(new Date(), "HH:mm") > time && apt.status !== 'finalizado' ? 'ATRASADO' : 'HORÁRIO'}
                         </Badge>
                     </div>
-                )}
 
-                {apt.type !== 'bloqueio' && (
-                    <div className="flex items-center gap-1.5 text-xs">
-                        <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
-                        <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                            {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
-                        </span>
+                    {/* Content */}
+                    <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
+                        <div className="flex justify-between items-start mb-1.5">
+                            {apt.type === 'bloqueio' ? (
+                                <h3 className={cn("font-bold truncate text-sm leading-tight flex items-center gap-2", isDark ? "text-slate-300" : "text-slate-700")}>
+                                    <Ban className="w-3.5 h-3.5 text-rose-500" />
+                                    BLOQUEIO: {apt.procedure_name || "Indisponível"}
+                                </h3>
+                            ) : (
+                                <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
+                                    {apt.patient?.full_name || "Paciente sem nome"}
+                                    {apt.professional && (
+                                        <span className="opacity-60 text-[10px] font-normal ml-1 block">
+                                            com {apt.professional.name || apt.professional.full_name || "Profissional"}
+                                        </span>
+                                    )}
+                                </h3>
+                            )}
+                        </div>
+
+                        {/* Patient Tags Row - High Ticket Indicators */}
+                        {apt.type !== 'bloqueio' && (
+                            <div className="flex flex-wrap gap-1.5 mb-2.5">
+                                {(apt.patient?.temperature || apt.patient?.funnel_status) && (
+                                    <div className={cn(
+                                        "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
+                                        (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
+                                            (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
+                                                "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                                    )}>
+                                        {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "QUENTE" :
+                                            (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "MORNO" : "FRIO"}
+                                    </div>
+                                )}
+                                <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
+                                    {status.label}
+                                </Badge>
+                            </div>
+                        )}
+
+                        {apt.type !== 'bloqueio' && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                                <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
+                                <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
+                                    {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
+                                </span>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
-        </Card>
+                </Card>
+            </motion.div>
+        </div>
     );
 }

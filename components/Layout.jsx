@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import NotificationList from "@/components/notifications/NotificationList";
 import NotificationPermissionPrompt from "@/components/notifications/NotificationPermissionPrompt";
+import BottomNav from "@/components/BottomNav";
 
 const navigation = [
   { name: "Dashboard", href: "Dashboard", icon: LayoutDashboard },
@@ -327,10 +328,12 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
 
-        <div className="p-4 lg:p-8">
+        <div className="p-4 lg:p-8 pb-24 lg:pb-8">
           {children}
         </div>
       </main>
+
+      <BottomNav />
     </div>
   );
 }
