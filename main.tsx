@@ -7,11 +7,9 @@ import { Toaster as ToasterOriginal } from "@/components/ui/toaster"
 import './index.css'
 import './src/registerSW' // PWA Registration
 
-// --- CRITICAL: Direct imports for fastest initial load ---
-import Login from './pages/Login'
-import PlanilhaLP from './pages/PlanilhaLP'
-
-// --- LAZY LOADED: Everything else loads on-demand ---
+// --- ALL PAGES ARE LAZY LOADED for fastest initial paint ---
+const Login = React.lazy(() => import('./pages/Login'))
+const PlanilhaLP = React.lazy(() => import('./pages/PlanilhaLP'))
 const Layout = React.lazy(() => import('./Layout'))
 const Auth = React.lazy(() => import('./pages/Auth'))
 const AcceptInvitation = React.lazy(() => import('./pages/AcceptInvitation'))
@@ -50,13 +48,27 @@ const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'))
 const AdminUsers = React.lazy(() => import('./pages/admin/AdminUsers'))
 const AdminReports = React.lazy(() => import('./pages/admin/AdminReports'))
 
-// Loading Fallback Component
+// ULTRA-MINIMAL Loading Fallback - Pure CSS, no JS overhead
 const PageLoader = () => (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-            <p className="text-slate-400 text-sm">Carregando...</p>
-        </div>
+    <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom, #020617, #0f172a)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '16px'
+    }}>
+        <div style={{
+            width: '40px',
+            height: '40px',
+            border: '4px solid rgba(59, 130, 246, 0.3)',
+            borderTopColor: '#3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+        }} />
+        <p style={{ color: '#64748b', fontSize: '14px' }}>Carregando...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
 )
 
