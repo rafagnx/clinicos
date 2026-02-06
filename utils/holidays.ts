@@ -35,6 +35,12 @@ export function getHolidays(year: number): Holiday[] {
         { date: new Date(year, 10, 2), name: 'Finados' },
         { date: new Date(year, 10, 15), name: 'Proclamação da República' },
         { date: new Date(year, 11, 25), name: 'Natal' },
+
+        // Feriados Regionais (RJ / Nova Friburgo) - Orofacial Clinic
+        { date: new Date(year, 3, 23), name: 'São Jorge (RJ)' },
+        { date: new Date(year, 4, 16), name: 'Aniv. Nova Friburgo' },
+        { date: new Date(year, 5, 24), name: 'São João (Friburgo)' },
+        { date: new Date(year, 10, 20), name: 'Consciência Negra' },
     ];
 
     const mobileHolidays = [
