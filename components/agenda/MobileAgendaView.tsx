@@ -1,10 +1,17 @@
 import React from "react";
-import { format, addDays } from "date-fns";
+import { format, addDays, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     Calendar, Clock, MapPin, MoreVertical,
-    ChevronLeft, ChevronRight, Plus, Ban, Sparkles
+    ChevronLeft, ChevronRight, Plus, Ban, Sparkles, LayoutList
 } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +31,8 @@ interface MobileAgendaViewProps {
     holiday?: { name: string, type?: 'holiday' | 'reminder' } | null;
     blockedDays?: any[];
     holidays?: any[];
+    onTimeBlock?: () => void;
+    onBlockDay?: () => void;
 }
 
 const statusConfig: any = {
@@ -48,7 +57,9 @@ export default function MobileAgendaView({
     onViewChange,
     holiday,
     blockedDays = [],
-    holidays = []
+    holidays = [],
+    onTimeBlock,
+    onBlockDay
 }: MobileAgendaViewProps) {
 
     // Generic date extractor from ISO or space-separated string
@@ -77,7 +88,14 @@ export default function MobileAgendaView({
         return acc;
     }, {});
 
-    const days = Object.keys(groupedByDay).sort();
+    // Ensure all days of the week appear in "week" view
+    let days: string[] = [];
+    if (view === "week") {
+        const start = startOfWeek(date, { weekStartsOn: 0 });
+        days = Array.from({ length: 7 }).map((_, i) => format(addDays(start, i), "yyyy-MM-dd"));
+    } else {
+        days = Object.keys(groupedByDay).sort();
+    }
 
     return (
         <div className={cn("min-h-full flex flex-col relative", isDark ? "bg-[#0B0E14]" : "bg-slate-50")}>
@@ -239,9 +257,19 @@ export default function MobileAgendaView({
                                     <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
                                 <div className="space-y-3">
-                                    {groupedByDay[dayStr].map((apt: any) => (
+                                    {(groupedByDay[dayStr] || []).map((apt: any) => (
                                         <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
                                     ))}
+                                    {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
+                                        <div className={cn(
+                                            "p-3 rounded-xl border border-dashed text-center",
+                                            isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50/50"
+                                        )}>
+                                            <span className={cn("text-[9px] font-bold uppercase tracking-widest opacity-30", isDark ? "text-slate-400" : "text-slate-500")}>
+                                                Sem compromissos
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))
@@ -255,13 +283,32 @@ export default function MobileAgendaView({
 
             {/* Floating Action Button - Liquid Gradient */}
             <div className="fixed bottom-6 right-6 z-30">
-                <Button
-                    size="icon"
-                    className="w-14 h-14 rounded-2xl shadow-2xl shadow-indigo-500/40 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10 group"
-                    onClick={onNewAppointment}
-                >
-                    <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            size="icon"
+                            className="w-14 h-14 rounded-2xl shadow-2xl shadow-indigo-500/40 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10 group"
+                        >
+                            <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[200px]", isDark ? "bg-slate-900/95 backdrop-blur-xl text-slate-200" : "bg-white/95 backdrop-blur-xl")}>
+                        <DropdownMenuItem onClick={onNewAppointment} className="gap-3 cursor-pointer p-3 rounded-xl text-xs font-bold uppercase tracking-wider focus:bg-blue-500/10 focus:text-blue-500">
+                            <Plus className="w-4 h-4" /> Novo Agendamento
+                        </DropdownMenuItem>
+                        {onTimeBlock && (
+                            <DropdownMenuItem onClick={onTimeBlock} className="gap-3 cursor-pointer p-3 rounded-xl text-xs font-bold uppercase tracking-wider focus:bg-blue-500/10 focus:text-blue-500">
+                                <Clock className="w-4 h-4" /> Bloqueio de Horário
+                            </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator className={isDark ? "bg-white/5 my-1" : "bg-slate-100 my-1"} />
+                        {onBlockDay && (
+                            <DropdownMenuItem onClick={onBlockDay} className="gap-3 text-rose-500 focus:text-rose-600 focus:bg-rose-500/10 cursor-pointer p-3 rounded-xl text-xs font-bold uppercase tracking-wider">
+                                <Ban className="w-4 h-4" /> Bloquear Dia
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
     );

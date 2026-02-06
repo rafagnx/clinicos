@@ -397,6 +397,8 @@ export default function Agenda() {
           view={view}
           onViewChange={setView}
           holiday={getDayHoliday(selectedDate)}
+          onTimeBlock={() => setIsTimeBlockOpen(true)}
+          onBlockDay={() => setIsBlockDayOpen(true)}
         />
       ) : (
         <div className={cn("px-4 md:px-6 lg:px-4 pb-4 md:pb-6 lg:pb-4 pt-0 max-w-[1600px] mx-auto space-y-4 md:space-y-6 min-h-screen relative overflow-hidden flex flex-col")}>
