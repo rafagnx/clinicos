@@ -156,10 +156,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 let supabaseAdmin = null;
 if (SUPABASE_SERVICE_ROLE_KEY) {
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-        auth: { autoRefreshToken: false, persistSession: false }
-    });
-    console.log("[Supabase] Admin client initialized for emergency operations.");
+    try {
+        supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+        console.log("[Supabase] Admin client initialized for emergency operations.");
+    } catch (e) {
+        console.error("[Supabase] Failed to initialize admin client:", e.message);
+    }
 } else {
     console.warn("[Supabase] No SERVICE_ROLE_KEY found. Emergency cleanup endpoint will be disabled.");
 }
