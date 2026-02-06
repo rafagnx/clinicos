@@ -31,13 +31,30 @@ export default function TimeBlockDialog({ open, onOpenChange, onSuccess, profess
 
     const mutation = useMutation({
         mutationFn: async (data: any) => {
+            // Combine date and time to ISO strings
+            const startDateTime = new Date(`${data.date}T${data.start_time}`);
+            const endDateTime = new Date(`${data.date}T${data.end_time}`);
+
+            const payload = {
+                ...data,
+                type: "bloqueio",
+                start_time: startDateTime.toISOString(),
+                end_time: endDateTime.toISOString(),
+                procedure_name: data.reason, // Map reason to procedure_name so it shows in title
+                notes: data.reason,
+                status: "confirmed" // Blocked slots are effectively confirmed
+            };
+
+            // Remove helper fields that might not exist in DB
+            delete payload.reason;
+
             if (data.professional_id === 'all') {
                 const promises = professionals.map(p =>
-                    base44.entities.Appointment.create({ ...data, professional_id: p.id, type: "bloqueio" })
+                    base44.entities.Appointment.create({ ...payload, professional_id: p.id })
                 );
                 return Promise.all(promises);
             }
-            return base44.entities.Appointment.create({ ...data, type: "bloqueio" });
+            return base44.entities.Appointment.create(payload);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["appointments"] });

@@ -373,6 +373,8 @@ export default function Agenda() {
           onDateChange={handleDateChange}
           onToday={() => setSelectedDate(new Date())}
           appointments={filteredAppointments}
+          blockedDays={blockedDays}
+          holidays={holidays}
           isDark={isDark}
           onSelectAppointment={(apt) => {
             setSelectedAppointment(apt);

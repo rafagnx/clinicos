@@ -22,6 +22,8 @@ interface MobileAgendaViewProps {
     view: "day" | "week";
     onViewChange: (view: "day" | "week") => void;
     holiday?: { name: string } | null;
+    blockedDays?: any[];
+    holidays?: any[];
 }
 
 const statusConfig: any = {
@@ -44,7 +46,9 @@ export default function MobileAgendaView({
     onNewAppointment,
     view,
     onViewChange,
-    holiday
+    holiday,
+    blockedDays = [],
+    holidays = []
 }: MobileAgendaViewProps) {
 
     // Generic date extractor from ISO or space-separated string
@@ -116,6 +120,26 @@ export default function MobileAgendaView({
                     </div>
                 )}
 
+                {/* Day Block Banner */}
+                {view === 'day' && blockedDays.some(b => {
+                    const d = format(date, 'yyyy-MM-dd');
+                    const start = b.start_date?.substring(0, 10);
+                    const end = b.end_date?.substring(0, 10);
+                    return start && end && d >= start && d <= end;
+                }) && (
+                        <div className="px-4 pb-2 flex justify-center">
+                            <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full">
+                                <Ban className="w-3 h-3" />
+                                DIA BLOQUEADO: {blockedDays.find(b => {
+                                    const d = format(date, 'yyyy-MM-dd');
+                                    const start = b.start_date?.substring(0, 10);
+                                    const end = b.end_date?.substring(0, 10);
+                                    return start && end && d >= start && d <= end;
+                                })?.reason || "Indisponível"}
+                            </Badge>
+                        </div>
+                    )}
+
                 {/* View Switcher Mobile */}
                 <div className="flex p-2 justify-center gap-2">
                     <div className={cn(
@@ -181,6 +205,26 @@ export default function MobileAgendaView({
                                     <span className="text-[10px] font-black uppercase tracking-widest">
                                         {format(new Date(dayStr + "T12:00:00"), "EEEE, d 'de' MMMM", { locale: ptBR })}
                                     </span>
+                                    {/* Holiday & Block Badges for Week View */}
+                                    {(() => {
+                                        const dayHoliday = holidays.find(h => format(h.date, 'yyyy-MM-dd') === dayStr);
+                                        const isBlocked = blockedDays.some(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0]);
+
+                                        return (
+                                            <div className="flex gap-1">
+                                                {dayHoliday && (
+                                                    <Badge className="bg-amber-500/10 text-amber-500 border-0 text-[8px] h-4 px-1">
+                                                        <Sparkles className="w-2 h-2 mr-1" /> {dayHoliday.name}
+                                                    </Badge>
+                                                )}
+                                                {isBlocked && (
+                                                    <Badge className="bg-rose-500/10 text-rose-500 border-0 text-[8px] h-4 px-1">
+                                                        <Ban className="w-2 h-2 mr-1" /> BLOQUEADO
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                     <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
                                 <div className="space-y-3">
@@ -246,40 +290,51 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
             {/* Content */}
             <div className="flex-1 p-3 min-w-0 flex flex-col justify-center">
                 <div className="flex justify-between items-start mb-1.5">
-                    <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
-                        {apt.patient?.full_name || "Paciente sem nome"}
-                        {apt.professional && (
-                            <span className="opacity-60 text-[10px] font-normal ml-1 block">
-                                com {apt.professional.name || apt.professional.full_name || "Profissional"}
-                            </span>
-                        )}
-                    </h3>
+                    {apt.type === 'bloqueio' ? (
+                        <h3 className={cn("font-bold truncate text-sm leading-tight flex items-center gap-2", isDark ? "text-slate-400" : "text-slate-500")}>
+                            <Ban className="w-3.5 h-3.5 text-rose-500" />
+                            BLOQUEIO: {apt.procedure_name || "Indisponível"}
+                        </h3>
+                    ) : (
+                        <h3 className={cn("font-bold truncate text-sm leading-tight", isDark ? "text-slate-100" : "text-slate-800")}>
+                            {apt.patient?.full_name || "Paciente sem nome"}
+                            {apt.professional && (
+                                <span className="opacity-60 text-[10px] font-normal ml-1 block">
+                                    com {apt.professional.name || apt.professional.full_name || "Profissional"}
+                                </span>
+                            )}
+                        </h3>
+                    )}
                 </div>
 
                 {/* Patient Tags Row - High Ticket Indicators */}
-                <div className="flex flex-wrap gap-1.5 mb-2.5">
-                    {(apt.patient?.temperature || apt.patient?.funnel_status) && (
-                        <div className={cn(
-                            "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
-                            (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
-                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
-                                    "bg-blue-500/10 text-blue-500 border border-blue-500/20"
-                        )}>
-                            {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "QUENTE" :
-                                (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "MORNO" : "FRIO"}
-                        </div>
-                    )}
-                    <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
-                        {status.label}
-                    </Badge>
-                </div>
+                {apt.type !== 'bloqueio' && (
+                    <div className="flex flex-wrap gap-1.5 mb-2.5">
+                        {(apt.patient?.temperature || apt.patient?.funnel_status) && (
+                            <div className={cn(
+                                "text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter flex items-center gap-1",
+                                (apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
+                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" :
+                                        "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                            )}>
+                                {(apt.patient.temperature === "hot" || apt.patient.funnel_status === "hot") ? "QUENTE" :
+                                    (apt.patient.temperature === "warm" || apt.patient.funnel_status === "warm") ? "MORNO" : "FRIO"}
+                            </div>
+                        )}
+                        <Badge variant="outline" className={cn("h-4 text-[8px] px-1.5 border-0 font-black uppercase tracking-wider backdrop-blur-md", status.color)}>
+                            {status.label}
+                        </Badge>
+                    </div>
+                )}
 
-                <div className="flex items-center gap-1.5 text-xs">
-                    <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
-                    <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
-                        {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
-                    </span>
-                </div>
+                {apt.type !== 'bloqueio' && (
+                    <div className="flex items-center gap-1.5 text-xs">
+                        <div className={cn("w-1 h-1 rounded-full", isDark ? "bg-slate-600" : "bg-slate-300")} />
+                        <span className={cn("truncate font-medium text-[10px] uppercase tracking-wide opacity-70", isDark ? "text-slate-300" : "text-slate-600")}>
+                            {apt.type || "Consulta"} • {apt.procedure_name || "Procedimento"}
+                        </span>
+                    </div>
+                )}
             </div>
         </Card>
     );
