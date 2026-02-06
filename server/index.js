@@ -780,9 +780,11 @@ const initSchema = async () => {
                     ALTER TABLE "blocked_days" ALTER COLUMN "reason" DROP NOT NULL;
                     ALTER TABLE "blocked_days" ALTER COLUMN "organization_id" DROP NOT NULL;
 
-                    -- Backfill
-                    UPDATE "blocked_days" SET start_date = date WHERE start_date IS NULL AND date IS NOT NULL;
-                    UPDATE "blocked_days" SET end_date = date WHERE end_date IS NULL AND date IS NOT NULL;
+                    -- Backfill safely
+                    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'blocked_days' AND column_name = 'date') THEN
+                        UPDATE "blocked_days" SET start_date = date WHERE start_date IS NULL AND date IS NOT NULL;
+                        UPDATE "blocked_days" SET end_date = date WHERE end_date IS NULL AND date IS NOT NULL;
+                    END IF;
                 END $$;
 
                 CREATE INDEX IF NOT EXISTS idx_blocked_days_org ON "blocked_days"(organization_id);
