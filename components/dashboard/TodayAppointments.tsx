@@ -107,6 +107,53 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                         <span className="mx-1 opacity-50">•</span>
                                         <span className="text-blue-500">{apt.type || "Consulta"}</span>
                                     </div>
+
+                                    {/* Patient Badges */}
+                                    {(() => {
+                                        const patient = apt.patient || patients?.find((p: any) => p.id === apt.patient_id);
+                                        if (!patient) return null;
+
+                                        return (
+                                            <div className="flex flex-wrap gap-1 mt-1.5">
+                                                {/* Origin Badge */}
+                                                {patient.origin && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                                        patient.origin.toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                                                            patient.origin.toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
+                                                                "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                                                    )}>
+                                                        {patient.origin}
+                                                    </span>
+                                                )}
+
+                                                {/* Profile Badge */}
+                                                {patient.behavior_profile && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                                        patient.behavior_profile.toLowerCase() === 'analítico' ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" :
+                                                            patient.behavior_profile.toLowerCase() === 'emocional' ? "bg-pink-500/10 text-pink-600 dark:text-pink-400" :
+                                                                patient.behavior_profile.toLowerCase() === 'exigente' ? "bg-slate-800/10 text-slate-700 dark:text-slate-300" :
+                                                                    "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                                    )}>
+                                                        {patient.behavior_profile.substring(0, 3)}
+                                                    </span>
+                                                )}
+
+                                                {/* Temperature Badge */}
+                                                {(patient.temperature || patient.funnel_status) && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                                        (patient.temperature === 'hot' || patient.funnel_status === 'hot') ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                                                            (patient.temperature === 'warm' || patient.funnel_status === 'warm') ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" :
+                                                                "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                                    )}>
+                                                        {(patient.temperature || patient.funnel_status) === 'hot' ? 'QUENTE' : (patient.temperature || patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className={cn(

@@ -76,7 +76,7 @@ const typeConfig: any = {
   "Procedimento": { color: "text-emerald-500", border: "border-l-emerald-500", bg: "bg-emerald-500/10" },
   "Encaixe": { color: "text-rose-500", border: "border-l-rose-500", bg: "bg-rose-500/10" },
   "Compromisso": { color: "text-slate-500", border: "border-l-slate-500", bg: "bg-slate-500/10" },
-  "bloqueio": { color: "text-slate-700 dark:text-slate-300", border: "border-l-slate-600 dark:border-l-slate-400", bg: "bg-slate-100 dark:bg-slate-800" },
+  "bloqueio": { color: "text-slate-900 dark:text-slate-100", border: "border-l-slate-700 dark:border-l-slate-400", bg: "bg-slate-400 dark:bg-slate-700" },
 };
 
 // Função para determinar a cor do card baseado no profissional e tipo
@@ -964,6 +964,49 @@ export default function Agenda() {
                                     </>
                                   )}
                                 </div>
+
+                              )}
+
+                              {/* Row 3: Badges (Origin, Profile, Temperature) */}
+                              {apt.type !== 'bloqueio' && apt.patient && (
+                                <div className="flex flex-wrap gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  {/* Origin Badge */}
+                                  {apt.patient.origin && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                      apt.patient.origin.toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                                        apt.patient.origin.toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
+                                          "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                                    )}>
+                                      {apt.patient.origin}
+                                    </span>
+                                  )}
+
+                                  {/* Profile Badge */}
+                                  {apt.patient.behavior_profile && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                      apt.patient.behavior_profile.toLowerCase() === 'analítico' ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" :
+                                        apt.patient.behavior_profile.toLowerCase() === 'emocional' ? "bg-pink-500/10 text-pink-600 dark:text-pink-400" :
+                                          apt.patient.behavior_profile.toLowerCase() === 'exigente' ? "bg-slate-800/10 text-slate-700 dark:text-slate-300" :
+                                            "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                    )}>
+                                      {apt.patient.behavior_profile.substring(0, 3)}
+                                    </span>
+                                  )}
+
+                                  {/* Temperature Badge */}
+                                  {(apt.patient.temperature || apt.patient.funnel_status) && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                                      (apt.patient.temperature === 'hot' || apt.patient.funnel_status === 'hot') ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                                        (apt.patient.temperature === 'warm' || apt.patient.funnel_status === 'warm') ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" :
+                                          "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                    )}>
+                                      {(apt.patient.temperature || apt.patient.funnel_status) === 'hot' ? 'QUENTE' : (apt.patient.temperature || apt.patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
 
@@ -1015,9 +1058,10 @@ export default function Agenda() {
                 })}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div >
+        </div >
+      )
+      }
 
       {/* GLOBAL MODALS / DIALOGS (Liquid Scale Refined) */}
       <AppointmentForm
