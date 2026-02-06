@@ -35,6 +35,18 @@ export default function BlockDayModal({
     initialDate,
     onBlockCreated
 }: BlockDayModalProps) {
+    // Helper to identify clinical professionals
+    const isClinical = (p: any) => {
+        const role = (p.role_type || "").toLowerCase();
+        const specialty = (p.specialty || "").toLowerCase();
+        // Include common clinical roles
+        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+    };
+
+    const clinicalProfessionals = React.useMemo(() => {
+        return professionals.filter(p => isClinical(p));
+    }, [professionals]);
+
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>(professionalId ? String(professionalId) : '');
     const [startDate, setStartDate] = useState<Date>(initialDate || new Date());
     const [endDate, setEndDate] = useState<Date>(initialDate || new Date());
@@ -142,7 +154,7 @@ export default function BlockDayModal({
                                 onCheckedChange={(checked) => {
                                     setSelectedProfessionalId(checked ? 'all' : (professionalId ? String(professionalId) : ''));
                                 }}
-                                disabled={!!professionalId && professionalId !== 0}
+                            // enable switch even if professionalId is present
                             />
                             <Label htmlFor="block-all" className="cursor-pointer">Bloquear para <strong>Toda a Equipe</strong></Label>
                         </div>
@@ -150,7 +162,7 @@ export default function BlockDayModal({
                         <Select
                             value={selectedProfessionalId}
                             onValueChange={setSelectedProfessionalId}
-                            disabled={(!!professionalId && professionalId !== 0) || selectedProfessionalId === 'all'}
+                            disabled={selectedProfessionalId === 'all'}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecione o profissional" />
@@ -159,7 +171,7 @@ export default function BlockDayModal({
                                 <SelectItem value="all" className="font-semibold text-indigo-600">
                                     Todos os Profissionais
                                 </SelectItem>
-                                {professionals.map((p) => (
+                                {clinicalProfessionals.map((p) => (
                                     <SelectItem key={p.id} value={String(p.id)}>
                                         {p.full_name || p.name}
                                     </SelectItem>

@@ -14,17 +14,37 @@ interface TimeBlockDialogProps {
     onOpenChange: (open: boolean) => void;
     onSuccess?: () => void;
     professionals?: any[];
+    initialProfessionalId?: string | number;
 }
 
-export default function TimeBlockDialog({ open, onOpenChange, onSuccess, professionals = [] }: TimeBlockDialogProps) {
+export default function TimeBlockDialog({ open, onOpenChange, onSuccess, professionals = [], initialProfessionalId }: TimeBlockDialogProps) {
+    // Helper to identify clinical professionals
+    const isClinical = (p: any) => {
+        const role = (p.role_type || "").toLowerCase();
+        const specialty = (p.specialty || "").toLowerCase();
+        // Include common clinical roles
+        return ["hof", "biomedico", "biomédico", "doutor", "medico", "médico", "esteticista", "dentista"].some(r => role.includes(r) || specialty.includes(r));
+    };
+
+    const clinicalProfessionals = React.useMemo(() => {
+        return professionals.filter(p => isClinical(p));
+    }, [professionals]);
+
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         date: "",
         start_time: "",
         end_time: "",
-        professional_id: "",
+        professional_id: initialProfessionalId ? String(initialProfessionalId) : "",
         reason: ""
     });
+
+    // Reset professional when modal opens or initial prop changes
+    React.useEffect(() => {
+        if (open && initialProfessionalId) {
+            setFormData(prev => ({ ...prev, professional_id: String(initialProfessionalId) }));
+        }
+    }, [open, initialProfessionalId]);
 
     // Remove internal professionals query if passed as prop, or keep as fallback? 
     // Agenda passes it, so we use the prop.
@@ -84,11 +104,14 @@ export default function TimeBlockDialog({ open, onOpenChange, onSuccess, profess
                         </div>
                         <div className="space-y-2">
                             <Label>Profissional</Label>
-                            <Select onValueChange={v => setFormData({ ...formData, professional_id: v })}>
+                            <Select
+                                value={formData.professional_id}
+                                onValueChange={v => setFormData({ ...formData, professional_id: v })}
+                            >
                                 <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos</SelectItem>
-                                    {professionals.map((p: any) => (
+                                    {clinicalProfessionals.map((p: any) => (
                                         <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>
                                     ))}
                                 </SelectContent>

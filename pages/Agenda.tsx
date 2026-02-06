@@ -1021,7 +1021,16 @@ export default function Agenda() {
         appointment={selectedAppointment}
         professionals={professionals}
       />
-      <TimeBlockDialog open={isTimeBlockOpen} onOpenChange={setIsTimeBlockOpen} professionals={professionals} />
+      <TimeBlockDialog
+        open={isTimeBlockOpen}
+        onOpenChange={setIsTimeBlockOpen}
+        professionals={professionals}
+        initialProfessionalId={
+          filters.professional_id !== "all"
+            ? filters.professional_id
+            : (currentProfessional?.id || null)
+        }
+      />
       <BlockDayModal
         isOpen={isBlockDayOpen}
         onClose={() => setIsBlockDayOpen(false)}
