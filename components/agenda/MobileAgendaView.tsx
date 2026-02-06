@@ -49,22 +49,25 @@ export default function MobileAgendaView({
 
     // Generic date extractor from ISO or space-separated string
     const getDateStr = (apt: any) => {
-        if (apt.date) return apt.date;
+        if (apt.date && apt.date.length >= 10) return apt.date.substring(0, 10);
         const st = apt.start_time || "";
-        return st.substring(0, 10); // Works for both T and space
+        if (st.length >= 10) return st.substring(0, 10);
+        return null;
     };
 
     // Group appointments by day and hour
     const sortedAppointments = [...appointments].sort((a, b) => {
-        const dateA = getDateStr(a);
-        const dateB = getDateStr(b);
+        const dateA = getDateStr(a) || "9999-99-99";
+        const dateB = getDateStr(b) || "9999-99-99";
         if (dateA !== dateB) return dateA.localeCompare(dateB);
         return (a.start_time || "").localeCompare(b.start_time || "");
     });
 
-    // Function to group by date
+    // Function to group by day
     const groupedByDay = sortedAppointments.reduce((acc: any, apt) => {
         const dateStr = getDateStr(apt);
+        if (!dateStr) return acc; // Skip invalid dates
+
         if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(apt);
         return acc;
