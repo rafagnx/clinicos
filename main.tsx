@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from "@/components/ui/sonner"
 import { Toaster as ToasterOriginal } from "@/components/ui/toaster"
 import './index.css'
-import './src/registerSW' // PWA Registration
+
+// PWA Registration - DEFERRED to not block initial render
+setTimeout(() => import('./src/registerSW'), 3000);
 
 // --- ALL PAGES ARE LAZY LOADED for fastest initial paint ---
 const Login = React.lazy(() => import('./pages/Login'))
@@ -127,22 +129,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const queryClient = new QueryClient()
 
-// --- SELF HEALING: Reset Astronomical Tokens ---
-// Goal: Prevent 431 Request Header Fields Too Large (Render/Vercel)
-try {
-    for (const key in localStorage) {
-        if (key.includes('-auth-token') || key === 'clinicos-token') {
-            const raw = localStorage.getItem(key);
-            // Tokens over 12KB are rejected by most proxies. Standard is ~2-4KB.
-            if (raw && raw.length > 12000) {
-                console.warn('🛡️ Removing astronomical token (' + raw.length + ' bytes) to prevent server rejection.');
-                localStorage.removeItem(key);
-                window.location.reload(); // Force clean start
-            }
-        }
-    }
-} catch (e) { console.error("Auto-cleanup failed", e); }
-// -------------------------------------------------------------
+// Token cleanup already handled in index.html before JS loads
 
 const App = () => {
     return (
