@@ -21,7 +21,7 @@ interface MobileAgendaViewProps {
     onNewAppointment: () => void;
     view: "day" | "week";
     onViewChange: (view: "day" | "week") => void;
-    holiday?: { name: string } | null;
+    holiday?: { name: string, type?: 'holiday' | 'reminder' } | null;
     blockedDays?: any[];
     holidays?: any[];
 }
@@ -113,8 +113,13 @@ export default function MobileAgendaView({
                 {/* Holiday Badge */}
                 {holiday && (
                     <div className="px-4 pb-2 flex justify-center">
-                        <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full">
-                            <Sparkles className="w-3 h-3" />
+                        <Badge className={cn(
+                            "border text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full",
+                            holiday.type === 'reminder'
+                                ? "bg-green-500/10 text-green-500 border-green-500/20"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                            {holiday.type === 'reminder' ? '⚽' : <Sparkles className="w-3 h-3" />}
                             {holiday.name}
                         </Badge>
                     </div>
@@ -213,8 +218,14 @@ export default function MobileAgendaView({
                                         return (
                                             <div className="flex gap-1">
                                                 {dayHoliday && (
-                                                    <Badge className="bg-amber-500/10 text-amber-500 border-0 text-[8px] h-4 px-1">
-                                                        <Sparkles className="w-2 h-2 mr-1" /> {dayHoliday.name}
+                                                    <Badge className={cn(
+                                                        "border-0 text-[8px] h-4 px-1",
+                                                        dayHoliday.type === 'reminder'
+                                                            ? "bg-green-500/10 text-green-500"
+                                                            : "bg-amber-500/10 text-amber-500"
+                                                    )}>
+                                                        {dayHoliday.type === 'reminder' ? '⚽' : <Sparkles className="w-2 h-2 mr-1" />}
+                                                        {dayHoliday.name}
                                                     </Badge>
                                                 )}
                                                 {isBlocked && (
