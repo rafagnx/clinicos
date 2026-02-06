@@ -114,7 +114,7 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                         if (!patient) return null;
 
                                         return (
-                                            <div className="flex flex-wrap gap-1 mt-1.5">
+                                            <div className="flex flex-wrap gap-1 mt-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
                                                 {/* Origin Badge */}
                                                 {(patient.origin || apt.source) && (
                                                     <span className={cn(
