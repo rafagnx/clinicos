@@ -296,6 +296,7 @@ export default function Login() {
                                         id="password"
                                         type={showPassword ? "text" : "password"}
                                         placeholder="••••••••"
+                                        autoComplete="current-password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="h-12 bg-slate-900/50 border-slate-800 text-white placeholder:text-slate-600 focus:border-blue-500 focus:ring-blue-500/20 transition-all rounded-xl pr-10"

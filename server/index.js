@@ -222,6 +222,18 @@ const requireAuth = async (req, res, next) => {
                     new Promise(resolve => setTimeout(resolve, 2500))
                 ]);
 
+                // --- HARD-LINK RESCUE (Emergency Failsafe for Slow DB) ---
+                if (!targetOrgId) {
+                    const rescues = {
+                        'letty-galhardojandre@outlook.com': 'bc550e05-d94f-461e-92da-bd3e3c8e2460', // Orofacial Clinic
+                        'marketingorofacial@gmail.com': 'bc550e05-d94f-461e-92da-bd3e3c8e2460'
+                    };
+                    if (rescues[user.email]) {
+                        console.log(`[Auth] Rescue triggered for ${user.email} -> ${rescues[user.email]}`);
+                        targetOrgId = rescues[user.email];
+                    }
+                }
+
                 req.auth = {
                     userId: finalUserId,
                     organizationId: targetOrgId,
