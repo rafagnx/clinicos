@@ -154,28 +154,37 @@ const requireAuth = async (req, res, next) => {
             const { data: { user }, error } = await supabase.auth.getUser(token);
             if (!error && user) {
                 // AUTO-SYNC: Ensure Supabase user exists in DB table
+                let finalUserId = user.id;
+
                 try {
                     // Optimized sync: Try to update by ID first, if not exists, try to update by EMAIL, if still not exists, INSERT.
                     // This handles cases where Supabase ID might have changed for the same email (e.g. account recreation)
                     const existingByEmail = await pool.query('SELECT id FROM "user" WHERE email = $1', [user.email]);
 
                     if (existingByEmail.rows.length > 0 && existingByEmail.rows[0].id !== user.id) {
+                        const dbId = existingByEmail.rows[0].id;
                         // User exists with same email but DIFFERENT ID - update the old record with new ID
-                        console.log(`[Auth] Updating User ID for ${user.email} from ${existingByEmail.rows[0].id} to ${user.id}`);
+                        console.log(`[Auth] Updating User ID for ${user.email} from ${dbId} to ${user.id}`);
 
                         // FIX: Delete potentially conflicting sessions from 'better-auth' or similar that are holding the old ID
                         try {
-                            await pool.query('DELETE FROM "session" WHERE "userId" = $1', [existingByEmail.rows[0].id]);
+                            await pool.query('DELETE FROM "session" WHERE "userId" = $1', [dbId]);
                         } catch (e) { /* Ignore if session table invalid */ }
 
-                        await pool.query(`
-                            UPDATE "user" SET 
-                                id = $1, 
-                                name = $2, 
-                                image = $3, 
-                                "updatedAt" = NOW() 
-                            WHERE email = $4
-                        `, [user.id, user.user_metadata?.full_name || user.email.split('@')[0], user.user_metadata?.avatar_url || null, user.email]);
+                        try {
+                            await pool.query(`
+                                UPDATE "user" SET 
+                                    id = $1, 
+                                    name = $2, 
+                                    image = $3, 
+                                    "updatedAt" = NOW() 
+                                WHERE email = $4
+                            `, [user.id, user.user_metadata?.full_name || user.email.split('@')[0], user.user_metadata?.avatar_url || null, user.email]);
+                        } catch (updateErr) {
+                            console.warn(`[Auth] ID Sync Failed (Dependencies exist). Using DB ID ${dbId} for context.`);
+                            // FALLBACK: Use the DB ID for this request context so that relations (Memberships) still work!
+                            finalUserId = dbId;
+                        }
                     } else {
                         // Standard Upsert by ID
                         await pool.query(`
@@ -209,13 +218,13 @@ const requireAuth = async (req, res, next) => {
                     try {
                         // Check if user has organizations (As Owner or Member)
                         // We query the 'member' table which links users to orgs.
-                        const orgRes = await pool.query('SELECT "organizationId" FROM "member" WHERE "userId" = $1 ORDER BY "createdAt" ASC LIMIT 1', [user.id]);
+                        const orgRes = await pool.query('SELECT "organizationId" FROM "member" WHERE "userId" = $1 ORDER BY "createdAt" ASC LIMIT 1', [finalUserId]);
                         if (orgRes.rows.length > 0) {
                             targetOrgId = orgRes.rows[0].organizationId;
                             // console.log(`[Auth] Auto-selected Org ${targetOrgId} for user ${user.email}`);
                         } else {
                             // Backup: Check owner_id directly on organization (legacy/failsafe)
-                            const ownerRes = await pool.query('SELECT id FROM "organization" WHERE owner_id = $1 LIMIT 1', [user.id]);
+                            const ownerRes = await pool.query('SELECT id FROM "organization" WHERE owner_id = $1 LIMIT 1', [finalUserId]);
                             if (ownerRes.rows.length > 0) targetOrgId = ownerRes.rows[0].id;
                         }
                     } catch (e) { /* ignore DB error in auth */ }
@@ -223,9 +232,9 @@ const requireAuth = async (req, res, next) => {
                 // -----------------------------
 
                 req.auth = {
-                    userId: user.id,
+                    userId: finalUserId,
                     organizationId: targetOrgId,
-                    user: { ...user, role: isSystemAdmin ? 'admin' : (user.user_metadata?.role || 'user') },
+                    user: { ...user, id: finalUserId, role: isSystemAdmin ? 'admin' : (user.user_metadata?.role || 'user') },
                     isSystemAdmin: isSystemAdmin
                 };
                 return next();
