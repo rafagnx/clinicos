@@ -921,97 +921,102 @@ export default function Agenda() {
 
                             {/* Right: Content */}
                             <div className="flex-1 flex flex-col justify-center px-3 py-1 min-w-0 relative">
-                              {/* Row 1: Name */}
+                              {/* Row 1: Name or Block Reason */}
                               <h4 className={cn(
                                 "text-[12px] font-black truncate leading-tight mb-0.5",
                                 isDark ? "text-white" : "text-slate-900"
                               )}>
-                                {apt.patient?.full_name?.split(' ').slice(0, 2).join(' ') || "Paciente"}
+                                {apt.type === 'bloqueio'
+                                  ? (apt.procedure_name || "BLOQUEIO")
+                                  : (apt.patient?.full_name?.split(' ').slice(0, 2).join(' ') || "Paciente")
+                                }
                               </h4>
 
-                              {/* Row 2: Details (One line) */}
-                              <div className="flex items-center gap-1.5 min-w-0 text-[10px] leading-tight opacity-90">
-                                {professional && (
-                                  <span className={cn("truncate font-medium flex items-center gap-1 hidden sm:flex", isDark ? "text-slate-400" : "text-slate-600")}>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                    {professional.name || professional.full_name?.split(' ')[0] || "Pro"}
-                                  </span>
-                                )}
-
-                                <span className="opacity-30 hidden sm:inline">•</span>
-
-                                <span className={cn(
-                                  "font-black uppercase tracking-wider",
-                                  (() => {
-                                    const t = (apt.type || "Consulta").trim();
-                                    const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
-                                    return (typeConfig[key || t] || typeConfig["Consulta"]).color;
-                                  })()
-                                )}>
-                                  {apt.type || "Consulta"}
-                                </span>
-
-                                {apt.procedure_name && (
-                                  <>
-                                    <span className="opacity-30 hidden md:inline">•</span>
-                                    <span className={cn("truncate hidden md:inline opacity-70", isDark ? "text-slate-400" : "text-slate-600")}>
-                                      {apt.procedure_name}
+                              {/* Row 2: Details (One line) - Hide for blocks if redundant */}
+                              {apt.type !== 'bloqueio' && (
+                                <div className="flex items-center gap-1.5 min-w-0 text-[10px] leading-tight opacity-90">
+                                  {professional && (
+                                    <span className={cn("truncate font-medium flex items-center gap-1 hidden sm:flex", isDark ? "text-slate-400" : "text-slate-600")}>
+                                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                      {professional.name || professional.full_name?.split(' ')[0] || "Pro"}
                                     </span>
-                                  </>
-                                )}
-                              </div>
+                                  )}
 
-                              {/* Hover Menu Button (Absolute) */}
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" onClick={(e) => e.stopPropagation()}>
-                                      <MoreVertical className="w-3 h-3" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className={cn("min-w-[140px]", isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : "")}>
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setIsRescheduleOpen(true); }}>
-                                      Reagendar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                                    {Object.entries(statusConfig).map(([key, config]) => (
-                                      <DropdownMenuItem
-                                        key={key}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          updateStatusMutation.mutate({ id: apt.id, status: key });
-                                        }}
-                                      >
-                                        <span className={cn("w-2 h-2 rounded-full mr-2", config.class.split(" ")[0])}></span>
-                                        {config.label}
-                                      </DropdownMenuItem>
-                                    ))}
-                                    <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                                  <span className="opacity-30 hidden sm:inline">•</span>
+
+                                  <span className={cn(
+                                    "font-black uppercase tracking-wider",
+                                    (() => {
+                                      const t = (apt.type || "Consulta").trim();
+                                      const key = Object.keys(typeConfig).find(k => k.toLowerCase() === t.toLowerCase());
+                                      return (typeConfig[key || t] || typeConfig["Consulta"]).color;
+                                    })()
+                                  )}>
+                                    {apt.type || "Consulta"}
+                                  </span>
+
+                                  {apt.procedure_name && (
+                                    <>
+                                      <span className="opacity-30 hidden md:inline">•</span>
+                                      <span className={cn("truncate hidden md:inline opacity-70", isDark ? "text-slate-400" : "text-slate-600")}>
+                                        {apt.procedure_name}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Hover Menu Button (Absolute) */}
+                            <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" onClick={(e) => e.stopPropagation()}>
+                                    <MoreVertical className="w-3 h-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className={cn("min-w-[140px]", isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : "")}>
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setIsRescheduleOpen(true); }}>
+                                    Reagendar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                                  {Object.entries(statusConfig).map(([key, config]) => (
                                     <DropdownMenuItem
-                                      className="text-rose-500 focus:text-rose-500"
+                                      key={key}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm("Deseja realmente excluir este agendamento?")) {
-                                          deleteMutation.mutate(apt.id);
-                                        }
+                                        updateStatusMutation.mutate({ id: apt.id, status: key });
                                       }}
                                     >
-                                      Excluir
+                                      <span className={cn("w-2 h-2 rounded-full mr-2", config.class.split(" ")[0])}></span>
+                                      {config.label}
                                     </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
+                                  ))}
+                                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                                  <DropdownMenuItem
+                                    className="text-rose-500 focus:text-rose-500"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (confirm("Deseja realmente excluir este agendamento?")) {
+                                        deleteMutation.mutate(apt.id);
+                                      }
+                                    }}
+                                  >
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </div>
                         </motion.div>
                       </div>
-                    </div >
+                    </div>
                   );
                 })}
-              </div >
-            </div >
-          </div >
-        </div >
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* GLOBAL MODALS / DIALOGS (Liquid Scale Refined) */}
