@@ -1412,6 +1412,15 @@ app.post('/api/admin/organizations/:id/bypass', requireAuth, async (req, res) =>
     }
 });
 
+// Health Check / Root
+app.get('/', (req, res) => {
+    res.json({
+        status: "ONLINE",
+        message: "ClinicOS API Server is running.",
+        timestamp: new Date().toISOString()
+    });
+});
+
 // GET User's Organizations (Critical for Login Context)
 app.get('/api/user/organizations', requireAuth, async (req, res) => {
     const { user } = req.auth;
