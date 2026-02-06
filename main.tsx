@@ -72,6 +72,59 @@ const PageLoader = () => (
     </div>
 )
 
+// Error Boundary to catch lazy loading errors and display them
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error('App Error:', error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{
+                    minHeight: '100vh',
+                    background: '#0f172a',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    gap: '16px',
+                    padding: '20px',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ fontSize: '48px' }}>⚠️</div>
+                    <h1 style={{ color: '#ef4444', fontSize: '24px', fontWeight: 'bold' }}>Erro ao carregar</h1>
+                    <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '300px' }}>
+                        {this.state.error?.message || 'Ocorreu um erro inesperado'}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        style={{
+                            background: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            padding: '12px 24px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Tentar Novamente
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 const queryClient = new QueryClient()
 
 // --- SELF HEALING: Reset Astronomical Tokens ---
@@ -158,8 +211,10 @@ const App = () => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <App />
-        </QueryClientProvider>
+        <ErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+                <App />
+            </QueryClientProvider>
+        </ErrorBoundary>
     </React.StrictMode>,
 )
