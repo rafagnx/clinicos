@@ -333,7 +333,7 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </main>
 
-      <BottomNav />
+      <BottomNav isDark={isDark} />
     </div>
   );
 }
