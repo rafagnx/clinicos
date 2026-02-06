@@ -69,20 +69,55 @@ export default function Dashboard() {
     base44.auth.me().then(setUser).catch(() => { });
   }, []);
 
-  const { data: appointments = [] } = useQuery({
-    queryKey: ["appointments"],
-    queryFn: () => base44.entities.Appointment.list("-date")
+  // PERFORMANCE: Only load recent appointments (last 30 days + next 7 days)
+  const dateRangeStart = format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd");
+  const dateRangeEnd = format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd");
+
+  const { data: appointments = [], isLoading: isLoadingAppointments } = useQuery({
+    queryKey: ["appointments-dashboard", dateRangeStart, dateRangeEnd],
+    queryFn: async () => {
+      try {
+        // Try to use date filter if backend supports it
+        const result = await base44.entities.Appointment.list({
+          date_gte: dateRangeStart,
+          date_lte: dateRangeEnd,
+          limit: 100
+        });
+        return Array.isArray(result) ? result : [];
+      } catch {
+        // Fallback: get all and filter client-side (less optimal but safe)
+        const all = await base44.entities.Appointment.list("-date");
+        const allArr = Array.isArray(all) ? all : [];
+        return allArr.filter(a => {
+          if (!a?.date) return false;
+          const d = String(a.date).split('T')[0];
+          return d >= dateRangeStart && d <= dateRangeEnd;
+        }).slice(0, 100);
+      }
+    },
+    staleTime: 30000 // Cache for 30 seconds
   });
 
-  const { data: patients = [] } = useQuery({
-    queryKey: ["patients"],
-    queryFn: () => (base44.entities.Patient as any).filter({ status: "ativo" })
+  const { data: patients = [], isLoading: isLoadingPatients } = useQuery({
+    queryKey: ["patients-active"],
+    queryFn: async () => {
+      const result = await (base44.entities.Patient as any).filter({ status: "ativo" });
+      return Array.isArray(result) ? result : [];
+    },
+    staleTime: 60000 // Cache for 1 minute
   });
 
-  const { data: professionals = [] } = useQuery({
-    queryKey: ["professionals"],
-    queryFn: () => (base44.entities.Professional as any).filter({ status: "ativo" })
+  const { data: professionals = [], isLoading: isLoadingProfessionals } = useQuery({
+    queryKey: ["professionals-active"],
+    queryFn: async () => {
+      const result = await (base44.entities.Professional as any).filter({ status: "ativo" });
+      return Array.isArray(result) ? result : [];
+    },
+    staleTime: 60000 // Cache for 1 minute
   });
+
+  // Show loading state on mobile for better UX
+  const isLoading = isLoadingAppointments || isLoadingPatients || isLoadingProfessionals;
 
   const safeAppointments = Array.isArray(appointments) ? appointments : [];
   const safePatients = Array.isArray(patients) ? patients : [];
@@ -123,6 +158,16 @@ export default function Dashboard() {
   const firstName = (user?.name || user?.display_name || user?.full_name || "Usuário").split(" ")[0];
 
   if (isMobile) {
+    // Show loading spinner on mobile while data loads
+    if (isLoading) {
+      return (
+        <div className={cn("min-h-screen flex flex-col items-center justify-center gap-4", isDark ? "bg-slate-950" : "bg-slate-50")}>
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className={cn("text-sm", isDark ? "text-slate-400" : "text-slate-600")}>Carregando...</p>
+        </div>
+      );
+    }
+
     return <MobileDashboard
       user={user}
       stats={stats}
