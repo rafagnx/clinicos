@@ -344,6 +344,15 @@ export default function Agenda() {
     },
   });
 
+  const deleteBlockedDayMutation = useMutation({
+    mutationFn: (id: string | number) => base44.blockedDays.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blocked-days"] });
+      toast.success("Dia desbloqueado com sucesso!");
+    },
+    onError: () => toast.error("Erro ao desbloquear o dia.")
+  });
+
   // Helpers
   const timeSlots = Array.from({ length: 25 }, (_, i) => {
     const hour = Math.floor(i / 2) + 7; // Start at 07:00
@@ -681,20 +690,37 @@ export default function Agenda() {
 
                           return (
                             <div
-                              className={cn("relative transition-colors border-l-0",
+                              className={cn("relative transition-colors border-l-0 cursor-pointer group",
                                 isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50",
-                                blocked ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : "",
-                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : ""
+                                blocked ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-300/90") : "",
+                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : ""
                               )}
                               onClick={() => {
-                                if (blocked) return;
+                                if (blocked) {
+                                  const target = format(selectedDate, 'yyyy-MM-dd');
+                                  const block = blockedDays.find((b: any) => {
+                                    const s = typeof b.start_date === 'string' ? b.start_date.split('T')[0] : format(new Date(b.start_date), 'yyyy-MM-dd');
+                                    const e = typeof b.end_date === 'string' ? b.end_date.split('T')[0] : format(new Date(b.end_date), 'yyyy-MM-dd');
+                                    return target >= s && target <= e;
+                                  });
+
+                                  if (block && block.id) {
+                                    if (confirm(`Deseja desbloquear este dia (${reason})?`)) {
+                                      deleteBlockedDayMutation.mutate(String(block.id));
+                                    }
+                                  }
+                                  return;
+                                }
                                 setSelectedAppointment({ start_time: time, date: format(selectedDate, "yyyy-MM-dd") });
                                 setIsFormOpen(true);
                               }}
                             >
                               {blocked && time === "08:00" && (
-                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-40 overflow-hidden">
+                                  <span className={cn(
+                                    "text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap",
+                                    isDark ? "text-slate-400" : "text-slate-600"
+                                  )}>
                                     {reason}
                                   </span>
                                 </div>
@@ -703,17 +729,17 @@ export default function Agenda() {
                               {blocked && time === "09:00" && (
                                 <div className="absolute inset-x-4 top-2 text-center z-10">
                                   <span className={cn(
-                                    "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
-                                    isDark ? "bg-slate-800 text-slate-400 border-slate-700" : "bg-white text-slate-500 border-slate-200"
+                                    "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border flex items-center justify-center gap-2",
+                                    isDark ? "bg-slate-800 text-white border-slate-600" : "bg-white text-slate-800 border-slate-300"
                                   )}>
-                                    {emoji} {reason}
+                                    {emoji} {reason} <span className="opacity-50 text-[8px]">(Clique p/ desbloquear)</span>
                                   </span>
                                 </div>
                               )}
 
                               {!blocked && holiday && time === "08:00" && (
-                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-30 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-amber-600 dark:text-amber-500">
                                     {holiday.name}
                                   </span>
                                 </div>
@@ -722,7 +748,7 @@ export default function Agenda() {
                                 <div className="absolute inset-x-4 top-2 text-center z-10">
                                   <span className={cn(
                                     "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
-                                    isDark ? "bg-slate-800 text-slate-400 border-slate-700" : "bg-white text-slate-500 border-slate-200"
+                                    isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200"
                                   )}>
                                     🎉 {holiday.name}
                                   </span>
