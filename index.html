@@ -24,11 +24,16 @@
       // Helper to clean object
       function cleanData(data) {
         var modified = false;
-        if (data && data.user && data.user.user_metadata && data.user.user_metadata.image && data.user.user_metadata.image.length > 1000) {
-          console.warn('⚠️ Found massive image in token. Stripping...');
-          data.user.user_metadata.image = "";
-          data.user.user_metadata.avatar_url = "";
-          modified = true;
+        if (data && data.user && data.user.user_metadata) {
+          var meta = data.user.user_metadata;
+          var fields = ['image', 'avatar_url', 'picture', 'photo_url', 'avatar'];
+          fields.forEach(function(f) {
+            if (meta[f] && meta[f].length > 500) {
+              console.warn('⚠️ Stripping large field: ' + f);
+              meta[f] = "";
+              modified = true;
+            }
+          });
         }
         return modified ? data : null;
       }
@@ -49,16 +54,16 @@
                 cleaned = true;
               }
               
-              // AGGRESSIVE CHECK: If still > 10KB, nuke it.
-              // Normal JWTs are < 4KB. 10KB is plenty.
-              if (localStorage.getItem(key).length > 10000) {
-                console.warn('⚠️ Token still HUGE (' + localStorage.getItem(key).length + '). Nuking.');
+              // AGGRESSIVE CHECK: If still > 16KB, its dangerously large for Render headers (431 error)
+              var finalSize = localStorage.getItem(key).length;
+              if (finalSize > 16000) {
+                console.warn('⚠️ Token still HUGE (' + finalSize + '). Nuking as safety measure.');
                 localStorage.removeItem(key);
                 cleaned = true;
               }
             } catch (e) {
               // Not JSON? If it's a raw string and huge, delete it.
-              if (raw.length > 8000) {
+              if (raw.length > 10000) {
                 console.warn('⚠️ Non-JSON large token found (' + key + '). Deleting.');
                 localStorage.removeItem(key);
                 cleaned = true;
