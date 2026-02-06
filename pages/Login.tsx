@@ -62,36 +62,29 @@ export default function Login() {
             }
 
             if (data.user) {
+                // 1. Immediately store the initial token so we don't block
+                localStorage.setItem("clinicos-token", data.session?.access_token || "");
+
                 try {
                     // --- EMERGENCY TOKEN SLIMMING ---
-                    // If user has a massive image in metadata (common with Google Auth), 
-                    // the token will exceed Render's header limit (8KB-16KB).
                     const meta = data.user.user_metadata;
-                    const tooBig = meta && Object.values(meta).some(v => typeof v === 'string' && v.length > 1000);
+                    const tooBig = meta && Object.values(meta).some(v => typeof v === 'string' && v.length > 800);
 
                     if (tooBig || data.user.email === 'letty-galhardojandre@outlook.com') {
-                        console.warn("🛡️ [Login] Dangerous metadata detected. Slimming token...");
-                        await supabase.auth.updateUser({
-                            data: {
-                                image: "",
-                                avatar_url: "",
-                                picture: "",
-                                photo_url: "",
-                                avatar: ""
+                        console.warn("🛡️ [Login] Massive metadata detected. Optimizing session in background...");
+                        // Use a background cleanup to avoid blocking the user if Supabase is slow
+                        supabase.auth.updateUser({
+                            data: { image: "", avatar_url: "", picture: "", photo_url: "", avatar: "" }
+                        }).then(async () => {
+                            const { data: rd } = await supabase.auth.refreshSession();
+                            if (rd.session) {
+                                localStorage.setItem("clinicos-token", rd.session.access_token);
+                                console.log("✅ [Login] Token optimized.");
                             }
-                        });
-                        // Refresh session to get a small token
-                        const { data: refreshData } = await supabase.auth.refreshSession();
-                        if (refreshData.session) {
-                            localStorage.setItem("clinicos-token", refreshData.session.access_token);
-                        }
-                        console.log("✅ [Login] Token slimmed successfully.");
-                    } else {
-                        localStorage.setItem("clinicos-token", data.session?.access_token || "");
+                        }).catch(e => console.warn("Background Slimming failed:", e.message));
                     }
                 } catch (e) {
-                    console.warn("Token slimming failed, proceeding with caution:", e);
-                    localStorage.setItem("clinicos-token", data.session?.access_token || "");
+                    console.warn("Slimming logic bypass:", e);
                 }
 
                 try {
