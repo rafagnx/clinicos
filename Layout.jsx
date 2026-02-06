@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatProvider, useChat } from "@/context/ChatContext";
 import FloatingChatWindow from "@/components/chat/FloatingChatWindow";
+import BottomNav from "@/components/BottomNav";
 
 // Theme Context
 const ThemeContext = React.createContext({
@@ -851,6 +852,7 @@ function LayoutContent({
           <main className={cn("flex-1 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-indigo-200 hover:scrollbar-thumb-indigo-300 dark:scrollbar-thumb-slate-700", !hideLayout && "px-6 pb-6 pt-0")}>
             <Outlet context={{ isDark, organization }} />
           </main>
+          <BottomNav isDark={isDark} />
         </div>
 
         {/* Global Chat Window */}
