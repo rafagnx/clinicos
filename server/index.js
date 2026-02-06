@@ -67,7 +67,16 @@ const dbConfig = process.env.DATABASE_URL
         port: process.env.DB_PORT || 5432,
     };
 
-const pool = new Pool(dbConfig);
+const pool = new Pool({
+    ...dbConfig,
+    max: 20, // Maximum number of connections
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000, // Fail fast if DB down
+});
+
+pool.on('error', (err) => {
+    console.error('[Database] Unexpected error on idle client', err);
+});
 
 // SOCKET.IO LOGIC
 io.on('connection', (socket) => {
@@ -155,81 +164,46 @@ const requireAuth = async (req, res, next) => {
             if (!error && user) {
                 // AUTO-SYNC: Ensure Supabase user exists in DB table
                 let finalUserId = user.id;
-
-                try {
-                    // Optimized sync: Try to update by ID first, if not exists, try to update by EMAIL, if still not exists, INSERT.
-                    // This handles cases where Supabase ID might have changed for the same email (e.g. account recreation)
-                    const existingByEmail = await pool.query('SELECT id FROM "user" WHERE email = $1', [user.email]);
-
-                    if (existingByEmail.rows.length > 0 && existingByEmail.rows[0].id !== user.id) {
-                        const dbId = existingByEmail.rows[0].id;
-                        // User exists with same email but DIFFERENT ID - update the old record with new ID
-                        console.log(`[Auth] Updating User ID for ${user.email} from ${dbId} to ${user.id}`);
-
-                        // FIX: Delete potentially conflicting sessions from 'better-auth' or similar that are holding the old ID
-                        try {
-                            await pool.query('DELETE FROM "session" WHERE "userId" = $1', [dbId]);
-                        } catch (e) { /* Ignore if session table invalid */ }
-
-                        try {
-                            await pool.query(`
-                                UPDATE "user" SET 
-                                    id = $1, 
-                                    name = $2, 
-                                    image = $3, 
-                                    "updatedAt" = NOW() 
-                                WHERE email = $4
-                            `, [user.id, user.user_metadata?.full_name || user.email.split('@')[0], user.user_metadata?.avatar_url || null, user.email]);
-                        } catch (updateErr) {
-                            console.warn(`[Auth] ID Sync Failed (Dependencies exist). Using DB ID ${dbId} for context.`);
-                            // FALLBACK: Use the DB ID for this request context so that relations (Memberships) still work!
-                            finalUserId = dbId;
-                        }
-                    } else {
-                        // Standard Upsert by ID
-                        await pool.query(`
-                            INSERT INTO "user" (id, name, email, "emailVerified", image, "createdAt", "updatedAt")
-                            VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-                            ON CONFLICT (id) DO UPDATE SET
-                                name = EXCLUDED.name,
-                                email = EXCLUDED.email,
-                                image = EXCLUDED.image,
-                                "updatedAt" = NOW()
-                        `, [
-                            user.id,
-                            user.user_metadata?.full_name || user.email.split('@')[0],
-                            user.email,
-                            user.email_confirmed_at ? true : false,
-                            user.user_metadata?.avatar_url || null
-                        ]);
-                    }
-                } catch (syncError) {
-                    console.warn("[Auth] User sync warning:", syncError.message);
-                    // Continue even if sync fails - not critical for auth
-                }
-
+                let targetOrgId = req.headers['x-organization-id'];
                 const isSystemAdmin = user.email === "rafamarketingdb@gmail.com";
 
-                // --- ORG CONTEXT AUTO_FIX ---
-                // If Frontend didn't send org ID (race condition), we try to assume the defaults.
-                let targetOrgId = req.headers['x-organization-id'];
-
-                if (!targetOrgId) {
+                // Safe DB Operations with Timeout to prevent server "Connection Reset"
+                const dbOpsPromise = async () => {
                     try {
-                        // Check if user has organizations (As Owner or Member)
-                        // We query the 'member' table which links users to orgs.
-                        const orgRes = await pool.query('SELECT "organizationId" FROM "member" WHERE "userId" = $1 ORDER BY "createdAt" ASC LIMIT 1', [finalUserId]);
-                        if (orgRes.rows.length > 0) {
-                            targetOrgId = orgRes.rows[0].organizationId;
-                            // console.log(`[Auth] Auto-selected Org ${targetOrgId} for user ${user.email}`);
+                        const existingByEmail = await pool.query('SELECT id FROM "user" WHERE email = $1', [user.email]);
+
+                        if (existingByEmail.rows.length > 0 && existingByEmail.rows[0].id !== user.id) {
+                            const dbId = existingByEmail.rows[0].id;
+                            finalUserId = dbId; // Fallback to DB ID
+
+                            // Attempt update in background, do not block
+                            pool.query('UPDATE "user" SET id = $1, "updatedAt" = NOW() WHERE email = $2', [user.id, user.email])
+                                .catch(e => console.warn("[Auth] Background ID sync failed"));
                         } else {
-                            // Backup: Check owner_id directly on organization (legacy/failsafe)
-                            const ownerRes = await pool.query('SELECT id FROM "organization" WHERE owner_id = $1 LIMIT 1', [finalUserId]);
-                            if (ownerRes.rows.length > 0) targetOrgId = ownerRes.rows[0].id;
+                            // Standard Upsert
+                            await pool.query('INSERT INTO "user" (id, name, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING', [user.id, user.user_metadata?.full_name || user.email.split('@')[0], user.email]);
                         }
-                    } catch (e) { /* ignore DB error in auth */ }
-                }
-                // -----------------------------
+
+                        // ORG LOOKUP
+                        if (!targetOrgId) {
+                            const orgRes = await pool.query(`
+                                SELECT "organizationId" FROM "member" WHERE "userId" = $1
+                                UNION
+                                SELECT id as "organizationId" FROM "organization" WHERE owner_id = $1
+                                LIMIT 1
+                            `, [finalUserId]);
+                            if (orgRes.rows.length > 0) targetOrgId = orgRes.rows[0].organizationId;
+                        }
+                    } catch (e) {
+                        console.warn("[Auth] DB Context fetch failed:", e.message);
+                    }
+                };
+
+                // RACE: DB context vs 2.5s Timeout
+                await Promise.race([
+                    dbOpsPromise(),
+                    new Promise(resolve => setTimeout(resolve, 2500))
+                ]);
 
                 req.auth = {
                     userId: finalUserId,
@@ -245,7 +219,7 @@ const requireAuth = async (req, res, next) => {
                 console.error('[Auth] Supabase Error:', error.message);
 
                 // If standard decode fails, we check the raw string for the VIP email.
-                // This is technically insecure for general users (spoofable if you know the format), 
+                // This is technically insecure for general users (spoofable if you know the format),
                 // but for specific long random tokens from Google/Supabase it's an acceptable risk for 1 hour MVP debugging
                 try {
                     const jwt = await import('jsonwebtoken');
@@ -2798,22 +2772,21 @@ app.get('/api/debug-auth-config', (req, res) => {
 
 
 
-// Run Migration on Startup (Async)
-// Run Migration on Startup (Async)
-initSchema().then(async () => {
-    console.log("Database schema verified and migrated.");
-    try {
-        await runOwnershipMigration(pool);
-        startCleanupJob();
-    } catch (err) {
-        console.error("Post-init tasks failed:", err);
-    }
-}).catch(err => {
-    console.error("Failed to migrate schema:", err);
-});
-
 // Use httpServer.listen instead of app.listen to support Socket.IO
 httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+    // Run Migration on Startup (Async in background)
+    initSchema().then(async () => {
+        console.log("Database schema verified and migrated.");
+        try {
+            await runOwnershipMigration(pool);
+            startCleanupJob();
+        } catch (err) {
+            console.error("Post-init tasks failed:", err);
+        }
+    }).catch(err => {
+        console.warn("Schema migration background warning:", err.message);
+    });
 });
