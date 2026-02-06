@@ -3,13 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
 
+// Safe check for Notification API (not available on iOS Safari)
+const getNotificationPermission = () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+        return Notification.permission;
+    }
+    return 'denied'; // Treat as denied if not supported
+};
+
 export default function NotificationPermissionPrompt() {
-    const [permission, setPermission] = useState(Notification.permission);
+    const [permission, setPermission] = useState<NotificationPermission>('denied');
 
     useEffect(() => {
-        if ('Notification' in window) {
-            setPermission(Notification.permission);
-        }
+        setPermission(getNotificationPermission());
     }, []);
 
     const requestPermission = async () => {
