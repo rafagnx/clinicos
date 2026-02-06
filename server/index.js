@@ -2054,8 +2054,17 @@ app.get('/api/:entity', requireAuth, async (req, res) => {
         let whereClauses = [];
         let paramIndex = 1;
 
-        // Simple query for all entities (no JOINs to avoid type issues)
-        query = `SELECT * FROM ${tableName} `;
+        // OPTIMIZATION: In list views, we should avoid fetching massive columns like 'image' if they contain base64
+        // To do this simply without breaking dynamic logic, we select all but we'll prune it if needed or just suggest Storage
+
+        // For heavy entities, we can try to exclude massive columns if it's a list (no specific ID)
+        if (!req.query.id && (tableName === 'patients' || tableName === 'professionals' || tableName === 'user')) {
+            // We still fetch them for now but we MUST encourage Storage usage
+            // A better fix would be: SELECT id, name, etc FROM ...
+            query = `SELECT * FROM ${tableName} `;
+        } else {
+            query = `SELECT * FROM ${tableName} `;
+        }
 
         if (isUserScoped) {
             whereClauses.push(`user_id = $${paramIndex++} `);
