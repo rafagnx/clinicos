@@ -345,7 +345,7 @@ export default function Agenda() {
   });
 
   const deleteBlockedDayMutation = useMutation({
-    mutationFn: (id: string | number) => base44.blockedDays.delete(id),
+    mutationFn: (id: string | number) => base44.blockedDays.delete(String(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-days"] });
       toast.success("Dia desbloqueado com sucesso!");
