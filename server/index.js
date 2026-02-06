@@ -151,6 +151,19 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://yhfjhovhemgcamigi
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloZmpob3ZoZW1nY2FtaWdpbWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNzE1NzAsImV4cCI6MjA4NDY0NzU3MH0.6a8aSDM12eQwTRZES5r_hqFDGq2akKt9yMOys3QzodQ";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// ADMIN CLIENT (for emergency operations like metadata cleanup)
+// service_role key has full access - NEVER expose to frontend
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let supabaseAdmin = null;
+if (SUPABASE_SERVICE_ROLE_KEY) {
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false }
+    });
+    console.log("[Supabase] Admin client initialized for emergency operations.");
+} else {
+    console.warn("[Supabase] No SERVICE_ROLE_KEY found. Emergency cleanup endpoint will be disabled.");
+}
+
 // Helper to strip massive base64 junk from user objects (prevents ERR_CONNECTION_CLOSED)
 const sanitizeUser = (user) => {
     if (!user) return user;
@@ -434,6 +447,80 @@ app.get('/api/debug-auth-config', (req, res) => {
         },
         server_time: new Date().toISOString()
     });
+});
+
+// EMERGENCY CLEANUP ENDPOINT
+// Clears corrupted user metadata (e.g., oversized base64 images) via Admin API
+// This works even when the user's token is too large to be sent via normal auth
+app.post('/api/auth/emergency-cleanup', async (req, res) => {
+    const { email, secret } = req.body;
+
+    // Basic security: require a shared secret or admin email
+    const EMERGENCY_SECRET = process.env.EMERGENCY_CLEANUP_SECRET || 'clinicos-emergency-2026';
+    if (secret !== EMERGENCY_SECRET) {
+        return res.status(403).json({ error: 'Invalid secret' });
+    }
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!supabaseAdmin) {
+        return res.status(500).json({ error: 'Admin client not configured. Set SUPABASE_SERVICE_ROLE_KEY in environment.' });
+    }
+
+    try {
+        // 1. Find user by email using Admin API
+        const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+            filter: { email: email }
+        });
+
+        if (listError) throw listError;
+
+        // Alternative: Get user directly if filter doesn't work
+        let targetUser = users?.find(u => u.email === email);
+
+        if (!targetUser) {
+            // Try listing all and filtering (for older Supabase versions)
+            const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            targetUser = allUsers?.users?.find(u => u.email === email);
+        }
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found', email });
+        }
+
+        console.log(`[Emergency] Found user: ${targetUser.id} (${email})`);
+        console.log(`[Emergency] Current metadata keys: ${Object.keys(targetUser.user_metadata || {}).join(', ')}`);
+
+        // 2. Clear all image-related fields
+        const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+            targetUser.id,
+            {
+                user_metadata: {
+                    image: "",
+                    avatar_url: "",
+                    picture: "",
+                    photo_url: "",
+                    avatar: ""
+                }
+            }
+        );
+
+        if (updateError) throw updateError;
+
+        console.log(`[Emergency] ✅ User ${email} metadata cleaned successfully!`);
+
+        res.json({
+            success: true,
+            message: `User ${email} metadata cleaned. Please ask them to logout and login again.`,
+            userId: targetUser.id
+        });
+
+    } catch (error) {
+        console.error('[Emergency] Cleanup error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 // -----------------------------------------------------
 
