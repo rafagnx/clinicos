@@ -971,14 +971,14 @@ export default function Agenda() {
                               {apt.type !== 'bloqueio' && apt.patient && (
                                 <div className="flex flex-wrap gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                   {/* Origin Badge */}
-                                  {apt.patient.origin && (
+                                  {(apt.patient.origin || apt.source) && (
                                     <span className={cn(
                                       "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                                      apt.patient.origin.toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
-                                        apt.patient.origin.toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
+                                      (apt.patient.origin || apt.source).toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                                        (apt.patient.origin || apt.source).toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
                                           "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
                                     )}>
-                                      {apt.patient.origin}
+                                      {apt.patient.origin || apt.source}
                                     </span>
                                   )}
 

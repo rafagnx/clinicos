@@ -116,14 +116,14 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                         return (
                                             <div className="flex flex-wrap gap-1 mt-1.5">
                                                 {/* Origin Badge */}
-                                                {patient.origin && (
+                                                {(patient.origin || apt.source) && (
                                                     <span className={cn(
                                                         "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                                                        patient.origin.toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
-                                                            patient.origin.toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
+                                                        (patient.origin || apt.source).toLowerCase().includes('ads') ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                                                            (patient.origin || apt.source).toLowerCase().includes('indica') ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" :
                                                                 "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
                                                     )}>
-                                                        {patient.origin}
+                                                        {patient.origin || apt.source}
                                                     </span>
                                                 )}
 
