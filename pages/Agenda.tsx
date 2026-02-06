@@ -618,6 +618,9 @@ export default function Agenda() {
                     const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), i);
                     const isToday = isSameDay(date, new Date());
                     const holiday = getDayHoliday(date);
+                    const blocked = isDayBlocked(date);
+                    const reason = blocked ? getBlockReason(date) : "";
+                    const isSpecial = holiday || blocked;
 
                     return (
                       <div
@@ -625,13 +628,12 @@ export default function Agenda() {
                         className={cn(
                           "p-3 text-center border-r last:border-r-0 flex flex-col items-center gap-1.5 transition-all relative overflow-hidden group",
                           isDark ? "border-white/5" : "border-slate-100",
-                          isToday ? (isDark ? "bg-blue-500/5" : "bg-blue-50/50") : "hover:bg-white/5"
+                          isToday ? (isDark ? "bg-blue-500/5" : "bg-blue-50/50") : (isSpecial ? (isDark ? "bg-amber-900/10" : "bg-amber-50/50") : "hover:bg-white/5")
                         )}
                       >
                         <span className={cn(
                           "text-[9px] font-black uppercase tracking-[0.15em]",
-                          isToday ? "text-blue-500" : (isDark ? "text-slate-500" : "text-slate-400"),
-                          holiday ? "text-amber-500" : ""
+                          isToday ? "text-blue-500" : (isSpecial ? "text-amber-500" : (isDark ? "text-slate-500" : "text-slate-400"))
                         )}>
                           {format(date, "EEE", { locale: ptBR })}
                         </span>
@@ -639,15 +641,15 @@ export default function Agenda() {
                           "w-8 h-8 flex items-center justify-center rounded-xl text-sm font-black transition-all relative z-10",
                           isToday
                             ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30 scale-110"
-                            : (isDark ? "text-slate-300 group-hover:bg-white/10" : "text-slate-700 group-hover:bg-slate-100"),
-                          holiday && !isToday ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" : ""
+                            : (isSpecial ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-amber-100 text-amber-700 shadow-sm border border-amber-200") :
+                              (isDark ? "text-slate-300 group-hover:bg-white/10" : "text-slate-700 group-hover:bg-slate-100"))
                         )}>
                           {format(date, "d")}
                         </div>
 
-                        {holiday && (
-                          <span className="text-[8px] font-black text-amber-500/80 dark:text-amber-400/80 truncate max-w-full px-1 uppercase tracking-tighter" title={holiday.name}>
-                            {holiday.name.split(' ')[0]}
+                        {isSpecial && (
+                          <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 truncate max-w-full px-1 uppercase tracking-widest mt-0.5">
+                            {(holiday?.name || reason || "").split(' ')[0]}
                           </span>
                         )}
                       </div>
@@ -780,41 +782,54 @@ export default function Agenda() {
                             <div
                               key={j}
                               className={cn(
-                                "border-l relative transition-colors cursor-pointer",
+                                "border-l relative transition-colors cursor-pointer group",
                                 isDark ? "border-white/5" : "border-slate-100",
                                 j === 0 && "border-l-0",
-                                blocked ? (isDark ? "bg-[#1E293B]/60 cursor-not-allowed" : "bg-slate-100/80 cursor-not-allowed") : "",
-                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/60" : "bg-slate-100/80") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50")
+                                blocked ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-300/90") : "",
+                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50")
                               )}
                               onClick={() => {
-                                if (blocked) return;
-                                const date = addDays(startOfWeek(selectedDate, { weekStartsOn: 0 }), j);
+                                if (blocked) {
+                                  const target = format(date, 'yyyy-MM-dd');
+                                  const block = blockedDays.find((b: any) => {
+                                    const s = typeof b.start_date === 'string' ? b.start_date.split('T')[0] : format(new Date(b.start_date), 'yyyy-MM-dd');
+                                    const e = typeof b.end_date === 'string' ? b.end_date.split('T')[0] : format(new Date(b.end_date), 'yyyy-MM-dd');
+                                    return target >= s && target <= e;
+                                  });
+
+                                  if (block && block.id) {
+                                    if (confirm(`Deseja desbloquear este dia (${reason})?`)) {
+                                      deleteBlockedDayMutation.mutate(String(block.id));
+                                    }
+                                  }
+                                  return;
+                                }
                                 setSelectedAppointment({ start_time: time, date: format(date, "yyyy-MM-dd") });
                                 setIsFormOpen(true);
                               }}
                             >
                               {blocked && time === "08:00" && (
-                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-40 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-600 dark:text-slate-400">
                                     {reason}
                                   </span>
                                 </div>
                               )}
 
                               {blocked && time === "09:00" && (
-                                <div className="absolute inset-x-1 top-1 text-center z-10 pointer-events-none">
+                                <div className="absolute inset-x-1 top-1 text-center z-10">
                                   <span className={cn(
-                                    "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm",
-                                    isDark ? "bg-slate-800 text-slate-400 border border-slate-700" : "bg-white text-slate-500 border border-slate-200"
+                                    "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm flex items-center justify-center gap-1",
+                                    isDark ? "bg-slate-800 text-white border-slate-600" : "bg-white text-slate-800 border-slate-300"
                                   )}>
-                                    {emoji} {reason}
+                                    {emoji} {reason} <span className="opacity-50 text-[6px] hidden md:inline">(Clique)</span>
                                   </span>
                                 </div>
                               )}
 
                               {!blocked && holiday && time === "08:00" && (
-                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-20 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-slate-500">
+                                <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-30 overflow-hidden">
+                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-amber-600 dark:text-amber-500">
                                     {holiday.name}
                                   </span>
                                 </div>
@@ -823,7 +838,7 @@ export default function Agenda() {
                                 <div className="absolute inset-x-1 top-1 text-center z-10 pointer-events-none">
                                   <span className={cn(
                                     "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm",
-                                    isDark ? "bg-slate-800 text-slate-400 border border-slate-700" : "bg-white text-slate-500 border border-slate-200"
+                                    isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200"
                                   )}>
                                     🎉 {holiday.name}
                                   </span>
