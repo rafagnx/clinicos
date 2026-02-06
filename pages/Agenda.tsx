@@ -76,7 +76,7 @@ const typeConfig: any = {
   "Procedimento": { color: "text-emerald-500", border: "border-l-emerald-500", bg: "bg-emerald-500/10" },
   "Encaixe": { color: "text-rose-500", border: "border-l-rose-500", bg: "bg-rose-500/10" },
   "Compromisso": { color: "text-slate-500", border: "border-l-slate-500", bg: "bg-slate-500/10" },
-  "bloqueio": { color: "text-slate-900 dark:text-slate-100", border: "border-l-slate-700 dark:border-l-slate-400", bg: "bg-slate-400 dark:bg-slate-700" },
+  "bloqueio": { color: "text-white dark:text-white", border: "border-l-slate-800 dark:border-l-slate-500", bg: "bg-slate-600 dark:bg-slate-800" },
 };
 
 // Função para determinar a cor do card baseado no profissional e tipo
@@ -1059,34 +1059,50 @@ export default function Agenda() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className={cn("min-w-[140px]", isDark ? "bg-[#1C2333] border-slate-700 text-slate-200" : "")}>
-                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setIsRescheduleOpen(true); }}>
-                                    Reagendar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                                  {Object.entries(statusConfig).map(([key, config]) => (
+                                  {apt.type === 'bloqueio' ? (
                                     <DropdownMenuItem
-                                      key={key}
+                                      className="text-rose-500 focus:text-rose-500 font-bold"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        updateStatusMutation.mutate({ id: apt.id, status: key });
+                                        if (confirm("Desbloquear este horário?")) {
+                                          deleteMutation.mutate(apt.id);
+                                        }
                                       }}
                                     >
-                                      <span className={cn("w-2 h-2 rounded-full mr-2", config.class.split(" ")[0])}></span>
-                                      {config.label}
+                                      Remover Bloqueio
                                     </DropdownMenuItem>
-                                  ))}
-                                  <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
-                                  <DropdownMenuItem
-                                    className="text-rose-500 focus:text-rose-500"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (confirm("Deseja realmente excluir este agendamento?")) {
-                                        deleteMutation.mutate(apt.id);
-                                      }
-                                    }}
-                                  >
-                                    Excluir
-                                  </DropdownMenuItem>
+                                  ) : (
+                                    <>
+                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); setIsRescheduleOpen(true); }}>
+                                        Reagendar
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                                      {Object.entries(statusConfig).map(([key, config]) => (
+                                        <DropdownMenuItem
+                                          key={key}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateStatusMutation.mutate({ id: apt.id, status: key });
+                                          }}
+                                        >
+                                          <span className={cn("w-2 h-2 rounded-full mr-2", config.class.split(" ")[0])}></span>
+                                          {config.label}
+                                        </DropdownMenuItem>
+                                      ))}
+                                      <DropdownMenuSeparator className={isDark ? "bg-slate-700" : ""} />
+                                      <DropdownMenuItem
+                                        className="text-rose-500 focus:text-rose-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm("Deseja realmente excluir este agendamento?")) {
+                                            deleteMutation.mutate(apt.id);
+                                          }
+                                        }}
+                                      >
+                                        Excluir
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
