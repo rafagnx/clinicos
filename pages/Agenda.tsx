@@ -163,7 +163,7 @@ export default function Agenda() {
   // Check for mobile viewport
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 640);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -373,7 +373,6 @@ export default function Agenda() {
   const handleDateChange = (days) => {
     setSelectedDate(prev => addDays(prev, days));
   };
-
 
   // Force HMR Update
   return (
