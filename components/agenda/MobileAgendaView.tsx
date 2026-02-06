@@ -296,9 +296,9 @@ export default function MobileAgendaView({
                         ))}
                     </div>
                 ) : (sortedAppointments.length === 0 && view === 'day') ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center opacity-70 pointer-events-none">
                         <div className={cn(
-                            "w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-lg backdrop-blur-sm border",
+                            "w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-lg backdrop-blur-sm border pointer-events-auto",
                             isDark ? "bg-slate-900/50 border-white/5" : "bg-white/50 border-slate-200"
                         )}>
                             <LucideCalendar className={cn("w-5 h-5 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
@@ -309,7 +309,7 @@ export default function MobileAgendaView({
                         <Button
                             variant="default"
                             size="sm"
-                            className="rounded-full px-4 h-7 text-[10px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform shadow-blue-500/20"
+                            className="rounded-full px-4 h-7 text-[10px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform shadow-blue-500/20 pointer-events-auto"
                             onClick={onNewAppointment}
                         >
                             Agendar
