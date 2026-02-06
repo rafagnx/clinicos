@@ -170,10 +170,10 @@ export default function MobileAgendaView({
                     )}
 
                 {/* View Switcher Mobile */}
-                <div className="flex flex-col p-2 gap-3">
+                <div className="flex flex-col p-2 gap-3 w-full overflow-hidden">
                     {/* Professional Filter - Liquid Horizontal Scroll */}
                     {professionals.length > 0 && (
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide px-2">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 px-2 w-full touch-pan-x scrollbar-thin">
                             <button
                                 onClick={() => onProfessionalChange?.("all")}
                                 className={cn(
@@ -209,7 +209,7 @@ export default function MobileAgendaView({
                     )}
 
                     <div className={cn(
-                        "flex p-1 rounded-xl glass-premium border-white/5 self-center",
+                        "flex p-1 rounded-xl glass-premium border-white/5 self-center shrink-0",
                         isDark ? "bg-slate-950/60" : "bg-white/60"
                     )}>
                         <button
