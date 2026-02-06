@@ -151,6 +151,46 @@ export default function TodayAppointments({ isDark, appointments, patients, prof
                                                         {(patient.temperature || patient.funnel_status) === 'hot' ? 'QUENTE' : (patient.temperature || patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
                                                     </span>
                                                 )}
+
+                                                {/* Temperament Badge */}
+                                                {patient.temperament && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                                    )}>
+                                                        {patient.temperament === 'analitico' ? '🧠 ANALÍTICO' :
+                                                            patient.temperament === 'executor' ? '🚀 EXECUTOR' :
+                                                                patient.temperament === 'comunicador' ? '💬 COMUNICADOR' :
+                                                                    patient.temperament === 'planejador' ? '📋 PLANEJADOR' :
+                                                                        patient.temperament.toUpperCase()}
+                                                    </span>
+                                                )}
+
+                                                {/* Motivation Badge */}
+                                                {patient.main_motivation && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                                    )}>
+                                                        {patient.main_motivation === 'dor' ? '💊 DOR' :
+                                                            patient.main_motivation === 'prazer' ? '✨ PRAZER' :
+                                                                patient.main_motivation === 'status' ? '💎 STATUS' :
+                                                                    patient.main_motivation === 'seguranca' ? '🛡️ SEGURANÇA' :
+                                                                        patient.main_motivation.toUpperCase()}
+                                                    </span>
+                                                )}
+
+                                                {/* Conscience Level Badge */}
+                                                {patient.conscience_level && (
+                                                    <span className={cn(
+                                                        "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                                                    )}>
+                                                        {patient.conscience_level === 'unaware' ? 'INCONSCIENTE' :
+                                                            patient.conscience_level === 'problem_aware' ? 'PROBLEMA' :
+                                                                patient.conscience_level === 'solution_aware' ? 'SOLUÇÃO' :
+                                                                    patient.conscience_level === 'product_aware' ? 'PRODUTO' :
+                                                                        patient.conscience_level === 'most_aware' ? 'TOTALMENTE' :
+                                                                            patient.conscience_level.toUpperCase()}
+                                                    </span>
+                                                )}
                                             </div>
                                         );
                                     })()}

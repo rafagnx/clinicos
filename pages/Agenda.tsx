@@ -1006,6 +1006,46 @@ export default function Agenda() {
                                       {(apt.patient.temperature || apt.patient.funnel_status) === 'hot' ? 'QUENTE' : (apt.patient.temperature || apt.patient.funnel_status) === 'warm' ? 'MORNO' : 'FRIO'}
                                     </span>
                                   )}
+
+                                  {/* Temperament Badge */}
+                                  {apt.patient.temperament && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                    )}>
+                                      {apt.patient.temperament === 'analitico' ? '🧠 ANALÍTICO' :
+                                        apt.patient.temperament === 'executor' ? '🚀 EXECUTOR' :
+                                          apt.patient.temperament === 'comunicador' ? '💬 COMUNICADOR' :
+                                            apt.patient.temperament === 'planejador' ? '📋 PLANEJADOR' :
+                                              apt.patient.temperament.toUpperCase()}
+                                    </span>
+                                  )}
+
+                                  {/* Motivation Badge */}
+                                  {apt.patient.main_motivation && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                                    )}>
+                                      {apt.patient.main_motivation === 'dor' ? '💊 DOR' :
+                                        apt.patient.main_motivation === 'prazer' ? '✨ PRAZER' :
+                                          apt.patient.main_motivation === 'status' ? '💎 STATUS' :
+                                            apt.patient.main_motivation === 'seguranca' ? '🛡️ SEGURANÇA' :
+                                              apt.patient.main_motivation.toUpperCase()}
+                                    </span>
+                                  )}
+
+                                  {/* Conscience Level Badge */}
+                                  {apt.patient.conscience_level && (
+                                    <span className={cn(
+                                      "text-[8px] px-1 py-0.5 rounded-full font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-600 dark:text-cyan-400"
+                                    )}>
+                                      {apt.patient.conscience_level === 'unaware' ? 'INCONSCIENTE' :
+                                        apt.patient.conscience_level === 'problem_aware' ? 'PROBLEMA' :
+                                          apt.patient.conscience_level === 'solution_aware' ? 'SOLUÇÃO' :
+                                            apt.patient.conscience_level === 'product_aware' ? 'PRODUTO' :
+                                              apt.patient.conscience_level === 'most_aware' ? 'TOTALMENTE' :
+                                                apt.patient.conscience_level.toUpperCase()}
+                                    </span>
+                                  )}
                                 </div>
                               )}
                             </div>
