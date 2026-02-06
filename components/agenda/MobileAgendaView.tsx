@@ -3,7 +3,7 @@ import { format, addDays, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     Calendar, Clock, MapPin, MoreVertical,
-    ChevronLeft, ChevronRight, Plus, Ban, Sparkles, LayoutList
+    ChevronLeft, ChevronRight, Plus, Ban, Sparkles, LayoutList, User
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -33,6 +33,9 @@ interface MobileAgendaViewProps {
     holidays?: any[];
     onTimeBlock?: () => void;
     onBlockDay?: () => void;
+    professionals?: any[];
+    selectedProfessionalId?: string;
+    onProfessionalChange?: (id: string) => void;
 }
 
 const statusConfig: any = {
@@ -59,7 +62,10 @@ export default function MobileAgendaView({
     blockedDays = [],
     holidays = [],
     onTimeBlock,
-    onBlockDay
+    onBlockDay,
+    professionals = [],
+    selectedProfessionalId = "all",
+    onProfessionalChange
 }: MobileAgendaViewProps) {
 
     // Generic date extractor from ISO or space-separated string
@@ -164,9 +170,46 @@ export default function MobileAgendaView({
                     )}
 
                 {/* View Switcher Mobile */}
-                <div className="flex p-2 justify-center gap-2">
+                <div className="flex flex-col p-2 gap-3">
+                    {/* Professional Filter - Liquid Horizontal Scroll */}
+                    {professionals.length > 0 && (
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide px-2">
+                            <button
+                                onClick={() => onProfessionalChange?.("all")}
+                                className={cn(
+                                    "flex-shrink-0 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
+                                    selectedProfessionalId === "all"
+                                        ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                        : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
+                                )}
+                            >
+                                Todos
+                            </button>
+                            {professionals.map((prof) => (
+                                <button
+                                    key={prof.id}
+                                    onClick={() => onProfessionalChange?.(String(prof.id))}
+                                    className={cn(
+                                        "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
+                                        selectedProfessionalId === String(prof.id)
+                                            ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                            : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
+                                    )}
+                                >
+                                    <Avatar className="w-4 h-4 border-white/20">
+                                        <AvatarImage src={prof.photo_url} />
+                                        <AvatarFallback className="text-[6px] font-black">
+                                            {(prof.full_name || prof.name || "?").charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="whitespace-nowrap">{prof.name || prof.full_name?.split(' ')[0]}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     <div className={cn(
-                        "flex p-1 rounded-xl glass-premium border-white/5",
+                        "flex p-1 rounded-xl glass-premium border-white/5 self-center",
                         isDark ? "bg-slate-950/60" : "bg-white/60"
                     )}>
                         <button
