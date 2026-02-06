@@ -197,7 +197,7 @@ export default function MobileAgendaView({
 
             {/* List Content */}
             <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-32 relative z-10">
-                {sortedAppointments.length === 0 ? (
+                {(sortedAppointments.length === 0 && view === 'day') ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 min-h-[50vh]">
                         <div className={cn(
                             "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl backdrop-blur-sm border",
@@ -257,19 +257,46 @@ export default function MobileAgendaView({
                                     <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
                                 <div className="space-y-3">
-                                    {(groupedByDay[dayStr] || []).map((apt: any) => (
-                                        <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
-                                    ))}
-                                    {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
-                                        <div className={cn(
-                                            "p-3 rounded-xl border border-dashed text-center",
-                                            isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50/50"
-                                        )}>
-                                            <span className={cn("text-[9px] font-bold uppercase tracking-widest opacity-30", isDark ? "text-slate-400" : "text-slate-500")}>
-                                                Sem compromissos
-                                            </span>
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const isBlocked = blockedDays.some(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0]);
+                                        const blockReason = blockedDays.find(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0])?.reason || "Indisponível";
+
+                                        if (isBlocked) {
+                                            return (
+                                                <Card className={cn(
+                                                    "p-4 border-0 shadow-lg flex items-center gap-4 relative overflow-hidden",
+                                                    isDark ? "bg-rose-950/20 border border-rose-500/10" : "bg-rose-50 border border-rose-100"
+                                                )}>
+                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500" />
+                                                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", isDark ? "bg-rose-500/20" : "bg-rose-100")}>
+                                                        <Ban className="w-5 h-5 text-rose-500" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className={cn("text-xs font-black uppercase tracking-widest text-rose-500 mb-0.5")}>Dia Bloqueado</h4>
+                                                        <p className={cn("text-sm font-bold truncate", isDark ? "text-slate-300" : "text-slate-700")}>{blockReason}</p>
+                                                    </div>
+                                                </Card>
+                                            );
+                                        }
+
+                                        return (
+                                            <>
+                                                {(groupedByDay[dayStr] || []).map((apt: any) => (
+                                                    <AppointmentCard key={apt.id} apt={apt} isDark={isDark} onSelect={onSelectAppointment} />
+                                                ))}
+                                                {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
+                                                    <div className={cn(
+                                                        "p-3 rounded-xl border border-dashed text-center",
+                                                        isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50/50"
+                                                    )}>
+                                                        <span className={cn("text-[9px] font-bold uppercase tracking-widest opacity-30", isDark ? "text-slate-400" : "text-slate-500")}>
+                                                            Sem compromissos
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         ))
