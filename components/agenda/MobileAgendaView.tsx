@@ -177,7 +177,7 @@ export default function MobileAgendaView({
                             <button
                                 onClick={() => onProfessionalChange?.("all")}
                                 className={cn(
-                                    "flex-shrink-0 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
+                                    "flex-shrink-0 h-10 px-6 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
                                     selectedProfessionalId === "all"
                                         ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
                                         : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
@@ -190,7 +190,7 @@ export default function MobileAgendaView({
                                     key={prof.id}
                                     onClick={() => onProfessionalChange?.(String(prof.id))}
                                     className={cn(
-                                        "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
+                                        "flex-shrink-0 h-10 flex items-center gap-2 px-3 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
                                         selectedProfessionalId === String(prof.id)
                                             ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
                                             : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
@@ -299,24 +299,33 @@ export default function MobileAgendaView({
                                     })()}
                                     <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {(() => {
-                                        const isBlocked = blockedDays.some(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0]);
-                                        const blockReason = blockedDays.find(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0])?.reason || "Indisponível";
+                                        const isBlocked = blockedDays.some(b => {
+                                            const start = typeof b.start_date === 'string' ? b.start_date.split('T')[0] : format(new Date(b.start_date), 'yyyy-MM-dd');
+                                            const end = typeof b.end_date === 'string' ? b.end_date.split('T')[0] : format(new Date(b.end_date), 'yyyy-MM-dd');
+                                            return dayStr >= start && dayStr <= end;
+                                        });
+
+                                        const block = blockedDays.find(b => {
+                                            const start = typeof b.start_date === 'string' ? b.start_date.split('T')[0] : format(new Date(b.start_date), 'yyyy-MM-dd');
+                                            const end = typeof b.end_date === 'string' ? b.end_date.split('T')[0] : format(new Date(b.end_date), 'yyyy-MM-dd');
+                                            return dayStr >= start && dayStr <= end;
+                                        });
 
                                         if (isBlocked) {
                                             return (
                                                 <Card className={cn(
-                                                    "p-4 border-0 shadow-lg flex items-center gap-4 relative overflow-hidden",
+                                                    "p-3 border-0 shadow-md flex items-center gap-3 relative overflow-hidden",
                                                     isDark ? "bg-rose-950/20 border border-rose-500/10" : "bg-rose-50 border border-rose-100"
                                                 )}>
                                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500" />
-                                                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", isDark ? "bg-rose-500/20" : "bg-rose-100")}>
-                                                        <Ban className="w-5 h-5 text-rose-500" />
+                                                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", isDark ? "bg-rose-500/20" : "bg-rose-100")}>
+                                                        <Ban className="w-4 h-4 text-rose-500" />
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <h4 className={cn("text-xs font-black uppercase tracking-widest text-rose-500 mb-0.5")}>Dia Bloqueado</h4>
-                                                        <p className={cn("text-sm font-bold truncate", isDark ? "text-slate-300" : "text-slate-700")}>{blockReason}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className={cn("text-[8px] font-black uppercase tracking-widest text-rose-500")}>Dia Bloqueado</h4>
+                                                        <p className={cn("text-xs font-bold truncate", isDark ? "text-slate-300" : "text-slate-700")}>{block?.reason || "Indisponível"}</p>
                                                     </div>
                                                 </Card>
                                             );
@@ -329,11 +338,11 @@ export default function MobileAgendaView({
                                                 ))}
                                                 {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
                                                     <div className={cn(
-                                                        "p-3 rounded-xl border border-dashed text-center",
+                                                        "py-2 rounded-lg border border-dashed text-center opacity-40",
                                                         isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50/50"
                                                     )}>
-                                                        <span className={cn("text-[9px] font-bold uppercase tracking-widest opacity-30", isDark ? "text-slate-400" : "text-slate-500")}>
-                                                            Sem compromissos
+                                                        <span className={cn("text-[8px] font-bold uppercase tracking-[0.2em]", isDark ? "text-slate-400" : "text-slate-500")}>
+                                                            Vazio
                                                         </span>
                                                     </div>
                                                 )}
