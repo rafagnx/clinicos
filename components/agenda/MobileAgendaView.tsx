@@ -265,7 +265,9 @@ function AppointmentCard({ apt, isDark, onSelect }: { apt: any, isDark: boolean,
             onClick={() => onSelect(apt)}
             className={cn(
                 "flex items-stretch overflow-hidden border-0 shadow-lg active:scale-[0.98] transition-all duration-300 group relative",
-                isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md"
+                apt.type === 'bloqueio'
+                    ? (isDark ? "bg-slate-700/90 backdrop-blur-md" : "bg-slate-400/90 backdrop-blur-md")
+                    : (isDark ? "bg-slate-900/60 backdrop-blur-md" : "bg-white/80 backdrop-blur-md")
             )}
         >
             {/* Gradient Indicator Bar */}
