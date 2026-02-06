@@ -1,8 +1,9 @@
-import { addDays, getDate, getMonth, getYear, isSameDay } from 'date-fns';
+import { addDays } from 'date-fns';
 
 export interface Holiday {
     date: Date;
     name: string;
+    type?: 'holiday' | 'reminder'; // Default is 'holiday'
 }
 
 // Logic to calculate mobile holidays (Easter, Carnival, Corpus Christi)
@@ -26,7 +27,7 @@ export function getHolidays(year: number): Holiday[] {
     const goodFriday = addDays(easter, -2);
     const corpusChristi = addDays(easter, 60);
 
-    const fixedHolidays = [
+    const fixedHolidays: Holiday[] = [
         { date: new Date(year, 0, 1), name: 'Ano Novo' },
         { date: new Date(year, 3, 21), name: 'Tiradentes' },
         { date: new Date(year, 4, 1), name: 'Dia do Trabalho' },
@@ -34,6 +35,7 @@ export function getHolidays(year: number): Holiday[] {
         { date: new Date(year, 9, 12), name: 'Nossa Sra. Aparecida' },
         { date: new Date(year, 10, 2), name: 'Finados' },
         { date: new Date(year, 10, 15), name: 'Proclamação da República' },
+        { date: new Date(year, 10, 20), name: 'Consciência Negra' },
         { date: new Date(year, 11, 25), name: 'Natal' },
 
         // Feriados Regionais (RJ / Nova Friburgo) - Orofacial Clinic
@@ -43,12 +45,19 @@ export function getHolidays(year: number): Holiday[] {
         { date: new Date(year, 10, 20), name: 'Consciência Negra' },
     ];
 
-    const mobileHolidays = [
+    const mobileHolidays: Holiday[] = [
         { date: carnival, name: 'Carnaval' },
         { date: goodFriday, name: 'Sexta-feira Santa' },
         { date: easter, name: 'Páscoa' },
         { date: corpusChristi, name: 'Corpus Christi' },
     ];
 
-    return [...fixedHolidays, ...mobileHolidays].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const specialReminders: Holiday[] = [
+        { date: new Date(year, 5, 11), name: 'Abertura Copa ⚽', type: 'reminder' },
+        { date: new Date(year, 5, 16), name: 'Brasil 🇧🇷', type: 'reminder' },
+        { date: new Date(year, 5, 20), name: 'Brasil 🇧🇷', type: 'reminder' },
+        { date: new Date(year, 5, 23), name: 'Brasil 🇧🇷', type: 'reminder' },
+    ];
+
+    return [...fixedHolidays, ...mobileHolidays, ...specialReminders].sort((a, b) => a.date.getTime() - b.date.getTime());
 }

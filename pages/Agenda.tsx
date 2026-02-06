@@ -695,7 +695,7 @@ export default function Agenda() {
                               className={cn("relative transition-colors border-l-0 cursor-pointer group",
                                 isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50",
                                 blocked ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-300/90") : "",
-                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : ""
+                                !blocked && holiday && holiday.type !== 'reminder' ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : ""
                               )}
                               onClick={() => {
                                 if (blocked) {
@@ -741,7 +741,10 @@ export default function Agenda() {
 
                               {!blocked && holiday && time === "08:00" && (
                                 <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-30 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-amber-600 dark:text-amber-500">
+                                  <span className={cn(
+                                    "text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap",
+                                    holiday.type === 'reminder' ? "text-green-600/40 dark:text-green-400/40" : "text-amber-600 dark:text-amber-500"
+                                  )}>
                                     {holiday.name}
                                   </span>
                                 </div>
@@ -750,9 +753,11 @@ export default function Agenda() {
                                 <div className="absolute inset-x-4 top-2 text-center z-10">
                                   <span className={cn(
                                     "text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
-                                    isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200"
+                                    holiday.type === 'reminder'
+                                      ? (isDark ? "bg-green-900/40 text-green-400 border-green-800" : "bg-green-100 text-green-700 border-green-200")
+                                      : (isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200")
                                   )}>
-                                    🎉 {holiday.name}
+                                    {holiday.type === 'reminder' ? '⚽' : '🎉'} {holiday.name}
                                   </span>
                                 </div>
                               )}
@@ -786,7 +791,7 @@ export default function Agenda() {
                                 isDark ? "border-white/5" : "border-slate-100",
                                 j === 0 && "border-l-0",
                                 blocked ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-300/90") : "",
-                                !blocked && holiday ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50")
+                                !blocked && holiday && holiday.type !== 'reminder' ? (isDark ? "bg-[#1E293B]/95" : "bg-slate-200/80") : (isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50")
                               )}
                               onClick={() => {
                                 if (blocked) {
@@ -829,7 +834,10 @@ export default function Agenda() {
 
                               {!blocked && holiday && time === "08:00" && (
                                 <div className="absolute inset-x-0 top-0 bottom-0 flex items-center justify-center z-0 pointer-events-none opacity-30 overflow-hidden">
-                                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap text-amber-600 dark:text-amber-500">
+                                  <span className={cn(
+                                    "text-[10px] md:text-xs font-black uppercase tracking-[0.2em] transform -rotate-90 md:rotate-0 whitespace-nowrap",
+                                    holiday.type === 'reminder' ? "text-green-600/40 dark:text-green-400/40" : "text-amber-600 dark:text-amber-500"
+                                  )}>
                                     {holiday.name}
                                   </span>
                                 </div>
@@ -838,9 +846,11 @@ export default function Agenda() {
                                 <div className="absolute inset-x-1 top-1 text-center z-10 pointer-events-none">
                                   <span className={cn(
                                     "text-[8px] font-black uppercase tracking-wider truncate max-w-full inline-block px-2 py-0.5 rounded-full shadow-sm",
-                                    isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200"
+                                    holiday.type === 'reminder'
+                                      ? (isDark ? "bg-green-900/40 text-green-400 border border-green-800" : "bg-green-100 text-green-700 border border-green-200")
+                                      : (isDark ? "bg-slate-800 text-amber-500 border-slate-700" : "bg-white text-amber-600 border-slate-200")
                                   )}>
-                                    🎉 {holiday.name}
+                                    {holiday.type === 'reminder' ? '⚽' : '🎉'} {holiday.name}
                                   </span>
                                 </div>
                               )}
