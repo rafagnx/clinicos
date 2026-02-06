@@ -171,7 +171,7 @@ export default function Promotions() {
               Eficiência Média
             </p>
             <div className="text-3xl font-black tracking-tighter text-emerald-500">
-              {Math.floor(Math.random() * 20 + 70)}% <span className="text-[10px] font-bold opacity-50">Score</span>
+              {promotions.length > 0 ? Math.round((promotions.reduce((acc, p) => acc + (p.interest_count || 0), 0) / (promotions.length * 10 || 1)) * 100) : 0}% <span className="text-[10px] font-bold opacity-50">Score</span>
             </div>
           </div>
         </div>

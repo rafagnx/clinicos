@@ -2433,8 +2433,28 @@ app.get('/api/conversations/me', requireAuth, async (req, res) => {
     const { user, organizationId } = req.auth;
 
     try {
-        const { rows } = await pool.query(`
-            SELECT DISTINCT c.*,
+        // 1. Resolve Professional ID (Integer) for the current User (UUID)
+        // This prevents "operator does not exist: integer = uuid" errors
+        let professionalId = null;
+        try {
+            const { rows: proRows } = await pool.query(
+                `SELECT id FROM professionals WHERE user_id = $1 OR email = $2 LIMIT 1`,
+                [user.id, user.email]
+            );
+            if (proRows.length > 0) professionalId = proRows[0].id;
+        } catch (err) {
+            // Ignore lookup errors, user might just be a staff member without professional profile
+            console.warn("[Chat] Professional lookup warning:", err.message);
+        }
+
+        // 2. Build Query dynamically based on role
+        // We find conversations where:
+        // - User is a member (via conversation_members.user_id -> UUID)
+        // - OR User is the creator/recipient Professional (via professionals.id -> Int)
+
+        let queryFn = `
+            SELECT DISTINCT c.id, c.organization_id, c.title, c.is_group, c.created_at, 
+                   c.professional_id, c.recipient_professional_id, c.patient_id,
                    c.title as name,
                    (SELECT content FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
                    (SELECT created_at FROM messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_at
@@ -2442,12 +2462,23 @@ app.get('/api/conversations/me', requireAuth, async (req, res) => {
             LEFT JOIN conversation_members cm ON cm.conversation_id = c.id
             WHERE c.organization_id = $1
               AND (
-                c.professional_id = $2 
-                OR c.recipient_professional_id::text = $2 
-                OR cm.user_id = $2
-              )
-            ORDER BY last_message_at DESC NULLS LAST, c.created_at DESC
-        `, [organizationId, user.id]);
+                cm.user_id = $2
+        `;
+
+        const params = [organizationId, user.id];
+
+        if (professionalId) {
+            queryFn += ` OR c.professional_id = $3 OR c.recipient_professional_id = $3`;
+            params.push(professionalId);
+        }
+
+        queryFn += ` ) ORDER BY last_message_at DESC NULLS LAST, c.created_at DESC`;
+
+        // DEBUG: Check query execution
+        console.log(`[Chat] Query Params: Org=${organizationId}, User=${user.id}, Prof=${professionalId}`);
+        // console.log(`[Chat] Query: ${queryFn}`);
+
+        const { rows } = await pool.query(queryFn, params);
 
         res.json(rows);
     } catch (error) {

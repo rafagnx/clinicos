@@ -375,6 +375,7 @@ export default function Agenda() {
   };
 
 
+  // Force HMR Update
   return (
     <>
       {isMobile ? (

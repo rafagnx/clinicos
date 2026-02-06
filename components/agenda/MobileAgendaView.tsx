@@ -98,174 +98,94 @@ export default function MobileAgendaView({
     const getDateStr = (apt: any) => {
         if (apt.date && apt.date.length >= 10) return apt.date.substring(0, 10);
         const st = apt.start_time || "";
-        if (st.length >= 10) return st.substring(0, 10);
-        return null;
+        if (st.includes("T")) return st.split("T")[0];
+        return st.split(" ")[0]; // Fallback
     };
 
-    // Group appointments by day and hour
     const sortedAppointments = [...appointments].sort((a, b) => {
-        const dateA = getDateStr(a) || "9999-99-99";
-        const dateB = getDateStr(b) || "9999-99-99";
-        if (dateA !== dateB) return dateA.localeCompare(dateB);
         return (a.start_time || "").localeCompare(b.start_time || "");
     });
 
-    // Function to group by day
-    const groupedByDay = sortedAppointments.reduce((acc: any, apt) => {
-        const dateStr = getDateStr(apt);
-        if (!dateStr) return acc; // Skip invalid dates
-
-        if (!acc[dateStr]) acc[dateStr] = [];
-        acc[dateStr].push(apt);
-        return acc;
-    }, {});
-
-    // Ensure all days of the week appear in "week" view
-    let days: string[] = [];
+    // Group by day for Week view
+    const groupedByDay: Record<string, any[]> = {};
     if (view === "week") {
         const start = startOfWeek(date, { weekStartsOn: 0 });
-        days = Array.from({ length: 7 }).map((_, i) => format(addDays(start, i), "yyyy-MM-dd"));
-    } else {
-        days = Object.keys(groupedByDay).sort();
+        for (let i = 0; i < 7; i++) {
+            const dStr = format(addDays(start, i), "yyyy-MM-dd");
+            groupedByDay[dStr] = sortedAppointments.filter(a => getDateStr(a) === dStr);
+        }
     }
 
+    // Days array for rendering
+    const days = view === "week"
+        ? Array.from({ length: 7 }).map((_, i) => format(addDays(startOfWeek(date, { weekStartsOn: 0 }), i), "yyyy-MM-dd"))
+        : [format(date, "yyyy-MM-dd")];
+
     return (
-        <div className={cn("min-h-full flex flex-col relative", isDark ? "bg-[#0B0E14]" : "bg-slate-50")}>
+        <div className={cn("flex flex-col h-full relative overflow-hidden", isDark ? "bg-[#0B0E14]" : "bg-slate-50")}>
             <div className={cn("fixed inset-0 pointer-events-none opacity-20", isDark ? "bg-grid-white/[0.05]" : "bg-grid-black/[0.05]")} />
 
-            {/* Header: Date Navigation - Liquid Glass */}
+            {/* Header: Date Navigation - Compact */}
             <div className={cn(
-                "sticky top-0 z-20 flex flex-col border-b backdrop-blur-xl transition-colors",
-                isDark ? "bg-[#0B0E14]/80 border-white/5" : "bg-white/80 border-slate-200/50"
+                "flex-none flex flex-col border-b backdrop-blur-xl transition-colors shadow-sm z-30",
+                isDark ? "bg-[#0B0E14]/95 border-white/5" : "bg-white/95 border-slate-200/50"
             )}>
-                <div className="flex items-center justify-between p-4 pb-2">
-                    <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? -7 : -1)} className="rounded-xl hover:bg-white/10">
-                        <ChevronLeft className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
-                    </Button>
+                {/* Top Row: Date & View Toggle - 100% Fluid Responsive */}
+                <div className="flex items-center justify-between p-2 pb-1 gap-2 w-full">
 
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <div className="flex flex-col items-center cursor-pointer active:scale-95 transition-transform">
-                                <h2 className={cn("text-xl font-black capitalize tracking-tight leading-none mb-0.5", isDark ? "text-white" : "text-slate-900")}>
-                                    {view === "week" ? "Esta Semana" : format(date, "EEEE", { locale: ptBR })}
-                                </h2>
-                                <div className="flex items-center gap-1.5 opacity-60">
-                                    <span className={cn("text-[10px] font-bold uppercase tracking-[0.2em]", isDark ? "text-slate-400" : "text-slate-500")}>
+                    {/* Date Navigation (Fluida, ocupa o espaço disponível) */}
+                    <div className="flex items-center gap-0.5 flex-1 min-w-0 bg-transparent">
+                        <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? -7 : -1)} className="h-8 w-8 rounded-full hover:bg-white/10 shrink-0">
+                            <ChevronLeft className={cn("w-5 h-5", isDark ? "text-slate-400" : "text-slate-600")} />
+                        </Button>
+
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <div className="flex flex-col cursor-pointer active:scale-95 transition-transform px-1 text-center flex-1 min-w-0 overflow-hidden">
+                                    <h2 className={cn("text-sm font-black capitalize tracking-tight leading-none truncate w-full", isDark ? "text-white" : "text-slate-900")}>
+                                        {view === "week" ? "Esta Semana" : format(date, "EEEE", { locale: ptBR })}
+                                    </h2>
+                                    <span className={cn("text-[8px] font-bold uppercase tracking-widest opacity-60 truncate w-full block", isDark ? "text-slate-400" : "text-slate-500")}>
                                         {view === "week"
-                                            ? `${format(addDays(date, -date.getDay()), "d/MM")} - ${format(addDays(date, 6 - date.getDay()), "d/MM")}`
+                                            ? `${format(startOfWeek(date, { weekStartsOn: 0 }), "d MMM", { locale: ptBR })} - ${format(addDays(startOfWeek(date, { weekStartsOn: 0 }), 6), "d MMM", { locale: ptBR })}`
                                             : format(date, "d 'de' MMMM", { locale: ptBR })
                                         }
                                     </span>
-                                    <LucideCalendar className="w-2.5 h-2.5" />
                                 </div>
-                            </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 rounded-2xl border-white/10" align="center" side="bottom">
-                            <CalendarComponent
-                                mode="single"
-                                selected={date}
-                                onSelect={(newDate) => {
-                                    if (newDate) {
-                                        const diff = Math.floor((newDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-                                        onDateChange(diff);
-                                    }
-                                }}
-                                initialFocus
-                                locale={ptBR}
-                                className={isDark ? "bg-slate-900 text-white" : "bg-white"}
-                            />
-                        </PopoverContent>
-                    </Popover>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 rounded-2xl border-white/10" align="center" side="bottom">
+                                <CalendarComponent
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={(newDate) => {
+                                        if (newDate) {
+                                            const diff = Math.floor((newDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+                                            onDateChange(diff);
+                                        }
+                                    }}
+                                    initialFocus
+                                    locale={ptBR}
+                                    className={isDark ? "bg-slate-900 text-white" : "bg-white"}
+                                />
+                            </PopoverContent>
+                        </Popover>
 
-                    <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? 7 : 1)} className="rounded-xl hover:bg-white/10">
-                        <ChevronRight className={cn("w-6 h-6", isDark ? "text-slate-400" : "text-slate-600")} />
-                    </Button>
-                </div>
-
-                {/* Holiday Badge */}
-                {holiday && (
-                    <div className="px-4 pb-2 flex justify-center">
-                        <Badge className={cn(
-                            "border text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full",
-                            holiday.type === 'reminder'
-                                ? "bg-green-500/10 text-green-500 border-green-500/20"
-                                : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        )}>
-                            {holiday.type === 'reminder' ? '⚽' : <Sparkles className="w-3 h-3" />}
-                            {holiday.name}
-                        </Badge>
+                        <Button variant="ghost" size="icon" onClick={() => onDateChange(view === "week" ? 7 : 1)} className="h-8 w-8 rounded-full hover:bg-white/10 shrink-0">
+                            <ChevronRight className={cn("w-5 h-5", isDark ? "text-slate-400" : "text-slate-600")} />
+                        </Button>
                     </div>
-                )}
 
-                {/* Day Block Banner */}
-                {view === 'day' && blockedDays.some(b => {
-                    const d = format(date, 'yyyy-MM-dd');
-                    const start = b.start_date?.substring(0, 10);
-                    const end = b.end_date?.substring(0, 10);
-                    return start && end && d >= start && d <= end;
-                }) && (
-                        <div className="px-4 pb-2 flex justify-center">
-                            <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 text-[9px] font-black uppercase tracking-widest gap-1.5 py-1 px-3 rounded-full">
-                                <Ban className="w-3 h-3" />
-                                DIA BLOQUEADO: {blockedDays.find(b => {
-                                    const d = format(date, 'yyyy-MM-dd');
-                                    const start = b.start_date?.substring(0, 10);
-                                    const end = b.end_date?.substring(0, 10);
-                                    return start && end && d >= start && d <= end;
-                                })?.reason || "Indisponível"}
-                            </Badge>
-                        </div>
-                    )}
-
-                {/* View Switcher Mobile */}
-                <div className="flex flex-col p-2 gap-3 w-full overflow-hidden">
-                    {/* Professional Filter - Liquid Horizontal Scroll */}
-                    {professionals.length > 0 && (
-                        <div className="flex items-center gap-2 overflow-x-auto pb-2 px-2 w-full touch-pan-x scrollbar-thin">
-                            <button
-                                onClick={() => onProfessionalChange?.("all")}
-                                className={cn(
-                                    "flex-shrink-0 h-10 px-6 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
-                                    selectedProfessionalId === "all"
-                                        ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                        : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
-                                )}
-                            >
-                                Todos
-                            </button>
-                            {professionals.map((prof) => (
-                                <button
-                                    key={prof.id}
-                                    onClick={() => onProfessionalChange?.(String(prof.id))}
-                                    className={cn(
-                                        "flex-shrink-0 h-10 flex items-center gap-2 px-3 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border",
-                                        selectedProfessionalId === String(prof.id)
-                                            ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                            : (isDark ? "bg-slate-900/50 border-white/5 text-slate-400" : "bg-white border-slate-200 text-slate-600")
-                                    )}
-                                >
-                                    <Avatar className="w-4 h-4 border-white/20">
-                                        <AvatarImage src={prof.photo_url} />
-                                        <AvatarFallback className="text-[6px] font-black">
-                                            {(prof.full_name || prof.name || "?").charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="whitespace-nowrap">{prof.name || prof.full_name?.split(' ')[0]}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
+                    {/* View Switcher - Fixed Size, never shrinks */}
                     <div className={cn(
-                        "flex p-1 rounded-xl glass-premium border-white/5 self-center shrink-0",
-                        isDark ? "bg-slate-950/60" : "bg-white/60"
+                        "flex p-0.5 rounded-full border h-7 items-center shrink-0 ml-1",
+                        isDark ? "bg-slate-900/50 border-white/10" : "bg-slate-100/50 border-slate-200"
                     )}>
                         <button
                             onClick={() => onViewChange("day")}
                             className={cn(
-                                "px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                "px-2.5 h-full rounded-full text-[8px] font-black uppercase tracking-widest transition-all",
                                 view === "day"
-                                    ? "text-white bg-blue-600 shadow-[0_4px_12px_-4px_rgba(37,99,235,0.6)]"
+                                    ? (isDark ? "bg-white text-slate-950" : "bg-white text-slate-900 shadow-sm")
                                     : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
                             )}
                         >
@@ -274,9 +194,9 @@ export default function MobileAgendaView({
                         <button
                             onClick={() => onViewChange("week")}
                             className={cn(
-                                "px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                "px-2.5 h-full rounded-full text-[8px] font-black uppercase tracking-widest transition-all",
                                 view === "week"
-                                    ? "text-white bg-blue-600 shadow-[0_4px_12px_-4px_rgba(37,99,235,0.6)]"
+                                    ? (isDark ? "bg-white text-slate-950" : "bg-white text-slate-900 shadow-sm")
                                     : (isDark ? "text-slate-500 hover:text-slate-300" : "text-slate-500 hover:text-slate-900")
                             )}
                         >
@@ -284,54 +204,135 @@ export default function MobileAgendaView({
                         </button>
                     </div>
                 </div>
+
+                {/* Filters Row - Compact Horizontal Scroll */}
+                <div className="w-full overflow-x-auto pb-2 px-4 touch-pan-x scrollbar-hide flex items-center gap-2">
+                    <button
+                        onClick={() => onProfessionalChange?.("all")}
+                        className={cn(
+                            "flex-shrink-0 h-7 px-3 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border flex items-center shadow-sm",
+                            selectedProfessionalId === "all"
+                                ? "bg-blue-600 border-blue-600 text-white"
+                                : (isDark ? "bg-slate-900/50 border-white/10 text-slate-400" : "bg-white border-slate-200 text-slate-600")
+                        )}
+                    >
+                        Todos
+                    </button>
+                    {professionals.map((prof) => (
+                        <button
+                            key={prof.id}
+                            onClick={() => onProfessionalChange?.(String(prof.id))}
+                            className={cn(
+                                "flex-shrink-0 h-7 flex items-center gap-2 px-2 pl-1 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border shadow-sm",
+                                selectedProfessionalId === String(prof.id)
+                                    ? "bg-blue-600 border-blue-600 text-white"
+                                    : (isDark ? "bg-slate-900/50 border-white/10 text-slate-400" : "bg-white border-slate-200 text-slate-600")
+                            )}
+                        >
+                            <Avatar className="w-5 h-5 border border-white/10">
+                                <AvatarImage src={prof.photo_url} />
+                                <AvatarFallback className={cn("text-[6px] font-black", isDark ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-700")}>
+                                    {(prof.full_name || prof.name || "?").charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <span className="whitespace-nowrap translate-y-[0.5px]">{prof.name || prof.full_name?.split(' ')[0]}</span>
+                        </button>
+                    ))}
+                    {/* Spacer for proper end padding */}
+                    <div className="w-2 shrink-0" />
+                </div>
+
+                {/* Badges Row */}
+                {(holiday || (view === 'day' && blockedDays.some(b => {
+                    const d = format(date, 'yyyy-MM-dd');
+                    const start = b.start_date?.substring(0, 10);
+                    const end = b.end_date?.substring(0, 10);
+                    return start && end && d >= start && d <= end;
+                }))) && (
+                        <div className="px-4 pb-2 flex justify-center gap-2 animate-in slide-in-from-top-2">
+                            {holiday && (
+                                <Badge className={cn(
+                                    "border text-[8px] font-black uppercase tracking-widest gap-1.5 py-0.5 px-2 h-5 rounded-full",
+                                    holiday.type === 'reminder'
+                                        ? "bg-green-500/10 text-green-500 border-green-500/20"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                )}>
+                                    {holiday.type === 'reminder' ? '⚽' : <Sparkles className="w-2.5 h-2.5" />}
+                                    {holiday.name}
+                                </Badge>
+                            )}
+                            {view === 'day' && blockedDays.some(b => {
+                                const d = format(date, 'yyyy-MM-dd');
+                                const start = b.start_date?.substring(0, 10);
+                                const end = b.end_date?.substring(0, 10);
+                                return start && end && d >= start && d <= end;
+                            }) && (
+                                    <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 text-[8px] font-black uppercase tracking-widest gap-1.5 py-0.5 px-2 h-5 rounded-full">
+                                        <Ban className="w-2.5 h-2.5" />
+                                        {blockedDays.find(b => {
+                                            const d = format(date, 'yyyy-MM-dd');
+                                            const start = b.start_date?.substring(0, 10);
+                                            const end = b.end_date?.substring(0, 10);
+                                            return start && end && d >= start && d <= end;
+                                        })?.reason || "Bloqueado"}
+                                    </Badge>
+                                )}
+                        </div>
+                    )}
             </div>
 
             {/* List Content */}
-            <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto pb-32 relative z-10">
+            <div className="flex-1 overflow-y-auto min-h-0 relative z-10 p-2 pb-24 touch-pan-y">
                 {isLoading ? (
-                    <div className="space-y-4">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="flex gap-4 p-4 rounded-3xl bg-white/40 dark:bg-slate-900/40 border border-white/10">
-                                <Skeleton className="w-16 h-12 rounded-2xl" />
+                    <div className="space-y-3 pt-2">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex gap-4 p-3 rounded-2xl bg-white/40 dark:bg-slate-900/40 border border-white/10">
+                                <Skeleton className="w-12 h-10 rounded-xl" />
                                 <div className="flex-1 space-y-2">
-                                    <Skeleton className="w-3/4 h-4 rounded-lg" />
-                                    <Skeleton className="w-1/2 h-3 rounded-lg" />
+                                    <Skeleton className="w-3/4 h-3 rounded-lg" />
+                                    <Skeleton className="w-1/2 h-2.5 rounded-lg" />
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (sortedAppointments.length === 0 && view === 'day') ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 min-h-[50vh]">
+                    <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
                         <div className={cn(
-                            "w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-xl backdrop-blur-sm border",
+                            "w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-lg backdrop-blur-sm border",
                             isDark ? "bg-slate-900/50 border-white/5" : "bg-white/50 border-slate-200"
                         )}>
-                            <LucideCalendar className={cn("w-8 h-8 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
+                            <LucideCalendar className={cn("w-5 h-5 opacity-50", isDark ? "text-slate-400" : "text-slate-400")} />
                         </div>
-                        <p className={cn("text-sm font-bold uppercase tracking-widest opacity-50 mb-4", isDark ? "text-slate-400" : "text-slate-600")}>
+                        <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-3", isDark ? "text-slate-400" : "text-slate-600")}>
                             Sem agendamentos
                         </p>
                         <Button
                             variant="default"
                             size="sm"
-                            className="rounded-full px-6 font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform shadow-lg shadow-blue-500/20"
+                            className="rounded-full px-4 h-7 text-[10px] font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 transition-transform shadow-blue-500/20"
                             onClick={onNewAppointment}
                         >
-                            Agendar agora
+                            Agendar
                         </Button>
                     </div>
                 ) : (
                     view === "week" ? (
                         days.map((dayStr) => (
-                            <div key={dayStr} className="space-y-3">
+                            <div key={dayStr} className="mb-2">
                                 <div className={cn(
-                                    "flex items-center gap-3 px-2 py-1 sticky top-0 z-10 backdrop-blur-md rounded-lg",
-                                    isDark ? "bg-slate-950/60 text-blue-400" : "bg-white/60 text-blue-600"
+                                    "flex items-center gap-2 px-3 py-1.5 sticky top-0 z-10 backdrop-blur-md rounded-lg mb-2 shadow-sm",
+                                    isDark ? "bg-slate-950/80 border-slate-800 text-blue-400" : "bg-white/95 border-slate-200 text-blue-600"
                                 )}>
-                                    <span className="text-[10px] font-black uppercase tracking-widest">
-                                        {format(new Date(dayStr + "T12:00:00"), "EEEE, d 'de' MMMM", { locale: ptBR })}
+                                    <div className={cn("text-[9px] font-black uppercase tracking-widest flex flex-col leading-none text-center min-w-[24px]", isDark ? "text-slate-400" : "text-slate-500")}>
+                                        <span className="text-[7px] opacity-70">{format(new Date(dayStr + "T12:00:00"), "EEE", { locale: ptBR })}</span>
+                                        <span className={cn("text-xs", isDark ? "text-white" : "text-slate-900")}>{format(new Date(dayStr + "T12:00:00"), "dd")}</span>
+                                    </div>
+                                    <div className="w-px h-5 bg-current opacity-10" />
+                                    <span className={cn("text-[9px] font-bold uppercase tracking-widest flex-1", isDark ? "text-slate-300" : "text-slate-700")}>
+                                        {format(new Date(dayStr + "T12:00:00"), "MMMM", { locale: ptBR })}
                                     </span>
-                                    {/* Holiday & Block Badges for Week View */}
+
+                                    {/* Badges */}
                                     {(() => {
                                         const dayHoliday = holidays.find(h => format(h.date, 'yyyy-MM-dd') === dayStr);
                                         const isBlocked = blockedDays.some(b => dayStr >= b.start_date.split('T')[0] && dayStr <= b.end_date.split('T')[0]);
@@ -339,27 +340,20 @@ export default function MobileAgendaView({
                                         return (
                                             <div className="flex gap-1">
                                                 {dayHoliday && (
-                                                    <Badge className={cn(
-                                                        "border-0 text-[8px] h-4 px-1",
-                                                        dayHoliday.type === 'reminder'
-                                                            ? "bg-green-500/10 text-green-500"
-                                                            : "bg-amber-500/10 text-amber-500"
-                                                    )}>
-                                                        {dayHoliday.type === 'reminder' ? '⚽' : <Sparkles className="w-2 h-2 mr-1" />}
-                                                        {dayHoliday.name}
-                                                    </Badge>
+                                                    <div className={cn(
+                                                        "w-1.5 h-1.5 rounded-full",
+                                                        dayHoliday.type === 'reminder' ? "bg-green-500" : "bg-amber-500"
+                                                    )} />
                                                 )}
                                                 {isBlocked && (
-                                                    <Badge className="bg-rose-500/10 text-rose-500 border-0 text-[8px] h-4 px-1">
-                                                        <Ban className="w-2 h-2 mr-1" /> BLOQUEADO
-                                                    </Badge>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                                                 )}
                                             </div>
                                         );
                                     })()}
-                                    <div className="h-px flex-1 bg-current opacity-10" />
                                 </div>
-                                <div className="space-y-2">
+
+                                <div className="space-y-2 pl-2">
                                     {(() => {
                                         const isBlocked = blockedDays.some(b => {
                                             const start = typeof b.start_date === 'string' ? b.start_date.split('T')[0] : format(new Date(b.start_date), 'yyyy-MM-dd');
@@ -375,46 +369,44 @@ export default function MobileAgendaView({
 
                                         if (isBlocked) {
                                             return (
-                                                <Card className={cn(
-                                                    "p-3 border-0 shadow-md flex items-center gap-3 relative overflow-hidden",
-                                                    isDark ? "bg-rose-950/20 border border-rose-500/10" : "bg-rose-50 border border-rose-100"
+                                                <div className={cn(
+                                                    "p-2.5 rounded-xl border flex items-center gap-3 relative overflow-hidden ml-2",
+                                                    isDark ? "bg-rose-950/10 border-rose-500/20" : "bg-rose-50 border-rose-100"
                                                 )}>
-                                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500" />
-                                                    <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", isDark ? "bg-rose-500/20" : "bg-rose-100")}>
-                                                        <Ban className="w-4 h-4 text-rose-500" />
-                                                    </div>
+                                                    <Ban className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className={cn("text-[8px] font-black uppercase tracking-widest text-rose-500")}>Dia Bloqueado</h4>
-                                                        <p className={cn("text-xs font-bold truncate", isDark ? "text-slate-300" : "text-slate-700")}>{block?.reason || "Indisponível"}</p>
+                                                        <h4 className="text-[8px] font-black uppercase tracking-widest text-rose-500">Dia Bloqueado</h4>
+                                                        <p className={cn("text-[10px] font-medium truncate opacity-80", isDark ? "text-rose-200" : "text-rose-900")}>{block?.reason || "Indisponível"}</p>
                                                     </div>
-                                                </Card>
+                                                </div>
                                             );
                                         }
 
-                                        return (
-                                            <>
-                                                {(groupedByDay[dayStr] || []).map((apt: any) => (
-                                                    <AppointmentCard
-                                                        key={apt.id}
-                                                        apt={apt}
-                                                        isDark={isDark}
-                                                        onSelect={onSelectAppointment}
-                                                        onUpdateStatus={onUpdateStatus}
-                                                        onDelete={onDelete}
-                                                    />
-                                                ))}
-                                                {(!groupedByDay[dayStr] || groupedByDay[dayStr].length === 0) && (
-                                                    <div className={cn(
-                                                        "py-2 rounded-lg border border-dashed text-center opacity-40",
-                                                        isDark ? "border-white/5 bg-white/5" : "border-slate-200 bg-slate-50/50"
-                                                    )}>
-                                                        <span className={cn("text-[8px] font-bold uppercase tracking-[0.2em]", isDark ? "text-slate-400" : "text-slate-500")}>
-                                                            Vazio
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </>
-                                        );
+                                        const dayApts = groupedByDay[dayStr] || [];
+
+                                        if (dayApts.length === 0) {
+                                            return (
+                                                <div className={cn(
+                                                    "py-2 ml-1 rounded-lg text-center border border-dashed",
+                                                    isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-slate-50/50"
+                                                )}>
+                                                    <p className={cn("text-[8px] font-bold uppercase tracking-widest opacity-40", isDark ? "text-slate-400" : "text-slate-500")}>
+                                                        Sem agendamentos
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+
+                                        return dayApts.map((apt: any) => (
+                                            <AppointmentCard
+                                                key={apt.id}
+                                                apt={apt}
+                                                isDark={isDark}
+                                                onSelect={onSelectAppointment}
+                                                onUpdateStatus={onUpdateStatus}
+                                                onDelete={onDelete}
+                                            />
+                                        ));
                                     })()}
                                 </div>
                             </div>
@@ -435,17 +427,17 @@ export default function MobileAgendaView({
             </div>
 
             {/* Floating Action Button - Liquid Gradient */}
-            <div className="fixed bottom-6 right-6 z-30">
+            <div className="fixed bottom-24 right-4 z-40">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
                             size="icon"
-                            className="w-14 h-14 rounded-2xl shadow-2xl shadow-indigo-500/40 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white hover:scale-110 active:scale-95 transition-all duration-300 border border-white/10 group"
+                            className="w-12 h-12 rounded-2xl shadow-xl shadow-blue-500/40 bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
                         >
-                            <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
+                            <Plus className="w-6 h-6" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[200px]", isDark ? "bg-slate-900/95 backdrop-blur-xl text-slate-200" : "bg-white/95 backdrop-blur-xl")}>
+                    <DropdownMenuContent align="end" className={cn("rounded-2xl border-white/5 p-2 min-w-[200px] mb-2", isDark ? "bg-slate-900/95 backdrop-blur-xl text-slate-200" : "bg-white/95 backdrop-blur-xl")}>
                         <DropdownMenuItem onClick={onNewAppointment} className="gap-3 cursor-pointer p-3 rounded-xl text-xs font-bold uppercase tracking-wider focus:bg-blue-500/10 focus:text-blue-500">
                             <Plus className="w-4 h-4" /> Novo Agendamento
                         </DropdownMenuItem>
@@ -483,7 +475,6 @@ function AppointmentCard({
     const status = statusConfig[apt.status] || statusConfig.agendado;
     const time = apt.start_time?.substring(0, 5) || "--:--";
     const x = useMotionValue(0);
-    const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]);
     const rightBg = useTransform(x, [0, 100], ["rgba(34, 197, 94, 0)", "rgba(34, 197, 94, 1)"]);
     const leftBg = useTransform(x, [-100, 0], ["rgba(239, 68, 68, 1)", "rgba(239, 68, 68, 0)"]);
 
