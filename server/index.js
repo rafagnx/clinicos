@@ -151,6 +151,22 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://yhfjhovhemgcamigi
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloZmpob3ZoZW1nY2FtaWdpbWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNzE1NzAsImV4cCI6MjA4NDY0NzU3MH0.6a8aSDM12eQwTRZES5r_hqFDGq2akKt9yMOys3QzodQ";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Helper to strip massive base64 junk from user objects (prevents ERR_CONNECTION_CLOSED)
+const sanitizeUser = (user) => {
+    if (!user) return user;
+    const clean = JSON.parse(JSON.stringify(user));
+    if (clean.user_metadata) {
+        const fields = ['image', 'avatar_url', 'picture', 'photo_url', 'avatar'];
+        fields.forEach(f => {
+            if (clean.user_metadata[f] && String(clean.user_metadata[f]).length > 1000) {
+                console.warn(`[Auth] Stripping oversized field ${f} for user ${clean.email}`);
+                clean.user_metadata[f] = "";
+            }
+        });
+    }
+    return clean;
+};
+
 // AUTH MIDDLEWARE (Definition)
 const requireAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -160,8 +176,9 @@ const requireAuth = async (req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
         try {
-            const { data: { user }, error } = await supabase.auth.getUser(token);
-            if (!error && user) {
+            const { data: { user: rawUser }, error } = await supabase.auth.getUser(token);
+            if (!error && rawUser) {
+                const user = sanitizeUser(rawUser);
                 // AUTO-SYNC: Ensure Supabase user exists in DB table
                 let finalUserId = user.id;
                 let targetOrgId = req.headers['x-organization-id'];
